@@ -31,7 +31,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.4.31</kotlin.version>
-        <kotlin.coroutines.version>1.4.2</kotlin.coroutines.version>
+        <kotlin.coroutines.version>1.4.3-native-mt</kotlin.coroutines.version>
         <java.version>11</java.version>
         <arrow.version>0.11.0</arrow.version>
         <kotlin.code.style>official</kotlin.code.style>
