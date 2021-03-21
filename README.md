@@ -1,4 +1,4 @@
-# Functional domain modeling
+# Functional domain modeling - `f(model)`
 
 The word `domain` here means the area of interest in the business.
 When you’re developing an `information system` to automate activities of that business, you’re modeling the
