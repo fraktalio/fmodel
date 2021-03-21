@@ -14,9 +14,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-          server-id: github # value of repository/id field of the pom.xml
-          server-username: GITHUB_USER_REF  # env variable name for username
-          server-password: GITHUB_TOKEN_REF # env variable name for GitHub Personal Access Token
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -27,6 +24,5 @@ jobs:
 
       - name: Test, Build and Deploy with Maven
         env:
-          GITHUB_USER_REF: ${{ secrets.GH_PACKAGE_REPO_USERNAME }}
-          GITHUB_TOKEN_REF: ${{ secrets.GH_PACKAGE_REPO_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./mvnw --batch-mode clean deploy
