@@ -39,7 +39,10 @@ sealed class Error : Result() {
     data class StoringStateFailed<S>(val state: S, val throwable: Throwable?) : Error()
     data class AggregateIsInTerminalState<S>(val state: S) : Error()
     data class ProcessManagerIsInTerminalState<S>(val state: S) : Error()
-    data class PublishingActionsFailed<S, A>(val state: S, val action: Iterable<A>) : Error()
+    data class PublishingActionsOrStoringStateFailed<S, A>(val state: S, val action: Iterable<A>) : Error()
+    data class PublishingActionsFailed<A>(val action: Iterable<A>) : Error()
+
+
 }
 
 /**
@@ -53,5 +56,7 @@ sealed class Success : Result() {
     data class EventsStoredSuccessfully<E>(val event: Iterable<E>) : Success()
     data class StateStoredSuccessfully<S>(val state: S) : Success()
     data class StateStoredAndEventsPublishedSuccessfully<S, E>(val state: S, val event: Iterable<E>) : Success()
-    data class ActionsPublishedSuccessfully<S, A>(val state: S, val action: Iterable<A>) : Success()
+    data class ActionsPublishedAndStateStoredSuccessfully<S, A>(val state: S, val action: Iterable<A>) : Success()
+    data class ActionsPublishedSuccessfully<A>(val action: Iterable<A>) : Success()
+
 }
