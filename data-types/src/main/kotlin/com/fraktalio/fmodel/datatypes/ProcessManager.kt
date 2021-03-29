@@ -32,6 +32,8 @@ import arrow.higherkind
  * @property publishActionsAndStoreState A suspending function that takes the newly produced state by [Process] and stores it by additionally publishing actions that should be taken further.
  * @property fetchState A suspending function that takes the action result of type [AR] and results with [either] error [Error.FetchingStateFailed] or success [S]?
  * @constructor Creates [ProcessManager]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @higherkind
 data class ProcessManager<AR, S, E, A>(

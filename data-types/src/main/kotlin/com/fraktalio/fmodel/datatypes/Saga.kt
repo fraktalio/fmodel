@@ -28,6 +28,8 @@ import arrow.higherkind
  * @param A Action type
  * @property react A pure function/lambda that takes input state of type [AR], and returns the list of actions [Iterable]<[A]>.
  * @constructor Creates [_Saga]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @higherkind
 data class _Saga<AR, A>(

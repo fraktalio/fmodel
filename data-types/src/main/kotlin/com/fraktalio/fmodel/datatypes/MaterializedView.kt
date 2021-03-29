@@ -30,6 +30,8 @@ import arrow.higherkind
  * @property storeState A suspending function that takes the newly produced state by [View] and stores it (produces side effect by modifying object/data outside its own scope) by resulting with [either] error [Error.StoringStateFailed] or success [Success.StateStoredSuccessfully]
  * @property fetchState A suspending function that takes the event of type [E] and results with [either] error [Error.FetchingStateFailed] or success [S]?
  * @constructor Creates [MaterializedView]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @higherkind
 data class MaterializedView<S, E>(

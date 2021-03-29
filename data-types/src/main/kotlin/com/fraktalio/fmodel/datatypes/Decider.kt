@@ -36,6 +36,8 @@ import arrow.higherkind
  * @property initialState A starting point / An initial state of type [So]
  * @property isTerminal A pure function/lambda that takes input state of type [Si], and returns [Boolean] showing if the current input state is terminal/final
  * @constructor Creates [_Decider]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @higherkind
 data class _Decider<C, Si, So, Ei, Eo>(

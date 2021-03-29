@@ -20,6 +20,8 @@ package com.fraktalio.fmodel.datatypes
  * A general result of any operation
  *
  * @constructor Creates [Result]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 sealed class Result
 
@@ -27,6 +29,8 @@ sealed class Result
  * The result of type [Error]
  *
  * @constructor Creates [Error]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 sealed class Error : Result() {
     data class FetchingStateFailed(val throwable: Throwable?) : Error()
@@ -42,6 +46,8 @@ sealed class Error : Result() {
  * The result of type [Success]
  *
  * @constructor Creates [Success]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 sealed class Success : Result() {
     data class EventsStoredSuccessfully<E>(val event: Iterable<E>) : Success()

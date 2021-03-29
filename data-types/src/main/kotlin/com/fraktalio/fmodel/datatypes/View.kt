@@ -35,6 +35,8 @@ import arrow.higherkind
  * @property evolve A pure function/lambda that takes input state of type [Si] and input event of type [E] as parameters, and returns the output/new state [So]
  * @property initialState A starting point / An initial state of type [So]
  * @constructor Creates [_View]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @higherkind
 data class _View<Si, So, E>(

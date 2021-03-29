@@ -34,6 +34,8 @@ import arrow.higherkind
  * @property storeState A suspending function that takes the newly produced state by [Decider] and stores it (produces side effect by modifying object/data outside its own scope) by resulting with [either] error [Error.StoringStateFailed] or success [Success.StateStoredSuccessfully]
  * @property fetchState A suspending function that takes the command of type [C] and results with [either] error [Error.FetchingStateFailed] or success [Iterable]<[E]>
  * @constructor Creates [StateStoredAggregate]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @higherkind
 data class StateStoredAggregate<C, S, E>(

@@ -34,6 +34,8 @@ import arrow.higherkind
  * @property storeEvents A suspending function that takes the newly produced events by [Decider] and stores them (produces side effect by modifying object/data outside its own scope) by resulting with [either] error [Error.StoringEventsFailed] or success [Success.EventsStoredSuccessfully]
  * @property fetchEvents A suspending function that takes the command of type [C] and results with [either] error [Error.FetchingEventsFailed] or success [Iterable]<[E]>
  * @constructor Creates [EventSourcingAggregate]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @higherkind
 data class EventSourcingAggregate<C, S, E>(
