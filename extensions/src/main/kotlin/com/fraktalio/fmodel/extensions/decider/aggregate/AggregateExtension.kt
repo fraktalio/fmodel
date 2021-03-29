@@ -42,7 +42,7 @@ interface StateStoredAggregateExtension : Contravariant<ForStateStoredAggregate>
     override fun <Cn, C, S, E> Kind3<ForStateStoredAggregate, C, S, E>.lmapOnC(f: (Cn) -> C): Kind3<ForStateStoredAggregate, Cn, S, E> {
         val aggregate = this.fix()
         return StateStoredAggregate(
-            storeState = { s -> aggregate.storeState(s) },
+            storeState = { s, e -> aggregate.storeState(s, e) },
             fetchState = { c -> aggregate.fetchState(f(c)) },
             decider = aggregate.decider.lmapOnC(f)
         )

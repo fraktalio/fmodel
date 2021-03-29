@@ -52,5 +52,6 @@ sealed class Error : Result() {
 sealed class Success : Result() {
     data class EventsStoredSuccessfully<E>(val event: Iterable<E>) : Success()
     data class StateStoredSuccessfully<S>(val state: S) : Success()
+    data class StateStoredAndEventsPublishedSuccessfully<S, E>(val state: S, val event: Iterable<E>) : Success()
     data class ActionsPublishedSuccessfully<S, A>(val state: S, val action: Iterable<A>) : Success()
 }

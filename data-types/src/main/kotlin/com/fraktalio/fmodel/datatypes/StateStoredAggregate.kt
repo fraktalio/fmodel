@@ -40,7 +40,7 @@ import arrow.higherkind
 @higherkind
 data class StateStoredAggregate<C, S, E>(
     val decider: Decider<C, S, E>,
-    val storeState: suspend (S) -> Either<Error.StoringStateFailed<S>, Success.StateStoredSuccessfully<S>>,
+    val storeState: suspend (S, (Iterable<E>)) -> Either<Error.StoringStateFailed<S>, Success.StateStoredAndEventsPublishedSuccessfully<S, E>>,
     val fetchState: suspend (C) -> Either<Error.FetchingStateFailed, S?>
 ) : StateStoredAggregateOf<C, S, E> {
 
@@ -55,7 +55,8 @@ data class StateStoredAggregate<C, S, E>(
         either {
             val currentState = fetchState(command).bind()
             val state = validate(currentState ?: decider.initialState).bind()
-            storeState(decider.decide(command, state).fold(state, decider.evolve)).bind()
+            val events = decider.decide(command, state)
+            storeState(events.fold(state, decider.evolve), events).bind()
         }
 
     private fun validate(state: S): Either<Error, S> {
