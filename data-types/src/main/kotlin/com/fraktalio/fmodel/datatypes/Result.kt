@@ -39,8 +39,8 @@ sealed class Error : Result() {
     data class StoringStateFailed<S>(val state: S, val throwable: Throwable?) : Error()
     data class AggregateIsInTerminalState<S>(val state: S) : Error()
     data class ProcessManagerIsInTerminalState<S>(val state: S) : Error()
-    data class PublishingActionsOrStoringStateFailed<S, A>(val state: S, val action: Iterable<A>) : Error()
-    data class PublishingActionsFailed<A>(val action: Iterable<A>) : Error()
+    data class PublishingActionsOrStoringStateFailed<S, A>(val state: S, val action: Iterable<A>, val throwable: Throwable?) : Error()
+    data class PublishingActionsFailed<A>(val action: Iterable<A>, val throwable: Throwable?) : Error()
 
 
 }
