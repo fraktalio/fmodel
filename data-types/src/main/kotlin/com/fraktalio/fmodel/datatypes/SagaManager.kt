@@ -18,23 +18,41 @@ package com.fraktalio.fmodel.datatypes
 
 import arrow.core.Either
 import arrow.core.computations.either
-import arrow.higherkind
 
 /**
+ * Saga manager - Stateless process orchestrator
+ * It is reacting on Action Results of type [AR] and produces new actions [A] based on them
+ *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@higherkind
 data class SagaManager<AR, A>(
     val saga: Saga<AR, A>,
     val publishActions: suspend (Iterable<A>) -> Either<Error.PublishingActionsFailed<A>, Success.ActionsPublishedSuccessfully<A>>
-) : SagaManagerOf<AR, A> {
+) {
 
+    /**
+     * Handles the action result of type [AR]
+     *
+     * @param actionResult Action Result represent the outcome of some action you want to handle in some way
+     * @return Either [Error] or [Success]
+     */
     suspend fun handle(actionResult: AR): Either<Error, Success.ActionsPublishedSuccessfully<A>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
             publishActions(saga.react(actionResult)).bind()
         }
 
-    companion object
+    /**
+     * Left map over the parameter of type AR (ActionResult) - Contravariant over the AR (ActionResult) parameter
+     *
+     * @param ARn new Action Result type
+     * @param f
+     */
+    inline fun <ARn> lmapOnAR(crossinline f: (ARn) -> AR): SagaManager<ARn, A> = SagaManager(
+        saga = this.saga.lmapOnAR(f),
+        publishActions = this.publishActions,
+
+        )
+
 }
 

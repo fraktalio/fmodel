@@ -31,16 +31,15 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.4.31</kotlin.version>
-        <kotlin.coroutines.version>1.4.3-native-mt</kotlin.coroutines.version>
+        <kotlin.coroutines.version>1.4.2</kotlin.coroutines.version>
         <java.version>11</java.version>
-        <arrow.version>0.11.0</arrow.version>
+        <arrow.version>0.13.1</arrow.version>
         <kotlin.code.style>official</kotlin.code.style>
         <junit.version>4.13.1</junit.version>
     </properties>
 
     <modules>
         <module>data-types</module>
-        <module>extensions</module>
         <module>examples</module>
     </modules>
 
@@ -61,16 +60,6 @@
                 <artifactId>arrow-core</artifactId>
                 <version>${arrow.version}</version>
             </dependency>
-            <dependency>
-                <groupId>io.arrow-kt</groupId>
-                <artifactId>arrow-incubator-test</artifactId>
-                <version>${arrow.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.arrow-kt</groupId>
-                <artifactId>arrow-syntax</artifactId>
-                <version>${arrow.version}</version>
-            </dependency>
         </dependencies>
 
     </dependencyManagement>
@@ -89,24 +78,6 @@
                     <jvmTarget>1.8</jvmTarget>
                 </configuration>
                 <executions>
-                    <execution>
-                        <id>kapt</id>
-                        <goals>
-                            <goal>kapt</goal>
-                        </goals>
-                        <configuration>
-                            <sourceDirs>
-                                <sourceDir>src/main/kotlin</sourceDir>
-                            </sourceDirs>
-                            <annotationProcessorPaths>
-                                <annotationProcessorPath>
-                                    <groupId>io.arrow-kt</groupId>
-                                    <artifactId>arrow-meta</artifactId>
-                                    <version>${arrow.version}</version>
-                                </annotationProcessorPath>
-                            </annotationProcessorPaths>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>compile</id>
                         <phase>compile</phase>

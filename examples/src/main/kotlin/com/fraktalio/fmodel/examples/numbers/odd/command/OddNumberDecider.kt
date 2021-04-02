@@ -25,14 +25,14 @@ val ODD_NUMBER_DECIDER: Decider<NumberCommand.OddNumberCommand?, OddNumberState,
         isTerminal = { s -> s.value.get > 100 },
         initialState = OddNumberState(Description("Initial state"), NumberValue(0)),
         decide = { c, s ->
-            when {
-                (c != null && c is NumberCommand.OddNumberCommand.AddOddNumber) -> listOf(
+            when (c) {
+                is NumberCommand.OddNumberCommand.AddOddNumber -> listOf(
                     NumberEvent.OddNumberEvent.OddNumberAdded(
                         c.description,
                         c.value
                     )
                 )
-                (c != null && c is NumberCommand.OddNumberCommand.SubtractOddNumber) -> listOf(
+                is NumberCommand.OddNumberCommand.SubtractOddNumber -> listOf(
                     NumberEvent.OddNumberEvent.OddNumberSubtracted(
                         c.description,
                         c.value
@@ -42,12 +42,12 @@ val ODD_NUMBER_DECIDER: Decider<NumberCommand.OddNumberCommand?, OddNumberState,
             }
         },
         evolve = { s, e ->
-            when {
-                (e != null && e is NumberEvent.OddNumberEvent.OddNumberAdded) -> OddNumberState(
+            when (e) {
+                is NumberEvent.OddNumberEvent.OddNumberAdded -> OddNumberState(
                     e.description,
                     NumberValue(s.value.get + e.value.get)
                 )
-                (e != null && e is NumberEvent.OddNumberEvent.OddNumberSubtracted) -> OddNumberState(
+                is NumberEvent.OddNumberEvent.OddNumberSubtracted -> OddNumberState(
                     e.description,
                     NumberValue(s.value.get - e.value.get)
                 )

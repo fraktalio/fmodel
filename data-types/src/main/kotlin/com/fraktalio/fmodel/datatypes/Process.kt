@@ -16,8 +16,6 @@
 
 package com.fraktalio.fmodel.datatypes
 
-import arrow.higherkind
-
 /**
  * [_Process] is a datatype that represents the central point of control deciding what to execute next ([A]).
  * It is responsible for mapping different events from aggregates into action results ([AR]) that the _[Process] then can use to calculate the next actions ([A]) to be mapped to commands of other aggregates.
@@ -38,7 +36,6 @@ import arrow.higherkind
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@higherkind
 data class _Process<AR, Si, So, Ei, Eo, A>(
     val ingest: (AR, Si) -> Iterable<Eo>,
     val evolve: (Si, Ei) -> So,
@@ -46,9 +43,6 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
     val pending: (Si) -> Iterable<A>,
     val initialState: So,
     val isTerminal: (Si) -> Boolean
-) : _ProcessOf<AR, Si, So, Ei, Eo, A> {
-
-    companion object
-}
+)
 
 typealias Process<AR, S, E, A> = _Process<AR, S, S, E, E, A>

@@ -16,8 +16,6 @@
 
 package com.fraktalio.fmodel.datatypes
 
-import arrow.higherkind
-
 /**
  * [_Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).
  * It is responsible for mapping different events from aggregates into action results ([AR]) that the [_Saga] then can use to calculate the next actions ([A]) to be mapped to commands of other aggregates.
@@ -31,12 +29,29 @@ import arrow.higherkind
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@higherkind
 data class _Saga<AR, A>(
     val react: (AR) -> Iterable<A>
-) : _SagaOf<AR, A> {
+) {
+    /**
+     * Left map over the parameter of type [AR] - Contravariant over AR type
+     *
+     * @param ARn New ActionResult type that you are mapping to
+     * @param f
+     */
+    inline fun <ARn> lmapOnAR(crossinline f: (ARn) -> AR): _Saga<ARn, A> = _Saga(
+        react = { ar -> this.react(f(ar)) }
+    )
 
-    companion object
+    /**
+     * Right map on A - Covariant over the A type
+     *
+     * @param An
+     * @param f
+     */
+    inline fun <An> rmapOnA(crossinline f: (A) -> An): _Saga<AR, An> = _Saga(
+        react = { ar -> this.react(ar).map(f) }
+    )
+
 }
 
 typealias Saga<AR, A> = _Saga<AR, A>
