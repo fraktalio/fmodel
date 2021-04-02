@@ -18,7 +18,6 @@ package com.fraktalio.fmodel.datatypes
 
 import arrow.core.Either
 import arrow.core.computations.either
-import arrow.higherkind
 
 /**
  * Materialized view is using/delegating a [View] to handle events of type [E] and to maintain a state of denormalized projection(s) as a result.
@@ -33,13 +32,18 @@ import arrow.higherkind
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@higherkind
 data class MaterializedView<S, E>(
     val view: View<S, E>,
     val storeState: suspend (S) -> Either<Error.StoringStateFailed<S>, Success.StateStoredSuccessfully<S>>,
     val fetchState: suspend (E) -> Either<Error.FetchingStateFailed, S?>
-) : MaterializedViewOf<S, E> {
+) {
 
+    /**
+     * Handles the event of type [E]
+     *
+     * @param event Event of type [E] to be handled
+     * @return Either [Error] or [Success]
+     */
     suspend fun handle(event: E): Either<Error, Success> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
@@ -48,6 +52,17 @@ data class MaterializedView<S, E>(
             storeState(newState).bind()
         }
 
-    companion object
+    /**
+     * Left map over E (Event) - Contravariant
+     *
+     * @param En Event new
+     * @param f
+     */
+    inline fun <En> lmapOnE(crossinline f: (En) -> E): MaterializedView<S, En> = MaterializedView(
+        view = this.view.lmapOnE(f),
+        fetchState = { en -> this.fetchState(f(en)) },
+        storeState = { s -> this.storeState(s) }
+    )
+
 }
 

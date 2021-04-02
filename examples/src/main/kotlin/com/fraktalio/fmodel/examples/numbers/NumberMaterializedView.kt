@@ -18,14 +18,13 @@ package com.fraktalio.fmodel.examples.numbers
 
 import arrow.core.Either
 import arrow.core.Either.Companion.catch
-import arrow.core.Tuple2
 import com.fraktalio.fmodel.datatypes.Error
 import com.fraktalio.fmodel.datatypes.MaterializedView
 import com.fraktalio.fmodel.datatypes.Success
+import com.fraktalio.fmodel.datatypes.combineViews
 import com.fraktalio.fmodel.examples.numbers.api.*
 import com.fraktalio.fmodel.examples.numbers.even.query.EVEN_NUMBER_VIEW
 import com.fraktalio.fmodel.examples.numbers.odd.query.ODD_NUMBER_VIEW
-import com.fraktalio.fmodel.extensions.view._view.semigroup.combineViews
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -40,14 +39,14 @@ val numberStateStorageMutex = Mutex()
 /**
  * State stored view of all the Numbers
  */
-val NUMBER_MATERIALIZED_VIEW: MaterializedView<Tuple2<EvenNumberState?, OddNumberState?>, Either<NumberEvent.EvenNumberEvent?, NumberEvent.OddNumberEvent?>> =
+val NUMBER_MATERIALIZED_VIEW: MaterializedView<Pair<EvenNumberState?, OddNumberState?>, Either<NumberEvent.EvenNumberEvent?, NumberEvent.OddNumberEvent?>> =
     MaterializedView(
         view = EVEN_NUMBER_VIEW.combineViews(ODD_NUMBER_VIEW),
         fetchState = {
             catch {
                 when (it) {
-                    is Either.Left -> Tuple2(numberStateStorage1, null)
-                    is Either.Right -> Tuple2(null, numberStateStorage2)
+                    is Either.Left -> Pair(numberStateStorage1, null)
+                    is Either.Right -> Pair(null, numberStateStorage2)
                 }
             }.mapLeft { throwable ->
                 Error.FetchingStateFailed(throwable)
@@ -57,8 +56,8 @@ val NUMBER_MATERIALIZED_VIEW: MaterializedView<Tuple2<EvenNumberState?, OddNumbe
             catch {
                 numberStateStorageMutex.withLock {
                     when {
-                        it.a != null -> numberStateStorage1 = it.a
-                        it.b != null -> numberStateStorage2 = it.b
+                        it.first != null -> numberStateStorage1 = it.first
+                        it.second != null -> numberStateStorage2 = it.second
                     }
 
                 }

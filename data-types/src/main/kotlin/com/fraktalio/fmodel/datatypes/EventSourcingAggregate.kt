@@ -18,7 +18,6 @@ package com.fraktalio.fmodel.datatypes
 
 import arrow.core.Either
 import arrow.core.computations.either
-import arrow.higherkind
 
 /**
  * Event sourcing aggregate is using/delegating a [Decider] to handle commands and produce events.
@@ -37,12 +36,11 @@ import arrow.higherkind
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@higherkind
 data class EventSourcingAggregate<C, S, E>(
     val decider: Decider<C, S, E>,
     val storeEvents: suspend (Iterable<E>) -> Either<Error.StoringEventsFailed<E>, Success.EventsStoredSuccessfully<E>>,
     val fetchEvents: suspend (C) -> Either<Error.FetchingEventsFailed, Iterable<E>>
-) : EventSourcingAggregateOf<C, S, E> {
+) {
 
     /**
      * Handles the command message of type [C]
@@ -59,10 +57,20 @@ data class EventSourcingAggregate<C, S, E>(
             storeEvents(newEvents).bind()
         }
 
-    private fun validate(state: S): Either<Error, S> {
-        return if (decider.isTerminal(state)) Either.left(Error.AggregateIsInTerminalState(state))
-        else Either.right(state)
-    }
+    private fun validate(state: S): Either<Error, S> =
+        if (decider.isTerminal(state)) Either.Left(Error.AggregateIsInTerminalState(state))
+        else Either.Right(state)
 
-    companion object
+    /**
+     * Left map over C (Command) - Contravariant
+     *
+     * @param Cn Command new
+     * @param f
+     */
+    inline fun <Cn> lmapOnC(crossinline f: (Cn) -> C): EventSourcingAggregate<Cn, S, E> =
+        EventSourcingAggregate(
+            storeEvents = { e -> this.storeEvents(e) },
+            fetchEvents = { c -> this.fetchEvents(f(c)) },
+            decider = this.decider.lmapOnC(f)
+        )
 }

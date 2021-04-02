@@ -22,21 +22,18 @@ This project can be used as a library, or as an inspiration, or both.
       * [Decider](#decider)
          * [Event-sourcing aggregate](#event-sourcing-aggregate)
          * [State-stored aggregate](#state-stored-aggregate)
-         * [Decider extensions](#decider-extensions)
+         * [Decider extensions and functions](#decider-extensions-and-functions)
             * [Contravariant](#contravariant)
             * [Profunctor (Contravariant and Covariant)](#profunctor-contravariant-and-covariant)
             * [Applicative](#applicative)
             * [Monoid](#monoid)
       * [View](#view)
          * [Materialized View](#materialized-view)
-         * [View extensions](#view-extensions)
+         * [View extensions and functions](#view-extensions-and-functions)
             * [Contravariant](#contravariant-1)
             * [Profunctor (Contravariant and Covariant)](#profunctor-contravariant-and-covariant-1)
             * [Applicative](#applicative-1)
             * [Monoid](#monoid-1)
-      * [Process](#process)
-         * [Process manager](#process-manager)
-         * [Process manager extensions](#process-manager-extensions)
       * [Kotlin](#kotlin)
       * [References and further reading](#references-and-further-reading)
 
@@ -92,22 +89,14 @@ We can now use this function `(Iterable<E>) -> S` to:
 
 **We can verify that we are able to design any information system (event-sourced or/and state-stored) in this way**, by using these two functions wrapped in a data-type class (algebraic data structure) which is generalized with 3 generic parameters: 
 ```kotlin
-@higherkind
 data class Decider<C, S, E>(
     val decide: (C, S) -> Iterable<E>,
     val evolve: (S, E) -> S,
-) : DeciderOf<C, S, E> {
-    companion object
-}
+)
 ```
 
->A [data-type](https://arrow-kt.io/docs/datatypes/intro/) is an abstraction that encapsulates one reusable coding pattern. These solutions have a canonical implementation that is generalized for all possible uses.
->In Kotlin programming language, a datatype is implemented by a data class, or a sealed hierarchy of data classes and objects. These data-types are generalized by having one or several generic parameters, and, to become a [type constructor](https://arrow-kt.io/docs/patterns/glossary/#type-constructors), they implement the interface `Kind` for these generic parameters.
-
->A type constructor is any class or interface that has at least one generic parameter. For example, ListK<A> or Option<A>. They’re called constructors because they’re similar to a factory function where the parameter is A, except type constructors only work for types.
-
->Kotlin (with Arrow) is a good fit for functional domain modeling. It offers us data class, sealed class, enum class, and inline class. And we have Arrow, which offers us some interesting generic algebraic data-types such as Either, Validated, Ior, etc.
-
+>A `datatype` is an abstraction that encapsulates one reusable coding pattern. These solutions have a canonical implementation that is generalized for all possible uses.
+>In Kotlin programming language, a datatype is implemented by a data class, or a sealed hierarchy of data classes and objects.
 
 ## Decider
 
@@ -129,15 +118,12 @@ We can always specialize down to the 3 generic parameters: `typealias Decider<C,
 
 
 ```kotlin
-@higherkind
 data class _Decider<C, Si, So, Ei, Eo>(
     val decide: (C, Si) -> Iterable<Eo>,
     val evolve: (Si, Ei) -> So,
     val initialState: So,
     val isTerminal: (Si) -> Boolean
-) : _DeciderOf<C, Si, So, Ei, Eo> {
-    companion object
-}
+)
 
 typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
 ```
@@ -152,7 +138,7 @@ We can now construct event-sourcing or/and state-storing aggregate by using the 
 
 Event sourcing aggregate is using a `Decider` to handle commands and produce events.
 In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via `fetchEvents` function, and then delegate the command to the decider which can produce event(s) as a result.
-Produced events are then stored via `storeEvents` **suspending function**.
+Produced events are then stored via `storeEvents` suspending function.
 It is the responsibility of the user to implement these functions `fetchEvents` and `storeEvents` per need.
 These two functions are producing side effects (infrastructure), and they are deliberately separated from the decider (pure domain logic).
 
@@ -160,12 +146,11 @@ These two functions are producing side effects (infrastructure), and they are de
 >This effectively means we’re decoupling the pure declaration of our program logic (frequently called algebras in the functional world) from the runtime. And therefore, the runtime has the chance to see the big picture of our program and decide how to run and optimize it.
 
 ```kotlin
-@higherkind
 data class EventSourcingAggregate<C, S, E>(
     val decider: Decider<C, S, E>,
     val storeEvents: suspend (Iterable<E>) -> Either<Error.StoringEventsFailed<E>, Success.EventsStoredSuccessfully<E>>,
     val fetchEvents: suspend (C) -> Either<Error.FetchingEventsFailed, Iterable<E>>
-) : EventSourcingAggregateOf<C, S, E> {
+) {
 
     suspend fun handle(command: C): Either<Error, Success> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
@@ -180,26 +165,22 @@ data class EventSourcingAggregate<C, S, E>(
         else Either.right(state)
     }
 
-    companion object
 }
 ```
 ### State-stored aggregate
 
 State stored aggregate is using a `Decider` to handle commands and produce new state.
 In order to handle the command, aggregate needs to fetch the current state via `fetchState` function first, and then delegate the command to the decider which can produce new state as a result.
-New state is then stored via `storeState` **suspending function**.
+New state is then stored via `storeState` suspending function.
 It is the responsibility of the user to implement these functions `fetchState` and `storeState` per need.
 These two functions are producing side effects (infrastructure), and they are deliberately separated from the decider (pure domain logic).
-
->Flagging a computation as suspend enforces a calling context, meaning the compiler can ensure that we can’t call the effect from anywhere other than an environment prepared to run suspended effects. That will be another suspended function or a Coroutine.
->This effectively means we’re decoupling the pure declaration of our program logic (frequently called algebras in the functional world) from the runtime. And therefore, the runtime has the chance to see the big picture of our program and decide how to run and optimize it.
 
 ```kotlin
 data class StateStoredAggregate<C, S, E>(
     val decider: Decider<C, S, E>,
     val storeState: suspend (S) -> Either<Error.StoringStateFailed<S>, Success.StateStoredSuccessfully<S>>,
     val fetchState: suspend (C) -> Either<Error.FetchingStateFailed, S?>
-) : StateStoredAggregateOf<C, S, E> {
+) {
 
     suspend fun handle(command: C): Either<Error, Success> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
@@ -214,13 +195,12 @@ data class StateStoredAggregate<C, S, E>(
         else Either.right(state)
     }
 
-    companion object
 }
 ````
 
-### Decider extensions
+### Decider extensions and functions
 
-`Decider` defines a `monoid` in respect to the composition operation: `(Decider<Cx,Sx,Ex>, Decider<Cy,Sy,Ey>) -> Decider<Either<Cx,Cy>, Tuple2(Sx,Sy), Either<Ex,Ey>>`, and this is an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Decider<Nothing, Unit, Nothing>`
+`Decider` defines a `monoid` in respect to the composition operation: `(Decider<Cx,Sx,Ex>, Decider<Cy,Sy,Ey>) -> Decider<Either<Cx,Cy>, Pair(Sx,Sy), Either<Ex,Ey>>`, and this is an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Decider<Nothing, Unit, Nothing>`
 
 > A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
 > Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
@@ -246,12 +226,12 @@ data class StateStoredAggregate<C, S, E>(
 #### Applicative
 - `rjustOnS(so: So): Decider<C, Si, So, Ei, Eo>`
 - `Decider<C, Si, So, Ei, Eo>.rapplyOnS(ff: Decider<C, Si, (So) -> Son, Ei, Eo>): Decider<C, Si, Son, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.rproductOnS(fb: Decider<C, Si, Son, Ei, Eo>): Decider<C, Si, Tuple2<So, Son>, Ei, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.rproductOnS(fb: Decider<C, Si, Son, Ei, Eo>): Decider<C, Si, Pair<So, Son>, Ei, Eo>`
 
 #### Monoid
 - `Decider<C1, Si1, So1, Ei1, Eo1>.combineDeciders(
            y: Decider<C2, Si2, So2, Ei2, Eo2>
-       ): Decider<Either<C1, C2>, Tuple2<Si1, Si2>, Tuple2<So1, So2>, Either<Ei1, Ei2>, Either<Eo1, Eo2>>`
+       ): Decider<Either<C1, C2>, Pair<Si1, Si2>, Pair<So1, So2>, Either<Ei1, Ei2>, Either<Eo1, Eo2>>`
 - with identity element `Decider<Nothing, Unit, Nothing>`
 
 >Typeclasses are interfaces that define a set of extension functions associated to one type. You may see them referred to as “extension interfaces.”
@@ -276,13 +256,10 @@ We can always specialize down to the 2 generic parameters: `typealias View<S, E>
 
 
 ```kotlin
-@higherkind
 data class _View<Si, So, E>(
     val evolve: (Si, E) -> So,
     val initialState: So,
-) : _ViewOf<Si, So, E> {
-    companion object
-}
+)
 
 typealias View<S, E> = _View<S, S, E>
 ```
@@ -301,18 +278,13 @@ New state is then stored via `storeState` suspending function.
 It is the responsibility of the user to implement these functions `fetchState` and `storeState` per need.
 These two functions are producing side effects (infrastructure), and they are deliberately separated from the view (pure domain logic).
 
->Flagging a computation as suspend enforces a calling context, meaning the compiler can ensure that we can’t call the effect from anywhere other than an environment prepared to run suspended effects. That will be another suspended function or a Coroutine.
->This effectively means we’re decoupling the pure declaration of our program logic (frequently called algebras in the functional world) from the runtime. And therefore, the runtime has the chance to see the big picture of our program and decide how to run and optimize it.
-
 
 ```kotlin
-@higherkind
 data class MaterializedView<S, E>(
     val view: View<S, E>,
     val storeState: suspend (S) -> Either<Error.StoringStateFailed<S>, Success.StateStoredSuccessfully<S>>,
     val fetchState: suspend (E) -> Either<Error.FetchingStateFailed, S?>
-) : MaterializedViewOf<S, E> {
-
+) {
     suspend fun handle(event: E): Either<Error, Success> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
@@ -320,13 +292,12 @@ data class MaterializedView<S, E>(
             val newState = view.evolve(oldState, event)
             storeState(newState).bind()
         }
-    companion object
 }
 ```
 
-### View extensions
+### View extensions and functions
 
-`View` defines a `monoid` in respect to the composition operation: `(View<Sx,Ex>, View<Sy,Ey>) -> View<Tuple2(Sx,Sy), Either<Ex,Ey>>`, and this is an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `View<Unit, Nothing>`
+`View` defines a `monoid` in respect to the composition operation: `(View<Sx,Ex>, View<Sy,Ey>) -> View<Pair(Sx,Sy), Either<Ex,Ey>>`, and this is an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `View<Unit, Nothing>`
 
 #### Contravariant
 - `View<Si, So, E>.lmapOnE(f: (En) -> E): View<Si, So, En>`
@@ -344,87 +315,8 @@ data class MaterializedView<S, E>(
 - `rjustOnS(so: So): View<Si, So, E>`
 
 #### Monoid
-- `View<Si1, So1, E1>.combineViews(y: View<Si2, So2, E2>): View<Tuple2<Si1, Si2>, Tuple2<So1, So2>, Either<E1, E2>>`
+- `View<Si1, So1, E1>.combineViews(y: View<Si2, So2, E2>): View<Pair<Si1, Si2>, Pair<So1, So2>, Either<E1, E2>>`
 - with identity element `View<Unit, Nothing>`
-
-## Process
-`_Process` is a datatype that represents the central point of control deciding what to execute next.
-It is responsible for mapping different events from aggregates into action results (`AR`) that the `_Process` then can use to calculate the next actions (`A`) to be mapped to commands of other aggregates.
-
-It has six generic parameters `AR`, `Si`, `So`, `Ei`, `Eo`, `A`, representing the type of the values that `_Process` may contain or use.
-`_Process` can be specialized for any type of `AR`, `Si`, `So`, `Ei`, `Eo`, `A` because these types does not affect its behavior.
-`_Process` behaves the same for `AR`=`Int` or `AR`=`YourCustomType`, for example.
-
- - `AR` - Action Result 
- - `Si` - input State
- - `So` - output State
- - `Ei` - input Event
- - `Eo` - output Event
- - `A`  - Action
-
-We make a difference between input and output types, and we are more general in this case.
-We can always specialize down to the 4 generic parameters: `typealias Process<AR, S, E, A> = _Process<AR, S, S, E, E, A>`
-
-```kotlin
-@higherkind
-data class _Process<AR, Si, So, Ei, Eo, A>(
-    val ingest: (AR, Si) -> Iterable<Eo>,
-    val evolve: (Si, Ei) -> So,
-    val react: (Si, Ei) -> Iterable<A>,
-    val pending: (Si) -> Iterable<A>,
-    val initialState: So,
-    val isTerminal: (Si) -> Boolean
-) : _ProcessOf<AR, Si, So, Ei, Eo, A> {
-
-    companion object
-}
-
-typealias Process<AR, S, E, A> = _Process<AR, S, S, E, E, A>
-```
-We can now construct `Process manager` by using this `Process`.
-
-### Process manager
-Process manager is using/delegating a `_Process` to handle action results of type `AR` and publish next actions(`A`) as a result.
-Action result is created out of different events published by different aggregates.
-Action is the next action that should be taking place. Usually, it is mapped to the command of some aggregate to handle it.
-Process manager maintains its own state.
-
-`publishActionsAndStoreState` is a suspending function that takes the newly produced state by `Process` and stores it, by additionally publishing actions that should be taken further.
-
-`fetchState` is a suspending function that takes the action result of type `AR` and results with `either` error `Error.FetchingStateFailed` or success `S?`
-
->Flagging a computation as suspend enforces a calling context, meaning the compiler can ensure that we can’t call the effect from anywhere other than an environment prepared to run suspended effects. That will be another suspended function or a Coroutine.
->This effectively means we’re decoupling the pure declaration of our program logic (frequently called algebras in the functional world) from the runtime. And therefore, the runtime has the chance to see the big picture of our program and decide how to run and optimize it.
-
-```kotlin
-@higherkind
-data class ProcessManager<AR, S, E, A>(
-    val process: Process<AR, S, E, A>,
-    val publishActionsAndStoreState: suspend (S, Iterable<A>) -> Either<Error.PublishingActionsFailed<S, A>, Success.ActionsPublishedSuccessfully<S, A>>,
-    val fetchState: suspend (AR) -> Either<Error.FetchingStateFailed, S?>
-) : ProcessManagerOf<AR, S, E, A> {
-
-    suspend fun handle(actionResult: AR): Either<Error, Success.ActionsPublishedSuccessfully<S, A>> =
-        // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
-        either {
-            val state = validate(fetchState(actionResult).bind() ?: process.initialState).bind()
-            val events = process.ingest(actionResult, state)
-            publishActionsAndStoreState(
-                events.fold(state, process.evolve),
-                events.map { process.react(state, it) }.flatten()
-            ).bind()
-        }
-
-    private fun validate(state: S): Either<Error, S> {
-        return if (process.isTerminal(state)) Either.left(Error.ProcessManagerIsInTerminalState(state))
-        else Either.right(state)
-    }
-
-    companion object
-}
-```
-### Process manager extensions
-TODO - not implemented yet
 
 
 ## Kotlin

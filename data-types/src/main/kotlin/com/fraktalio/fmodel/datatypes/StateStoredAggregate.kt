@@ -18,7 +18,6 @@ package com.fraktalio.fmodel.datatypes
 
 import arrow.core.Either
 import arrow.core.computations.either
-import arrow.higherkind
 
 /**
  * State stored aggregate is using/delegating a [Decider] to handle commands and produce new state.
@@ -37,12 +36,11 @@ import arrow.higherkind
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@higherkind
 data class StateStoredAggregate<C, S, E>(
     val decider: Decider<C, S, E>,
     val storeState: suspend (S, (Iterable<E>)) -> Either<Error.StoringStateFailed<S>, Success.StateStoredAndEventsPublishedSuccessfully<S, E>>,
     val fetchState: suspend (C) -> Either<Error.FetchingStateFailed, S?>
-) : StateStoredAggregateOf<C, S, E> {
+) {
 
     /**
      * Handles the command message of type [C]
@@ -59,11 +57,21 @@ data class StateStoredAggregate<C, S, E>(
             storeState(events.fold(state, decider.evolve), events).bind()
         }
 
-    private fun validate(state: S): Either<Error, S> {
-        return if (decider.isTerminal(state)) Either.left(Error.AggregateIsInTerminalState(state))
-        else Either.right(state)
-    }
+    private fun validate(state: S): Either<Error, S> =
+        if (decider.isTerminal(state)) Either.Left(Error.AggregateIsInTerminalState(state))
+        else Either.Right(state)
 
-    companion object
+    /**
+     * Left map on c - Contravariant
+     *
+     * @param Cn
+     * @param f
+     */
+    inline fun <Cn> lmapOnC(crossinline f: (Cn) -> C): StateStoredAggregate<Cn, S, E> = StateStoredAggregate(
+        storeState = { s, e -> this.storeState(s, e) },
+        fetchState = { c -> this.fetchState(f(c)) },
+        decider = this.decider.lmapOnC(f)
+    )
+
 }
 

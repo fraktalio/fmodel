@@ -18,7 +18,6 @@ package com.fraktalio.fmodel.datatypes
 
 import arrow.core.Either
 import arrow.core.computations.either
-import arrow.higherkind
 
 /**
  * Process manager pattern is a durable event scheduler that encapsulates process specific logic and maintain a central point of control deciding what to execute next ([A]) once a process is completed.
@@ -35,13 +34,18 @@ import arrow.higherkind
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@higherkind
 data class ProcessManager<AR, S, E, A>(
     val process: Process<AR, S, E, A>,
     val publishActionsAndStoreState: suspend (S, Iterable<A>) -> Either<Error.PublishingActionsOrStoringStateFailed<S, A>, Success.ActionsPublishedAndStateStoredSuccessfully<S, A>>,
     val fetchState: suspend (AR) -> Either<Error.FetchingStateFailed, S?>
-) : ProcessManagerOf<AR, S, E, A> {
+) {
 
+    /**
+     * Handles the action result of type [AR]
+     *
+     * @param actionResult Action Result represent the outcome of some action you want to handle in some way
+     * @return Either [Error] or [Success]
+     */
     suspend fun handle(actionResult: AR): Either<Error, Success.ActionsPublishedAndStateStoredSuccessfully<S, A>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
@@ -54,10 +58,9 @@ data class ProcessManager<AR, S, E, A>(
         }
 
     private fun validate(state: S): Either<Error, S> {
-        return if (process.isTerminal(state)) Either.left(Error.ProcessManagerIsInTerminalState(state))
-        else Either.right(state)
+        return if (process.isTerminal(state)) Either.Left(Error.ProcessManagerIsInTerminalState(state))
+        else Either.Right(state)
     }
 
-    companion object
 }
 

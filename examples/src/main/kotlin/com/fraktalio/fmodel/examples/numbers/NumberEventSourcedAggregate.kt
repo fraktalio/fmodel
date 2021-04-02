@@ -18,19 +18,16 @@ package com.fraktalio.fmodel.examples.numbers
 
 import arrow.core.Either
 import arrow.core.Either.Companion.catch
-import arrow.core.Left
-import arrow.core.Right
-import arrow.core.Tuple2
 import com.fraktalio.fmodel.datatypes.Error
 import com.fraktalio.fmodel.datatypes.EventSourcingAggregate
 import com.fraktalio.fmodel.datatypes.Success
+import com.fraktalio.fmodel.datatypes.combineDeciders
 import com.fraktalio.fmodel.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.examples.numbers.api.NumberCommand
 import com.fraktalio.fmodel.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.examples.numbers.even.command.EVEN_NUMBER_DECIDER
 import com.fraktalio.fmodel.examples.numbers.odd.command.ODD_NUMBER_DECIDER
-import com.fraktalio.fmodel.extensions.decider._decider.semigroup.combineDeciders
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -43,15 +40,15 @@ val numberEventStorageMutex = Mutex()
 /**
  * EventSourcingAggregate instance for the all Numbers.
  */
-val NUMBER_AGGREGATE: EventSourcingAggregate<Either<NumberCommand.EvenNumberCommand?, NumberCommand.OddNumberCommand?>, Tuple2<EvenNumberState, OddNumberState>, Either<NumberEvent.EvenNumberEvent?, NumberEvent.OddNumberEvent?>> =
+val NUMBER_AGGREGATE: EventSourcingAggregate<Either<NumberCommand.EvenNumberCommand?, NumberCommand.OddNumberCommand?>, Pair<EvenNumberState, OddNumberState>, Either<NumberEvent.EvenNumberEvent?, NumberEvent.OddNumberEvent?>> =
     EventSourcingAggregate(
         decider = EVEN_NUMBER_DECIDER.combineDeciders(ODD_NUMBER_DECIDER),
         fetchEvents = {
             catch {
                 numberEventStorage.map { numberEvent ->
                     when (numberEvent) {
-                        is NumberEvent.EvenNumberEvent -> Left(numberEvent)
-                        is NumberEvent.OddNumberEvent -> Right(numberEvent)
+                        is NumberEvent.EvenNumberEvent -> Either.Left(numberEvent)
+                        is NumberEvent.OddNumberEvent -> Either.Right(numberEvent)
                     }
                 }
             }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
@@ -61,10 +58,10 @@ val NUMBER_AGGREGATE: EventSourcingAggregate<Either<NumberCommand.EvenNumberComm
                 numberEventStorageMutex.withLock {
                     numberEventStorage = numberEventStorage.plus(it.map { either ->
                         when (either) {
-                            is Either.Left -> either.a!!
-                            is Either.Right -> either.b!!
+                            is Either.Left -> either.value
+                            is Either.Right -> either.value
                         }
-                    })
+                    }.filterNotNull())
                 }
                 //Call event handlers explicitly
                 it.toList().forEach { e -> NUMBER_MATERIALIZED_VIEW.handle(e) }

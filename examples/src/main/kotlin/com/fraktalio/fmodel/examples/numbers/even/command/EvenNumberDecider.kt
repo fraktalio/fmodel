@@ -24,14 +24,14 @@ val EVEN_NUMBER_DECIDER: Decider<NumberCommand.EvenNumberCommand?, EvenNumberSta
         isTerminal = { s -> s.value.get > 100 },
         initialState = EvenNumberState(Description("Initial state"), NumberValue(0)),
         decide = { c, s ->
-            when {
-                (c != null && c is NumberCommand.EvenNumberCommand.AddEvenNumber) -> listOf(
+            when (c) {
+                is NumberCommand.EvenNumberCommand.AddEvenNumber -> listOf(
                     NumberEvent.EvenNumberEvent.EvenNumberAdded(
                         c.description,
                         c.value
                     )
                 )
-                (c != null && c is NumberCommand.EvenNumberCommand.SubtractEvenNumber) -> listOf(
+                is NumberCommand.EvenNumberCommand.SubtractEvenNumber -> listOf(
                     NumberEvent.EvenNumberEvent.EvenNumberSubtracted(
                         c.description,
                         c.value
@@ -41,12 +41,12 @@ val EVEN_NUMBER_DECIDER: Decider<NumberCommand.EvenNumberCommand?, EvenNumberSta
             }
         },
         evolve = { s, e ->
-            when {
-                (e != null && e is NumberEvent.EvenNumberEvent.EvenNumberAdded) -> EvenNumberState(
+            when (e) {
+                is NumberEvent.EvenNumberEvent.EvenNumberAdded -> EvenNumberState(
                     e.description,
                     NumberValue(s.value.get + e.value.get)
                 )
-                (e != null && e is NumberEvent.EvenNumberEvent.EvenNumberSubtracted) -> EvenNumberState(
+                is NumberEvent.EvenNumberEvent.EvenNumberSubtracted -> EvenNumberState(
                     e.description,
                     NumberValue(s.value.get - e.value.get)
                 )
