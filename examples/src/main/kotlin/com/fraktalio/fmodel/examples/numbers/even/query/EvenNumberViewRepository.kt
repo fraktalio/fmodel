@@ -17,6 +17,7 @@
 package com.fraktalio.fmodel.examples.numbers.even.query
 
 import arrow.core.Either
+import com.fraktalio.fmodel.application.Error
 import com.fraktalio.fmodel.application.Success
 import com.fraktalio.fmodel.application.ViewStateRepository
 import com.fraktalio.fmodel.examples.numbers.api.EvenNumberState
