@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.datatypes
+package com.fraktalio.fmodel.application
 
 /**
  * A general result of any operation
@@ -35,6 +35,7 @@ sealed class Result
 sealed class Error : Result() {
     data class FetchingStateFailed(val throwable: Throwable?) : Error()
     data class FetchingEventsFailed(val throwable: Throwable?) : Error()
+    data class StoringEventFailed<E>(val event: E, val throwable: Throwable?) : Error()
     data class StoringEventsFailed<E>(val event: Iterable<E>, val throwable: Throwable?) : Error()
     data class StoringStateFailed<S>(val state: S, val throwable: Throwable?) : Error()
     data class AggregateIsInTerminalState<S>(val state: S) : Error()
@@ -58,9 +59,12 @@ sealed class Error : Result() {
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 sealed class Success : Result() {
+    data class EventStoredSuccessfully<E>(val event: E) : Success()
     data class EventsStoredSuccessfully<E>(val event: Iterable<E>) : Success()
     data class StateStoredSuccessfully<S>(val state: S) : Success()
-    data class StateStoredAndEventsPublishedSuccessfully<S, E>(val state: S, val event: Iterable<E>) : Success()
+    data class StateStoredAndEventsPublishedSuccessfully<S, E>(val state: S, val event: Iterable<E> = emptyList()) :
+        Success()
+
     data class ActionsPublishedAndStateStoredSuccessfully<S, A>(val state: S, val action: Iterable<A>) : Success()
     data class ActionsPublishedSuccessfully<A>(val action: Iterable<A>) : Success()
 

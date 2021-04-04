@@ -16,14 +16,18 @@
 
 package com.fraktalio.fmodel.examples.numbers.odd.query
 
-import com.fraktalio.fmodel.datatypes.View
+import com.fraktalio.fmodel.domain.View
 import com.fraktalio.fmodel.examples.numbers.api.Description
 import com.fraktalio.fmodel.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.examples.numbers.api.OddNumberState
 
-
-val ODD_NUMBER_VIEW: View<OddNumberState?, NumberEvent.OddNumberEvent?> = View(
+/**
+ * Odd number view -  pure declaration of our program logic
+ *
+ * @return Odd number view instance
+ */
+fun oddNumberView(): View<OddNumberState?, NumberEvent.OddNumberEvent?> = View(
     initialState = OddNumberState(Description("Initial state"), NumberValue(0)),
     evolve = { oddNumberState, e ->
         when {

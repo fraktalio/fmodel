@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.datatypes
+package com.fraktalio.fmodel.domain
 
 /**
  * [_Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).

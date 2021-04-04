@@ -16,10 +16,15 @@
 
 package com.fraktalio.fmodel.examples.numbers.even.command
 
-import com.fraktalio.fmodel.datatypes.Decider
+import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.examples.numbers.api.*
 
-val EVEN_NUMBER_DECIDER: Decider<NumberCommand.EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?> =
+/**
+ * Even number decider - pure declaration of our program logic
+ *
+ * @return Even number decider instance
+ */
+fun evenNumberDecider(): Decider<NumberCommand.EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?> =
     Decider(
         isTerminal = { s -> s.value.get > 100 },
         initialState = EvenNumberState(Description("Initial state"), NumberValue(0)),

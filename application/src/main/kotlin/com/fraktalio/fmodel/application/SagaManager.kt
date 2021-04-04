@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.datatypes
+package com.fraktalio.fmodel.application
 
 import arrow.core.Either
 import arrow.core.computations.either
+import com.fraktalio.fmodel.domain.Saga
 
 /**
  * Saga manager - Stateless process orchestrator

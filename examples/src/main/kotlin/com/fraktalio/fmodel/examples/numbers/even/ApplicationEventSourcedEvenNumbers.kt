@@ -19,36 +19,55 @@ package com.fraktalio.fmodel.examples.numbers.even
 import com.fraktalio.fmodel.examples.numbers.api.Description
 import com.fraktalio.fmodel.examples.numbers.api.NumberCommand
 import com.fraktalio.fmodel.examples.numbers.api.NumberValue
-import com.fraktalio.fmodel.examples.numbers.even.command.EVEN_NUMBER_AGGREGATE
-import com.fraktalio.fmodel.examples.numbers.even.command.evenNumberEventStorage
-import com.fraktalio.fmodel.examples.numbers.even.query.EVEN_NUMBER_MATERIALIZED_VIEW
-import com.fraktalio.fmodel.examples.numbers.even.query.evenNumberStateStorage
+import com.fraktalio.fmodel.examples.numbers.even.command.evenNumberAggregate
+import com.fraktalio.fmodel.examples.numbers.even.command.evenNumberDecider
+import com.fraktalio.fmodel.examples.numbers.even.command.evenNumberRepository
+import com.fraktalio.fmodel.examples.numbers.even.query.evenNumberMaterializedView
+import com.fraktalio.fmodel.examples.numbers.even.query.evenNumberView
+import com.fraktalio.fmodel.examples.numbers.even.query.evenNumberViewRepository
 import kotlinx.coroutines.runBlocking
 
-fun main(args: Array<String>) = runBlocking { // start main coroutine
+fun main(args: Array<String>) = runBlocking {
 
-    println("  " + EVEN_NUMBER_AGGREGATE.decider.initialState)
+    val eventSourcingAggregate = evenNumberAggregate(evenNumberDecider(), evenNumberRepository())
+    val evenNumberMaterializedView = evenNumberMaterializedView(evenNumberView(), evenNumberViewRepository())
+
     println(
-        EVEN_NUMBER_AGGREGATE.handle(
+        eventSourcingAggregate.handle(
             NumberCommand.EvenNumberCommand.AddEvenNumber(
                 Description("Add 2"),
                 NumberValue(2)
             )
         )
+            .map { it.map { eventStoredSuccessfully -> evenNumberMaterializedView.handle(eventStoredSuccessfully.event) } }
     )
-    EVEN_NUMBER_AGGREGATE.handle(NumberCommand.EvenNumberCommand.AddEvenNumber(Description("Add 4"), NumberValue(4)))
-    EVEN_NUMBER_AGGREGATE.handle(NumberCommand.EvenNumberCommand.AddEvenNumber(Description("Add 8"), NumberValue(8)))
-    EVEN_NUMBER_AGGREGATE.handle(
-        NumberCommand.EvenNumberCommand.SubtractEvenNumber(
-            Description("Subtract 2"),
-            NumberValue(2)
+    println(
+        eventSourcingAggregate.handle(
+            NumberCommand.EvenNumberCommand.AddEvenNumber(
+                Description("Add 4"),
+                NumberValue(4)
+            )
         )
+            .map { it.map { eventStoredSuccessfully -> evenNumberMaterializedView.handle(eventStoredSuccessfully.event) } }
+    )
+    println(
+        eventSourcingAggregate.handle(
+            NumberCommand.EvenNumberCommand.AddEvenNumber(
+                Description("Add 8"),
+                NumberValue(8)
+            )
+        )
+            .map { it.map { eventStoredSuccessfully -> evenNumberMaterializedView.handle(eventStoredSuccessfully.event) } }
+    )
+    println(
+        eventSourcingAggregate.handle(
+            NumberCommand.EvenNumberCommand.SubtractEvenNumber(
+                Description("Subtract 2"),
+                NumberValue(2)
+            )
+        )
+            .map { it.map { eventStoredSuccessfully -> evenNumberMaterializedView.handle(eventStoredSuccessfully.event) } }
     )
 
-
-    println("Recreating/Replaying the View (state storage) with the current state: $evenNumberStateStorage")
-    evenNumberStateStorage = null
-    evenNumberEventStorage.forEach { if (it != null) EVEN_NUMBER_MATERIALIZED_VIEW.handle(it) }
-    println("Recreated state: $evenNumberStateStorage")
 }
 
