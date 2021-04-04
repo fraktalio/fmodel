@@ -4,9 +4,23 @@ The word `domain` here means the area of interest in the business.
 When you’re developing an `information system` to automate activities of that business, you’re modeling the
 business. The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect the business — *together they constitute the `model` of the domain*.
 
+>The importance of abstraction is derived from its ability to hide irrelevant details and from the use of names to reference objects. Programming languages provide abstraction through procedures, functions, and modules which permit the programmer to distinguish between what a program does and how it is implemented. The primary concern of the user of a program is with what it does. This is in contrast with the writer of the program whose primary concern is with how it is implemented. Abstraction is essential in the construction of programs. It places the emphasis on what an object is or does rather than how it is represented or how it works. Thus, it is the primary means of managing complexity in large programs.
+ 
+>Of no less importance is generalization. While abstraction reduces complexity by hiding irrelevant detail, generalization reduces complexity by replacing multiple entities which perform similar functions with a single construct. Programming languages provide generalization through variables, parameterization, generics and polymorphism. Generalization is essential in the construction of programs. It places the emphasis on the similarities between objects. Thus, it helps to manage complexity by collecting individuals into groups and providing a representative which can be used to specify any individual of the group.
+ 
+>Abstraction and generalization are often used together. Abstracts are generalized through parameterization to provide greater utility. In parameterization, one or more parts of an entity are replaced with a name which is new to the entity. The name is used as a parameter. When the parameterized abstract is invoked, it is invoked with a binding of the parameter to an argument.
+
 ## `IOR<Library, Inspiration>`
 This project can be used as a library, or as an inspiration, or both.
 
+![onion architecture image](.assets/onion.png)
+
+The arrows in the image are showing the direction of the dependency. Notice that all dependencies point inwards, and that `Domain` is not depending on anybody or anything.
+
+ - `Domain` - pure functional module - pure declaration of our program logic - abstracts are generalized through parameterization to provide greater utility for you!
+ - `Application` - effects - functional and OOP concepts - orchestrates the execution of business logic (domain): `load` entities from a repository, `execute`logic by calling domain layer, `store` the new state
+ - `Infrastructure/Persistence/Presentation` - The choice is yours! It will never be part of this project. We will provide examples only, so stay tuned!
+ 
 **Please note, that this project is in the experimental phase. The API will most probably change.**
 
 ## Table of Contents
