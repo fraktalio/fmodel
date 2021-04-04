@@ -39,7 +39,8 @@
     </properties>
 
     <modules>
-        <module>data-types</module>
+        <module>domain</module>
+        <module>application</module>
         <module>examples</module>
     </modules>
 

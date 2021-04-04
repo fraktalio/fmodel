@@ -14,33 +14,33 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.datatypes
+package com.fraktalio.fmodel.application
 
 import arrow.core.Either
 import arrow.core.computations.either
+import com.fraktalio.fmodel.domain.Decider
 
 /**
  * State stored aggregate is using/delegating a [Decider] to handle commands and produce new state.
- * In order to handle the command, aggregate needs to fetch the current state via [fetchState] function first, and then delegate the command to the decider which can produce new state as a result.
- * New state is then stored via [storeState] suspending function.
- * It is the responsibility of the user to implement these functions [fetchState] and [storeState] per need.
- * These two functions are producing side effects (infrastructure), and they are deliberately separated from the decider (pure domain logic).
+ * In order to handle the command, aggregate needs to fetch the current state via [AggregateStateRepository.fetchState] function first, and then delegate the command to the decider which can produce new state as a result.
+ * New state is then stored via [AggregateStateRepository.save] suspending function.
+ *
+ * [StateStoredAggregate] implements an interface [AggregateStateRepository] by delegating all of its public members to a specified object.
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
  *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
  * @param E Events of type [E] that are used internally to build/fold new state
  * @property decider A decider component of type [Decider]<[C], [S], [E]>.
- * @property storeState A suspending function that takes the newly produced state by [Decider] and stores it (produces side effect by modifying object/data outside its own scope) by resulting with [either] error [Error.StoringStateFailed] or success [Success.StateStoredSuccessfully]
- * @property fetchState A suspending function that takes the command of type [C] and results with [either] error [Error.FetchingStateFailed] or success [Iterable]<[E]>
+ * @property aggregateStateRepository Interface for [S]tate management/persistence - dependencies by delegation
  * @constructor Creates [StateStoredAggregate]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class StateStoredAggregate<C, S, E>(
-    val decider: Decider<C, S, E>,
-    val storeState: suspend (S, (Iterable<E>)) -> Either<Error.StoringStateFailed<S>, Success.StateStoredAndEventsPublishedSuccessfully<S, E>>,
-    val fetchState: suspend (C) -> Either<Error.FetchingStateFailed, S?>
-) {
+    private val decider: Decider<C, S, E>,
+    private val aggregateStateRepository: AggregateStateRepository<C, S>
+) : AggregateStateRepository<C, S> by aggregateStateRepository {
 
     /**
      * Handles the command message of type [C]
@@ -48,30 +48,18 @@ data class StateStoredAggregate<C, S, E>(
      * @param command Command message of type [C]
      * @return Either [Error] or [Success]
      */
-    suspend fun handle(command: C): Either<Error, Success> =
+    suspend fun handle(command: C): Either<Error, Success.StateStoredAndEventsPublishedSuccessfully<S, E>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            val currentState = fetchState(command).bind()
+            val currentState = command.fetchState().bind()
             val state = validate(currentState ?: decider.initialState).bind()
             val events = decider.decide(command, state)
-            storeState(events.fold(state, decider.evolve), events).bind()
+            events.fold(state, decider.evolve).save()
+                .map { s -> Success.StateStoredAndEventsPublishedSuccessfully(s.state, events) }.bind()
         }
 
     private fun validate(state: S): Either<Error, S> =
         if (decider.isTerminal(state)) Either.Left(Error.AggregateIsInTerminalState(state))
         else Either.Right(state)
-
-    /**
-     * Left map on c - Contravariant
-     *
-     * @param Cn
-     * @param f
-     */
-    inline fun <Cn> lmapOnC(crossinline f: (Cn) -> C): StateStoredAggregate<Cn, S, E> = StateStoredAggregate(
-        storeState = { s, e -> this.storeState(s, e) },
-        fetchState = { c -> this.fetchState(f(c)) },
-        decider = this.decider.lmapOnC(f)
-    )
-
 }
 

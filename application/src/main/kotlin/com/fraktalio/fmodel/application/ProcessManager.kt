@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.datatypes
+package com.fraktalio.fmodel.application
 
 import arrow.core.Either
 import arrow.core.computations.either
+import com.fraktalio.fmodel.domain.Process
 
 /**
  * Process manager pattern is a durable event scheduler that encapsulates process specific logic and maintain a central point of control deciding what to execute next ([A]) once a process is completed.

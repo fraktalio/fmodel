@@ -17,55 +17,31 @@
 package com.fraktalio.fmodel.examples.numbers
 
 import arrow.core.Either
-import arrow.core.Either.Companion.catch
-import com.fraktalio.fmodel.datatypes.Error
-import com.fraktalio.fmodel.datatypes.MaterializedView
-import com.fraktalio.fmodel.datatypes.Success
-import com.fraktalio.fmodel.datatypes.combineViews
-import com.fraktalio.fmodel.examples.numbers.api.*
-import com.fraktalio.fmodel.examples.numbers.even.query.EVEN_NUMBER_VIEW
-import com.fraktalio.fmodel.examples.numbers.odd.query.ODD_NUMBER_VIEW
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import com.fraktalio.fmodel.application.MaterializedView
+import com.fraktalio.fmodel.application.ViewStateRepository
+import com.fraktalio.fmodel.domain.View
+import com.fraktalio.fmodel.domain.combineViews
+import com.fraktalio.fmodel.examples.numbers.api.EvenNumberState
+import com.fraktalio.fmodel.examples.numbers.api.NumberEvent
+import com.fraktalio.fmodel.examples.numbers.api.OddNumberState
 
 
 /**
- * Represents the state store (it can be SQL table(s), NoSQL storage, ...)
+ * All numbers - materialized view.
+ *
+ * It combines two views for even and od numbers into one view for all numbers.
+ *
+ * @param oddView Odd number view -  pure declaration of our program logic
+ * @param evenView Even number view -  pure declaration of our program logic
+ * @param repository All numbers repository
+ * @return Materialized view for all the numbers
  */
-var numberStateStorage1: EvenNumberState? = EvenNumberState(Description("0"), NumberValue(0))
-var numberStateStorage2: OddNumberState? = OddNumberState(Description("0"), NumberValue(0))
-val numberStateStorageMutex = Mutex()
-
-/**
- * State stored view of all the Numbers
- */
-val NUMBER_MATERIALIZED_VIEW: MaterializedView<Pair<EvenNumberState?, OddNumberState?>, Either<NumberEvent.EvenNumberEvent?, NumberEvent.OddNumberEvent?>> =
+fun numberMaterializedView(
+    oddView: View<OddNumberState?, NumberEvent.OddNumberEvent?>,
+    evenView: View<EvenNumberState?, NumberEvent.EvenNumberEvent?>,
+    repository: ViewStateRepository<Either<NumberEvent.EvenNumberEvent?, NumberEvent.OddNumberEvent?>, Pair<EvenNumberState?, OddNumberState?>>
+): MaterializedView<Pair<EvenNumberState?, OddNumberState?>, Either<NumberEvent.EvenNumberEvent?, NumberEvent.OddNumberEvent?>> =
     MaterializedView(
-        view = EVEN_NUMBER_VIEW.combineViews(ODD_NUMBER_VIEW),
-        fetchState = {
-            catch {
-                when (it) {
-                    is Either.Left -> Pair(numberStateStorage1, null)
-                    is Either.Right -> Pair(null, numberStateStorage2)
-                }
-            }.mapLeft { throwable ->
-                Error.FetchingStateFailed(throwable)
-            }
-        },
-        storeState = {
-            catch {
-                numberStateStorageMutex.withLock {
-                    when {
-                        it.first != null -> numberStateStorage1 = it.first
-                        it.second != null -> numberStateStorage2 = it.second
-                    }
-
-                }
-                println("""= $numberStateStorage1""")
-                println("""= $numberStateStorage2""")
-                Success.StateStoredSuccessfully(it)
-            }.mapLeft { throwable ->
-                Error.StoringStateFailed(it, throwable)
-            }
-        }
+        view = evenView.combineViews(oddView),
+        viewStateRepository = repository
     )

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.datatypes
+package com.fraktalio.fmodel.application
 
 import arrow.core.Either
 import arrow.core.computations.either
+import com.fraktalio.fmodel.domain.View
 
 /**
  * Materialized view is using/delegating a [View] to handle events of type [E] and to maintain a state of denormalized projection(s) as a result.
@@ -26,17 +27,15 @@ import arrow.core.computations.either
  * @param S Materialized View state of type [S]
  * @param E Events of type [E] that are handled by this Materialized View
  * @property view A view component of type [View]<[S], [E]>
- * @property storeState A suspending function that takes the newly produced state by [View] and stores it (produces side effect by modifying object/data outside its own scope) by resulting with [either] error [Error.StoringStateFailed] or success [Success.StateStoredSuccessfully]
- * @property fetchState A suspending function that takes the event of type [E] and results with [either] error [Error.FetchingStateFailed] or success [S]?
+ * @property viewStateRepository Interface for [S]tate management/persistence - dependencies by delegation
  * @constructor Creates [MaterializedView]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class MaterializedView<S, E>(
-    val view: View<S, E>,
-    val storeState: suspend (S) -> Either<Error.StoringStateFailed<S>, Success.StateStoredSuccessfully<S>>,
-    val fetchState: suspend (E) -> Either<Error.FetchingStateFailed, S?>
-) {
+    private val view: View<S, E>,
+    private val viewStateRepository: ViewStateRepository<E, S>,
+) : ViewStateRepository<E, S> by viewStateRepository {
 
     /**
      * Handles the event of type [E]
@@ -44,25 +43,12 @@ data class MaterializedView<S, E>(
      * @param event Event of type [E] to be handled
      * @return Either [Error] or [Success]
      */
-    suspend fun handle(event: E): Either<Error, Success> =
+    suspend fun handle(event: E): Either<Error, Success.StateStoredSuccessfully<S>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            val oldState = fetchState(event).bind() ?: view.initialState
+            val oldState = event.fetchState().bind() ?: view.initialState
             val newState = view.evolve(oldState, event)
-            storeState(newState).bind()
+            newState.save().bind()
         }
-
-    /**
-     * Left map over E (Event) - Contravariant
-     *
-     * @param En Event new
-     * @param f
-     */
-    inline fun <En> lmapOnE(crossinline f: (En) -> E): MaterializedView<S, En> = MaterializedView(
-        view = this.view.lmapOnE(f),
-        fetchState = { en -> this.fetchState(f(en)) },
-        storeState = { s -> this.storeState(s) }
-    )
-
 }
 

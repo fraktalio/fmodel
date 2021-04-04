@@ -16,44 +16,26 @@
 
 package com.fraktalio.fmodel.examples.numbers.odd.command
 
-import arrow.core.Either.Companion.catch
-import com.fraktalio.fmodel.datatypes.Error
-import com.fraktalio.fmodel.datatypes.EventSourcingAggregate
-import com.fraktalio.fmodel.datatypes.Success
+import com.fraktalio.fmodel.application.AggregateEventRepository
+import com.fraktalio.fmodel.application.EventSourcingAggregate
+import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.examples.numbers.api.NumberCommand
 import com.fraktalio.fmodel.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.examples.numbers.api.OddNumberState
-import com.fraktalio.fmodel.examples.numbers.odd.query.ODD_NUMBER_MATERIALIZED_VIEW
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /**
- * Represents the event store. It is initially empty.
+ * Odd number aggregate
+ *
+ * @param decider the core domain logic algorithm - pure declaration of our program logic
+ * @param repository the event-sourcing repository for Odd numbers
+ * @return the event-sourcing aggregate instance for Odd numbers
  */
-var oddNumberEventStorage: List<NumberEvent.OddNumberEvent?> = emptyList()
-val oddNumberEventStorageMutex = Mutex()
+fun oddNumberAggregate(
+    decider: Decider<NumberCommand.OddNumberCommand?, OddNumberState, NumberEvent.OddNumberEvent?>,
+    repository: AggregateEventRepository<NumberCommand.OddNumberCommand?, NumberEvent.OddNumberEvent?>
+): EventSourcingAggregate<NumberCommand.OddNumberCommand?, OddNumberState, NumberEvent.OddNumberEvent?> =
 
-
-/**
- * EventSourcingAggregate instance for the Odd Numbers
- */
-val ODD_NUMBER_AGGREGATE: EventSourcingAggregate<NumberCommand.OddNumberCommand?, OddNumberState, NumberEvent.OddNumberEvent?> =
     EventSourcingAggregate(
-        decider = ODD_NUMBER_DECIDER,
-        fetchEvents = {
-            catch {
-                oddNumberEventStorage
-            }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
-        },
-        storeEvents = {
-            catch {
-                oddNumberEventStorageMutex.withLock {
-                    oddNumberEventStorage = oddNumberEventStorage.plus(it)
-                }
-                it.filterNotNull().forEach { e -> ODD_NUMBER_MATERIALIZED_VIEW.handle(e) }
-                Success.EventsStoredSuccessfully(it)
-
-            }.mapLeft { throwable -> Error.StoringEventsFailed(it, throwable) }
-
-        }
+        decider = decider,
+        aggregateEventRepository = repository
     )

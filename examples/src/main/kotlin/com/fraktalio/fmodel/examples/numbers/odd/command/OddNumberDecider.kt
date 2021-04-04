@@ -16,11 +16,15 @@
 
 package com.fraktalio.fmodel.examples.numbers.odd.command
 
-import com.fraktalio.fmodel.datatypes.Decider
+import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.examples.numbers.api.*
 
-
-val ODD_NUMBER_DECIDER: Decider<NumberCommand.OddNumberCommand?, OddNumberState, NumberEvent.OddNumberEvent?> =
+/**
+ * Odd number decider - pure declaration of our program logic
+ *
+ * @return Odd number decider instance
+ */
+fun oddNumberDecider(): Decider<NumberCommand.OddNumberCommand?, OddNumberState, NumberEvent.OddNumberEvent?> =
     Decider(
         isTerminal = { s -> s.value.get > 100 },
         initialState = OddNumberState(Description("Initial state"), NumberValue(0)),

@@ -19,30 +19,55 @@ package com.fraktalio.fmodel.examples.numbers.odd
 import com.fraktalio.fmodel.examples.numbers.api.Description
 import com.fraktalio.fmodel.examples.numbers.api.NumberCommand
 import com.fraktalio.fmodel.examples.numbers.api.NumberValue
-import com.fraktalio.fmodel.examples.numbers.odd.command.ODD_NUMBER_AGGREGATE
-import com.fraktalio.fmodel.examples.numbers.odd.command.oddNumberEventStorage
-import com.fraktalio.fmodel.examples.numbers.odd.query.ODD_NUMBER_MATERIALIZED_VIEW
-import com.fraktalio.fmodel.examples.numbers.odd.query.oddNumberStateStorage
+import com.fraktalio.fmodel.examples.numbers.odd.command.oddNumberAggregate
+import com.fraktalio.fmodel.examples.numbers.odd.command.oddNumberDecider
+import com.fraktalio.fmodel.examples.numbers.odd.command.oddNumberRepository
+import com.fraktalio.fmodel.examples.numbers.odd.query.oddNumberMaterializedView
+import com.fraktalio.fmodel.examples.numbers.odd.query.oddNumberView
+import com.fraktalio.fmodel.examples.numbers.odd.query.oddNumberViewRepository
 import kotlinx.coroutines.runBlocking
 
 fun main(args: Array<String>) = runBlocking { // start main coroutine
 
-    println("  " + ODD_NUMBER_AGGREGATE.decider.initialState)
-    ODD_NUMBER_AGGREGATE.handle(NumberCommand.OddNumberCommand.AddOddNumber(Description("Add 1"), NumberValue(1)))
-    ODD_NUMBER_AGGREGATE.handle(NumberCommand.OddNumberCommand.AddOddNumber(Description("Add 3"), NumberValue(3)))
-    ODD_NUMBER_AGGREGATE.handle(NumberCommand.OddNumberCommand.AddOddNumber(Description("Add 7"), NumberValue(7)))
-    ODD_NUMBER_AGGREGATE.handle(
-        NumberCommand.OddNumberCommand.SubtractOddNumber(
-            Description("Subtract 3"),
-            NumberValue(3)
+    val eventSourcingAggregate = oddNumberAggregate(oddNumberDecider(), oddNumberRepository())
+    val oddNumberMaterializedView = oddNumberMaterializedView(oddNumberView(), oddNumberViewRepository())
+
+    println(
+        eventSourcingAggregate.handle(
+            NumberCommand.OddNumberCommand.AddOddNumber(
+                Description("Add 1"),
+                NumberValue(1)
+            )
         )
+            .map { it.map { eventStoredSuccessfully -> oddNumberMaterializedView.handle(eventStoredSuccessfully.event) } }
+    )
+    println(
+        eventSourcingAggregate.handle(
+            NumberCommand.OddNumberCommand.AddOddNumber(
+                Description("Add 3"),
+                NumberValue(3)
+            )
+        )
+            .map { it.map { eventStoredSuccessfully -> oddNumberMaterializedView.handle(eventStoredSuccessfully.event) } }
+    )
+    println(
+        eventSourcingAggregate.handle(
+            NumberCommand.OddNumberCommand.AddOddNumber(
+                Description("Add 5"),
+                NumberValue(5)
+            )
+        )
+            .map { it.map { eventStoredSuccessfully -> oddNumberMaterializedView.handle(eventStoredSuccessfully.event) } }
+    )
+    println(
+        eventSourcingAggregate.handle(
+            NumberCommand.OddNumberCommand.SubtractOddNumber(
+                Description("Subtract 3"),
+                NumberValue(3)
+            )
+        )
+            .map { it.map { eventStoredSuccessfully -> oddNumberMaterializedView.handle(eventStoredSuccessfully.event) } }
     )
 
-
-    println("Recreating/Replaying the View (state storage) with the current state: $oddNumberStateStorage")
-    oddNumberStateStorage = null
-    oddNumberEventStorage.forEach { if (it != null) ODD_NUMBER_MATERIALIZED_VIEW.handle(it) }
-
-    println("Recreated state: $oddNumberStateStorage")
 }
 

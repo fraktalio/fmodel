@@ -16,43 +16,27 @@
 
 package com.fraktalio.fmodel.examples.numbers.even.command
 
-import arrow.core.Either.Companion.catch
-import com.fraktalio.fmodel.datatypes.Error
-import com.fraktalio.fmodel.datatypes.EventSourcingAggregate
-import com.fraktalio.fmodel.datatypes.Success
+import com.fraktalio.fmodel.application.AggregateEventRepository
+import com.fraktalio.fmodel.application.EventSourcingAggregate
+import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.examples.numbers.api.NumberCommand
 import com.fraktalio.fmodel.examples.numbers.api.NumberEvent
-import com.fraktalio.fmodel.examples.numbers.even.query.EVEN_NUMBER_MATERIALIZED_VIEW
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+
 
 /**
- * Represents the very simple event store ;)  It is initially empty.
+ * Even number aggregate
+ *
+ * @param decider the core domain logic algorithm - pure declaration of our program logic
+ * @param repository the event-sourcing repository for Even numbers
+ * @return the event-sourcing aggregate instance for Even numbers
  */
-var evenNumberEventStorage: List<NumberEvent.EvenNumberEvent?> = emptyList()
-val evenNumberEventStorageMutex = Mutex()
+fun evenNumberAggregate(
+    decider: Decider<NumberCommand.EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?>,
+    repository: AggregateEventRepository<NumberCommand.EvenNumberCommand?, NumberEvent.EvenNumberEvent?>
+): EventSourcingAggregate<NumberCommand.EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?> =
 
-/**
- * EventSourcingAggregate instance for the Even Numbers.
- */
-val EVEN_NUMBER_AGGREGATE: EventSourcingAggregate<NumberCommand.EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?> =
     EventSourcingAggregate(
-        decider = EVEN_NUMBER_DECIDER,
-        fetchEvents = {
-            catch {
-                evenNumberEventStorage
-            }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
-        },
-        storeEvents = {
-            catch {
-                evenNumberEventStorageMutex.withLock {
-                    evenNumberEventStorage = evenNumberEventStorage.plus(it)
-                }
-                it.filterNotNull().forEach { e -> EVEN_NUMBER_MATERIALIZED_VIEW.handle(e) }
-                Success.EventsStoredSuccessfully(it)
-
-            }.mapLeft { throwable -> Error.StoringEventsFailed(it, throwable) }
-
-        }
+        decider = decider,
+        aggregateEventRepository = repository
     )

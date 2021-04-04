@@ -16,14 +16,18 @@
 
 package com.fraktalio.fmodel.examples.numbers.even.query
 
-import com.fraktalio.fmodel.datatypes.View
+import com.fraktalio.fmodel.domain.View
 import com.fraktalio.fmodel.examples.numbers.api.Description
 import com.fraktalio.fmodel.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.examples.numbers.api.NumberValue
 
-
-val EVEN_NUMBER_VIEW: View<EvenNumberState?, NumberEvent.EvenNumberEvent?> = View(
+/**
+ * Even number view -  pure declaration of our program logic
+ *
+ * @return Even number view instance
+ */
+fun evenNumberView(): View<EvenNumberState?, NumberEvent.EvenNumberEvent?> = View(
     initialState = EvenNumberState(Description("Initial state"), NumberValue(0)),
     evolve = { evenNumberState, e ->
         when {

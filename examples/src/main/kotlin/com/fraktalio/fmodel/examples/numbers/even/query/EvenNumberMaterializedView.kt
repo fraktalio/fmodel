@@ -16,43 +16,23 @@
 
 package com.fraktalio.fmodel.examples.numbers.even.query
 
-import arrow.core.Either.Companion.catch
-import com.fraktalio.fmodel.datatypes.Error
-import com.fraktalio.fmodel.datatypes.MaterializedView
-import com.fraktalio.fmodel.datatypes.Success
+import com.fraktalio.fmodel.application.MaterializedView
+import com.fraktalio.fmodel.application.ViewStateRepository
+import com.fraktalio.fmodel.domain.View
 import com.fraktalio.fmodel.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.examples.numbers.api.NumberEvent
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-
 
 /**
- * Represents the state store (it can be SQL table, NoSQL storage, ...)
+ * Even number materialized view
+ *
+ * @param view pure declaration of our program logic
+ * @param repository Even number repository
+ * @return Even number materialized view
  */
-var evenNumberStateStorage: EvenNumberState? = null
-val evenNumberStateStorageMutex = Mutex()
-
-/**
- * State stored view of the Even Numbers
- */
-val EVEN_NUMBER_MATERIALIZED_VIEW: MaterializedView<EvenNumberState?, NumberEvent.EvenNumberEvent?> = MaterializedView(
-    view = EVEN_NUMBER_VIEW,
-    fetchState = {
-        catch {
-            evenNumberStateStorage
-        }.mapLeft { throwable ->
-            Error.FetchingStateFailed(throwable)
-        }
-    },
-    storeState = {
-        catch {
-            evenNumberStateStorageMutex.withLock {
-                evenNumberStateStorage = it
-            }
-            println("""= $evenNumberStateStorage""")
-            Success.StateStoredSuccessfully(it)
-        }.mapLeft { throwable ->
-            Error.StoringStateFailed(it, throwable)
-        }
-    }
+fun evenNumberMaterializedView(
+    view: View<EvenNumberState?, NumberEvent.EvenNumberEvent?>,
+    repository: ViewStateRepository<NumberEvent.EvenNumberEvent?, EvenNumberState?>
+): MaterializedView<EvenNumberState?, NumberEvent.EvenNumberEvent?> = MaterializedView(
+    view = view,
+    viewStateRepository = repository
 )

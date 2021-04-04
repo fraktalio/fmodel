@@ -25,10 +25,10 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>data-types</artifactId>
+    <artifactId>domain</artifactId>
     <packaging>jar</packaging>
-    <name>fmodel data-types</name>
-    <description>Functional Domain Modeling - Datatypes</description>
+    <name>fmodel-domain</name>
+    <description>Functional Domain Modeling - Domain - Core</description>
 
     <dependencies>
         <dependency>
@@ -36,13 +36,8 @@
             <artifactId>kotlin-stdlib-jdk8</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains.kotlinx</groupId>
-            <artifactId>kotlinx-coroutines-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.arrow-kt</groupId>
             <artifactId>arrow-core</artifactId>
         </dependency>
-
     </dependencies>
 </project>

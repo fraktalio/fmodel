@@ -17,57 +17,33 @@
 package com.fraktalio.fmodel.examples.numbers
 
 import arrow.core.Either
-import arrow.core.Either.Companion.catch
-import com.fraktalio.fmodel.datatypes.Error
-import com.fraktalio.fmodel.datatypes.EventSourcingAggregate
-import com.fraktalio.fmodel.datatypes.Success
-import com.fraktalio.fmodel.datatypes.combineDeciders
+import com.fraktalio.fmodel.application.AggregateEventRepository
+import com.fraktalio.fmodel.application.EventSourcingAggregate
+import com.fraktalio.fmodel.domain.Decider
+import com.fraktalio.fmodel.domain.combineDeciders
 import com.fraktalio.fmodel.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.examples.numbers.api.NumberCommand
 import com.fraktalio.fmodel.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.examples.numbers.api.OddNumberState
-import com.fraktalio.fmodel.examples.numbers.even.command.EVEN_NUMBER_DECIDER
-import com.fraktalio.fmodel.examples.numbers.odd.command.ODD_NUMBER_DECIDER
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+
 
 /**
- * Represents the very simple event store ;)  It is initially empty.
+ * Number aggregate
+ *
+ * It combines two already existing deciders into one that can handle ALL numbers (Even and Odd)
+ *
+ * @param evenNumberDecider the core domain logic algorithm for even numbers - pure declaration of our program logic
+ * @param oddNumberDecider the core domain logic algorithm for odd numbers   - pure declaration of our program logic
+ * @param repository the event-sourcing repository for all (even and odd) numbers
+ * @return the event-sourcing aggregate instance for all (even and odd) numbers
  */
-var numberEventStorage: List<NumberEvent> = emptyList()
-val numberEventStorageMutex = Mutex()
+fun numberAggregate(
+    evenNumberDecider: Decider<NumberCommand.EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?>,
+    oddNumberDecider: Decider<NumberCommand.OddNumberCommand?, OddNumberState, NumberEvent.OddNumberEvent?>,
+    repository: AggregateEventRepository<Either<NumberCommand.EvenNumberCommand?, NumberCommand.OddNumberCommand?>, Either<NumberEvent.EvenNumberEvent?, NumberEvent.OddNumberEvent?>>
+): EventSourcingAggregate<Either<NumberCommand.EvenNumberCommand?, NumberCommand.OddNumberCommand?>, Pair<EvenNumberState, OddNumberState>, Either<NumberEvent.EvenNumberEvent?, NumberEvent.OddNumberEvent?>> =
 
-/**
- * EventSourcingAggregate instance for the all Numbers.
- */
-val NUMBER_AGGREGATE: EventSourcingAggregate<Either<NumberCommand.EvenNumberCommand?, NumberCommand.OddNumberCommand?>, Pair<EvenNumberState, OddNumberState>, Either<NumberEvent.EvenNumberEvent?, NumberEvent.OddNumberEvent?>> =
     EventSourcingAggregate(
-        decider = EVEN_NUMBER_DECIDER.combineDeciders(ODD_NUMBER_DECIDER),
-        fetchEvents = {
-            catch {
-                numberEventStorage.map { numberEvent ->
-                    when (numberEvent) {
-                        is NumberEvent.EvenNumberEvent -> Either.Left(numberEvent)
-                        is NumberEvent.OddNumberEvent -> Either.Right(numberEvent)
-                    }
-                }
-            }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
-        },
-        storeEvents = {
-            catch {
-                numberEventStorageMutex.withLock {
-                    numberEventStorage = numberEventStorage.plus(it.map { either ->
-                        when (either) {
-                            is Either.Left -> either.value
-                            is Either.Right -> either.value
-                        }
-                    }.filterNotNull())
-                }
-                //Call event handlers explicitly
-                it.toList().forEach { e -> NUMBER_MATERIALIZED_VIEW.handle(e) }
-                Success.EventsStoredSuccessfully(it)
-
-            }.mapLeft { throwable -> Error.StoringEventsFailed(it, throwable) }
-
-        }
+        decider = evenNumberDecider.combineDeciders(oddNumberDecider),
+        aggregateEventRepository = repository
     )

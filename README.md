@@ -136,65 +136,68 @@ We can now construct event-sourcing or/and state-storing aggregate by using the 
 
 ### Event-sourcing aggregate
 
-Event sourcing aggregate is using a `Decider` to handle commands and produce events.
-In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via `fetchEvents` function, and then delegate the command to the decider which can produce event(s) as a result.
-Produced events are then stored via `storeEvents` suspending function.
-It is the responsibility of the user to implement these functions `fetchEvents` and `storeEvents` per need.
-These two functions are producing side effects (infrastructure), and they are deliberately separated from the decider (pure domain logic).
+Event sourcing aggregate is using/delegating a `Decider` to handle commands and produce events.
+In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via `AggregateEventRepository.fetchEvents` function, and then delegate the command to the decider which can produce new event(s) as a result.
+Produced events are then stored via `AggregateEventRepository.save` suspending function.
+ 
+`EventSourcingAggregate` implements an interface `AggregateEventRepository` by delegating all of its public members to a specified object.
+The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+
+The `by` -clause in the supertype list for `EventSourcingAggregate` indicates that `eventRepository` will be stored internally in objects of `EventSourcingAggregate` and the compiler will generate all the methods of `AggregateEventRepository` that forward to `eventRepository`
 
 >Flagging a computation as suspend enforces a calling context, meaning the compiler can ensure that we can’t call the effect from anywhere other than an environment prepared to run suspended effects. That will be another suspended function or a Coroutine.
 >This effectively means we’re decoupling the pure declaration of our program logic (frequently called algebras in the functional world) from the runtime. And therefore, the runtime has the chance to see the big picture of our program and decide how to run and optimize it.
 
 ```kotlin
 data class EventSourcingAggregate<C, S, E>(
-    val decider: Decider<C, S, E>,
-    val storeEvents: suspend (Iterable<E>) -> Either<Error.StoringEventsFailed<E>, Success.EventsStoredSuccessfully<E>>,
-    val fetchEvents: suspend (C) -> Either<Error.FetchingEventsFailed, Iterable<E>>
-) {
+    private val decider: Decider<C, S, E>,
+    private val eventRepository: EventRepository<C, E>
+) : AggregateEventRepository<C, E> by eventRepository {
 
-    suspend fun handle(command: C): Either<Error, Success> =
+    suspend fun handle(command: C): Either<Error, Iterable<Success.EventStoredSuccessfully<E>>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            val events = fetchEvents(command).bind()
+            val events = command.fetchEvents().bind()
             val state: S = validate(events.fold(decider.initialState, decider.evolve)).bind()
-            storeEvents(decider.decide(command, state)).bind()
+            val newEvents = decider.decide(command, state)
+            newEvents.save().bind()
         }
 
-    private fun validate(state: S): Either<Error, S> {
-        return if (decider.isTerminal(state)) Either.left(Error.AggregateIsInTerminalState(state))
-        else Either.right(state)
-    }
+    private fun validate(state: S): Either<Error, S> =
+        if (decider.isTerminal(state)) Either.Left(Error.AggregateIsInTerminalState(state))
+        else Either.Right(state)
 
 }
 ```
 ### State-stored aggregate
+State stored aggregate is using/delegating a `Decider` to handle commands and produce new state.
+In order to handle the command, aggregate needs to fetch the current state via `AggregateStateRepository.fetchState` function first, and then delegate the command to the decider which can produce new state as a result.
+New state is then stored via `AggregateStateRepository.save` suspending function.
+ 
+`StateStoredAggregate` implements an interface `AggregateStateRepository` by delegating all of its public members to a specified object.
+The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
 
-State stored aggregate is using a `Decider` to handle commands and produce new state.
-In order to handle the command, aggregate needs to fetch the current state via `fetchState` function first, and then delegate the command to the decider which can produce new state as a result.
-New state is then stored via `storeState` suspending function.
-It is the responsibility of the user to implement these functions `fetchState` and `storeState` per need.
-These two functions are producing side effects (infrastructure), and they are deliberately separated from the decider (pure domain logic).
+The `by` -clause in the supertype list for `StateStoredAggregate` indicates that `aggregateStateRepository` will be stored internally in objects of `StateStoredAggregate` and the compiler will generate all the methods of `AggregateStateRepository` that forward to `aggregateStateRepository`
 
 ```kotlin
 data class StateStoredAggregate<C, S, E>(
-    val decider: Decider<C, S, E>,
-    val storeState: suspend (S) -> Either<Error.StoringStateFailed<S>, Success.StateStoredSuccessfully<S>>,
-    val fetchState: suspend (C) -> Either<Error.FetchingStateFailed, S?>
-) {
+    private val decider: Decider<C, S, E>,
+    private val aggregateStateRepository: AggregateStateRepository<C, S>
+) : AggregateStateRepository<C, S> by aggregateStateRepository {
 
-    suspend fun handle(command: C): Either<Error, Success> =
+    suspend fun handle(command: C): Either<Error, Success.StateStoredAndEventsPublishedSuccessfully<S, E>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            val currentState = fetchState(command).bind()
+            val currentState = command.fetchState().bind()
             val state = validate(currentState ?: decider.initialState).bind()
-            storeState(decider.decide(command, state).fold(state, decider.evolve)).bind()
+            val events = decider.decide(command, state)
+            events.fold(state, decider.evolve).save()
+                .map { s -> Success.StateStoredAndEventsPublishedSuccessfully(s.state, events) }.bind()
         }
 
-    private fun validate(state: S): Either<Error, S> {
-        return if (decider.isTerminal(state)) Either.left(Error.AggregateIsInTerminalState(state))
-        else Either.right(state)
-    }
-
+    private fun validate(state: S): Either<Error, S> =
+        if (decider.isTerminal(state)) Either.Left(Error.AggregateIsInTerminalState(state))
+        else Either.Right(state)
 }
 ````
 
@@ -273,24 +276,21 @@ We can now construct `materialized` view by using this `view`.
 Materialized view is using/delegating a `View` to handle events of type `E` and to maintain a state of denormalized projection(s) as a result.
 Essentially, it represents the query/view side of the CQRS pattern.
 
-In order to handle the event, materialized view needs to fetch the current state via `fetchState` suspending function first, and then delegate the event to the view which can produce new state as a result.
-New state is then stored via `storeState` suspending function.
-It is the responsibility of the user to implement these functions `fetchState` and `storeState` per need.
-These two functions are producing side effects (infrastructure), and they are deliberately separated from the view (pure domain logic).
-
+In order to handle the event, materialized view needs to fetch the current state via `ViewStateRepository.fetchState` suspending function first, and then delegate the event to the view which can produce new state as a result.
+New state is then stored via `ViewStateRepository.save` suspending function.
 
 ```kotlin
 data class MaterializedView<S, E>(
-    val view: View<S, E>,
-    val storeState: suspend (S) -> Either<Error.StoringStateFailed<S>, Success.StateStoredSuccessfully<S>>,
-    val fetchState: suspend (E) -> Either<Error.FetchingStateFailed, S?>
-) {
-    suspend fun handle(event: E): Either<Error, Success> =
+    private val view: View<S, E>,
+    private val viewStateRepository: ViewStateRepository<E, S>,
+) : ViewStateRepository<E, S> by viewStateRepository {
+
+    suspend fun handle(event: E): Either<Error, Success.StateStoredSuccessfully<S>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            val oldState = fetchState(event).bind() ?: view.initialState
+            val oldState = event.fetchState().bind() ?: view.initialState
             val newState = view.evolve(oldState, event)
-            storeState(newState).bind()
+            newState.save().bind()
         }
 }
 ```

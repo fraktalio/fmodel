@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.datatypes
+package com.fraktalio.fmodel.domain
 
 import arrow.core.Either
 import arrow.core.identity
@@ -167,8 +167,6 @@ data class _Decider<C, Si, So, Ei, Eo>(
         initialState = so,
         isTerminal = { si -> true }
     )
-
-
 }
 
 

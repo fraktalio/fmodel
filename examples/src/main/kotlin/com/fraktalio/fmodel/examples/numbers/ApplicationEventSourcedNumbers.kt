@@ -20,63 +20,66 @@ import arrow.core.Either
 import com.fraktalio.fmodel.examples.numbers.api.Description
 import com.fraktalio.fmodel.examples.numbers.api.NumberCommand
 import com.fraktalio.fmodel.examples.numbers.api.NumberValue
+import com.fraktalio.fmodel.examples.numbers.even.command.evenNumberDecider
+import com.fraktalio.fmodel.examples.numbers.even.query.evenNumberView
+import com.fraktalio.fmodel.examples.numbers.odd.command.oddNumberDecider
+import com.fraktalio.fmodel.examples.numbers.odd.query.oddNumberView
 import kotlinx.coroutines.runBlocking
 
 fun main(args: Array<String>) = runBlocking { // start main coroutine
 
-    println("  " + NUMBER_AGGREGATE.decider.initialState)
+    val eventSourcingAggregate = numberAggregate(evenNumberDecider(), oddNumberDecider(), numberRepository())
+    val materializedView = numberMaterializedView(oddNumberView(), evenNumberView(), NumberViewRepository())
 
     println(
-        NUMBER_AGGREGATE.handle(
+        eventSourcingAggregate.handle(
             Either.Right(
                 NumberCommand.OddNumberCommand.AddOddNumber(
                     Description("Add 1"),
                     NumberValue(1)
                 )
             )
-        )
+        ).map { it.map { eventStoredSuccessfully -> materializedView.handle(eventStoredSuccessfully.event) } }
     )
     println(
-        NUMBER_AGGREGATE.handle(
+        eventSourcingAggregate.handle(
             Either.Left(
                 NumberCommand.EvenNumberCommand.AddEvenNumber(
                     Description("Add 4"),
                     NumberValue(4)
                 )
             )
-        )
+        ).map { it.map { eventStoredSuccessfully -> materializedView.handle(eventStoredSuccessfully.event) } }
     )
     println(
-        NUMBER_AGGREGATE.handle(
+        eventSourcingAggregate.handle(
             Either.Right(
                 NumberCommand.OddNumberCommand.AddOddNumber(
                     Description("Add 3"),
                     NumberValue(3)
                 )
             )
-        )
+        ).map { it.map { eventStoredSuccessfully -> materializedView.handle(eventStoredSuccessfully.event) } }
     )
     println(
-        NUMBER_AGGREGATE.handle(
+        eventSourcingAggregate.handle(
             Either.Left(
                 NumberCommand.EvenNumberCommand.AddEvenNumber(
                     Description("Add 8"),
                     NumberValue(8)
                 )
             )
-        )
+        ).map { it.map { eventStoredSuccessfully -> materializedView.handle(eventStoredSuccessfully.event) } }
     )
     println(
-        NUMBER_AGGREGATE.handle(
+        eventSourcingAggregate.handle(
             Either.Left(
                 NumberCommand.EvenNumberCommand.SubtractEvenNumber(
                     Description("Subtract 2"),
                     NumberValue(2)
                 )
             )
-        )
+        ).map { it.map { eventStoredSuccessfully -> materializedView.handle(eventStoredSuccessfully.event) } }
     )
-
-    println("Events: $numberEventStorage")
 }
 

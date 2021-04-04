@@ -16,43 +16,23 @@
 
 package com.fraktalio.fmodel.examples.numbers.odd.query
 
-import arrow.core.Either
-import com.fraktalio.fmodel.datatypes.Error
-import com.fraktalio.fmodel.datatypes.MaterializedView
-import com.fraktalio.fmodel.datatypes.Success
+import com.fraktalio.fmodel.application.MaterializedView
+import com.fraktalio.fmodel.application.ViewStateRepository
+import com.fraktalio.fmodel.domain.View
 import com.fraktalio.fmodel.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.examples.numbers.api.OddNumberState
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-
 
 /**
- * Represents the state store for Odd numbers (it can be SQL table, NoSQL storage, ...)
+ * Odd number materialized view
+ *
+ * @param view pure declaration of our program logic
+ * @param repository Odd number repository
+ * @return Odd number materialized view
  */
-var oddNumberStateStorage: OddNumberState? = null
-val oddNumberStateStorageMutex = Mutex()
-
-/**
- * State stored view of the Odd Numbers
- */
-val ODD_NUMBER_MATERIALIZED_VIEW: MaterializedView<OddNumberState?, NumberEvent.OddNumberEvent?> = MaterializedView(
-    view = ODD_NUMBER_VIEW,
-    fetchState = {
-        Either.catch {
-            oddNumberStateStorage
-        }.mapLeft { throwable ->
-            Error.FetchingStateFailed(throwable)
-        }
-    },
-    storeState = {
-        Either.catch {
-            oddNumberStateStorageMutex.withLock {
-                oddNumberStateStorage = it
-            }
-            println("""= $oddNumberStateStorage""")
-            Success.StateStoredSuccessfully(it)
-        }.mapLeft { throwable ->
-            Error.StoringStateFailed(it, throwable)
-        }
-    }
+fun oddNumberMaterializedView(
+    view: View<OddNumberState?, NumberEvent.OddNumberEvent?>,
+    repository: ViewStateRepository<NumberEvent.OddNumberEvent?, OddNumberState?>
+): MaterializedView<OddNumberState?, NumberEvent.OddNumberEvent?> = MaterializedView(
+    view = view,
+    viewStateRepository = repository
 )
