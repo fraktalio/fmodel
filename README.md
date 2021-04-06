@@ -4,28 +4,16 @@ The word `domain` here means the area of interest in the business.
 When you’re developing an `information system` to automate activities of that business, you’re modeling the
 business. The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect the business — *together they constitute the `model` of the domain*.
 
->The importance of abstraction is derived from its ability to hide irrelevant details and from the use of names to reference objects. Programming languages provide abstraction through procedures, functions, and modules which permit the programmer to distinguish between what a program does and how it is implemented. The primary concern of the user of a program is with what it does. This is in contrast with the writer of the program whose primary concern is with how it is implemented. Abstraction is essential in the construction of programs. It places the emphasis on what an object is or does rather than how it is represented or how it works. Thus, it is the primary means of managing complexity in large programs.
- 
->Of no less importance is generalization. While abstraction reduces complexity by hiding irrelevant detail, generalization reduces complexity by replacing multiple entities which perform similar functions with a single construct. Programming languages provide generalization through variables, parameterization, generics and polymorphism. Generalization is essential in the construction of programs. It places the emphasis on the similarities between objects. Thus, it helps to manage complexity by collecting individuals into groups and providing a representative which can be used to specify any individual of the group.
- 
->Abstraction and generalization are often used together. Abstracts are generalized through parameterization to provide greater utility. In parameterization, one or more parts of an entity are replaced with a name which is new to the entity. The name is used as a parameter. When the parameterized abstract is invoked, it is invoked with a binding of the parameter to an argument.
-
 ## `IOR<Library, Inspiration>`
+
 This project can be used as a library, or as an inspiration, or both.
 
-![onion architecture image](.assets/onion.png)
-
-The arrows in the image are showing the direction of the dependency. Notice that all dependencies point inwards, and that `Domain` is not depending on anybody or anything.
-
- - `Domain` - pure functional module - pure declaration of our program logic - abstracts are generalized through parameterization to provide greater utility for you!
- - `Application` - effects - functional and OOP concepts - orchestrates the execution of business logic (domain): `load` entities from a repository, `execute`logic by calling domain layer, `store` the new state
- - `Infrastructure/Persistence/Presentation` - The choice is yours! It will never be part of this project. We will provide examples only, so stay tuned!
- 
 **Please note, that this project is in the experimental phase. The API will most probably change.**
 
 ## Table of Contents
 
    * Functional domain modeling
+      * [Abstraction and generalization](#abstraction-and-generalization)
       * [decide: (C, S) -&gt; Iterable&lt;E&gt;](#decide-c-s---iterablee)
       * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
       * [Event-sourced or State-stored systems](#event-sourced-or-state-stored-systems)
@@ -34,22 +22,30 @@ The arrows in the image are showing the direction of the dependency. Notice that
          * [Event-sourced system decide: (C, Iterable&lt;E&gt;) -&gt; Iterable&lt;E&gt;](#event-sourced-system-decide-c-iterablee---iterablee)
          * [State-stored system decide: (C, S) -&gt; S](#state-stored-system-decide-c-s---s)
       * [Decider](#decider)
-         * [Event-sourcing aggregate](#event-sourcing-aggregate)
-         * [State-stored aggregate](#state-stored-aggregate)
          * [Decider extensions and functions](#decider-extensions-and-functions)
             * [Contravariant](#contravariant)
             * [Profunctor (Contravariant and Covariant)](#profunctor-contravariant-and-covariant)
             * [Applicative](#applicative)
             * [Monoid](#monoid)
+        * [Event-sourcing aggregate](#event-sourcing-aggregate)
+        * [State-stored aggregate](#state-stored-aggregate)
       * [View](#view)
-         * [Materialized View](#materialized-view)
          * [View extensions and functions](#view-extensions-and-functions)
             * [Contravariant](#contravariant-1)
             * [Profunctor (Contravariant and Covariant)](#profunctor-contravariant-and-covariant-1)
             * [Applicative](#applicative-1)
             * [Monoid](#monoid-1)
+        * [Materialized View](#materialized-view)
       * [Kotlin](#kotlin)
       * [References and further reading](#references-and-further-reading)
+
+## Abstraction and generalization
+
+The importance of abstraction is derived from its ability to hide irrelevant details and from the use of names to reference objects. Programming languages provide abstraction through procedures, functions, and modules which permit the programmer to distinguish between what a program does and how it is implemented. The primary concern of the user of a program is with what it does. This is in contrast with the writer of the program whose primary concern is with how it is implemented. Abstraction is essential in the construction of programs. It places the emphasis on what an object is or does rather than how it is represented or how it works. Thus, it is the primary means of managing complexity in large programs.
+
+While abstraction reduces complexity by hiding irrelevant detail, generalization reduces complexity by replacing multiple entities which perform similar functions with a single construct. Programming languages provide generalization through variables, parameterization, generics and polymorphism. Generalization is essential in the construction of programs. It places the emphasis on the similarities between objects. Thus, it helps to manage complexity by collecting individuals into groups and providing a representative which can be used to specify any individual of the group.
+
+Abstraction and generalization are often used together. Abstracts are generalized through parameterization to provide greater utility.
 
 
 ## `decide: (C, S) -> Iterable<E>` 
@@ -101,7 +97,7 @@ We can now use this function `(Iterable<E>) -> S` to:
 - The `evolve` function is now internal to the `decide` function, and not part of the public API.
 
 
-**We can verify that we are able to design any information system (event-sourced or/and state-stored) in this way**, by using these two functions wrapped in a data-type class (algebraic data structure) which is generalized with 3 generic parameters: 
+**We can verify that we are able to design any information system (event-sourced or/and state-stored) in this way**, by using these two functions wrapped in a datatype class (algebraic data structure) which is generalized with 3 generic parameters: 
 ```kotlin
 data class Decider<C, S, E>(
     val decide: (C, S) -> Iterable<E>,
@@ -109,15 +105,16 @@ data class Decider<C, S, E>(
 )
 ```
 
->A `datatype` is an abstraction that encapsulates one reusable coding pattern. These solutions have a canonical implementation that is generalized for all possible uses.
->In Kotlin programming language, a datatype is implemented by a data class, or a sealed hierarchy of data classes and objects.
+`Decider` is the most important datatype, but it is not the only one. There are others: 
+
+![onion architecture image](.assets/onion.png)
+
 
 ## Decider
 
- `_Decider` is a datatype that represents the main decision-making algorithm.
+ `_Decider` is a datatype that represents the main decision-making algorithm. It belongs to the Domain layer.
  It has five generic parameters `C`, `Si`, `So`, `Ei`, `Eo` , representing the type of the values that `_Decider` may contain or use.
  `_Decider` can be specialized for any type `C` or `Si` or `So` or `Ei` or `Eo` because these types does not affect its behavior. `_Decider` behaves the same for `C`=`Int` or `C`=`YourCustomType`, for example.
- To indicate that `_Decider` is a type constructor for all values of `C`, `Si`, `So`, `Ei`, `Eo`, it implements `_DeciderOf`<`C`, `Si`, `So`, `Ei`, `Eo`>, which is a typealias of `Kind5`<`For_Decider`, `C`, `Si`, `So`, `Ei`, `Eo`>
  
  `_Decider` is a pure domain component.
 
@@ -144,13 +141,50 @@ typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
 
 Additionally, `initialState` of the Decider and `isTerminal` function are introduced to gain more control over the initial and final state of the Decider.
 
+### Decider extensions and functions
+
+`Decider` defines a `monoid` in respect to the composition operation: `(Decider<Cx,Sx,Ex>, Decider<Cy,Sy,Ey>) -> Decider<Either<Cx,Cy>, Pair(Sx,Sy), Either<Ex,Ey>>`, and this is an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Decider<Nothing, Unit, Nothing>`
+
+> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
+> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
+
+
+#### Contravariant
+- `Decider<C, Si, So, Ei, Eo>.lmapOnC(f: (Cn) -> C): Decider<Cn, Si, So, Ei, Eo>`
+
+#### Profunctor (Contravariant and Covariant)
+- `Decider<C, Si, So, Ei, Eo>.dimapOnE(
+  fl: (Ein) -> Ei,
+  fr: (Eo) -> Eon
+  ): Decider<C, Si, So, Ein, Eon>`
+- `Decider<C, Si, So, Ei, Eo>.lmapOnE(f: (Ein) -> Ei): Decider<C, Si, So, Ein, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.rmapOnE(f: (Eo) -> Eon): Decider<C, Si, So, Ei, Eon>`
+- `Decider<C, Si, So, Ei, Eo>.dimapOnS(
+  fl: (Sin) -> Si,
+  fr: (So) -> Son
+  ): Decider<C, Sin, Son, Ei, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.lmapOnS(f: (Sin) -> Si): Decider<C, Sin, So, Ei, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.rmapOnS(f: (So) -> Son): Decider<C, Si, Son, Ei, Eo>`
+
+#### Applicative
+- `rjustOnS(so: So): Decider<C, Si, So, Ei, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.rapplyOnS(ff: Decider<C, Si, (So) -> Son, Ei, Eo>): Decider<C, Si, Son, Ei, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.rproductOnS(fb: Decider<C, Si, Son, Ei, Eo>): Decider<C, Si, Pair<So, Son>, Ei, Eo>`
+
+#### Monoid
+- `Decider<C1, Si1, So1, Ei1, Eo1>.combineDeciders(
+  y: Decider<C2, Si2, So2, Ei2, Eo2>
+  ): Decider<Either<C1, C2>, Pair<Si1, Si2>, Pair<So1, So2>, Either<Ei1, Ei2>, Either<Eo1, Eo2>>`
+- with identity element `Decider<Nothing, Unit, Nothing>`
+
+
 We can now construct event-sourcing or/and state-storing aggregate by using the same `decider`.
 
 ![aggregate image](.assets/aggregate.jpg)
 
 ### Event-sourcing aggregate
 
-Event sourcing aggregate is using/delegating a `Decider` to handle commands and produce events.
+Event sourcing aggregate is using/delegating a `Decider` to handle commands and produce events. It belongs to the Application layer.
 In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via `AggregateEventRepository.fetchEvents` function, and then delegate the command to the decider which can produce new event(s) as a result.
 Produced events are then stored via `AggregateEventRepository.save` suspending function.
  
@@ -184,7 +218,7 @@ data class EventSourcingAggregate<C, S, E>(
 }
 ```
 ### State-stored aggregate
-State stored aggregate is using/delegating a `Decider` to handle commands and produce new state.
+State stored aggregate is using/delegating a `Decider` to handle commands and produce new state. It belongs to the Application layer.
 In order to handle the command, aggregate needs to fetch the current state via `AggregateStateRepository.fetchState` function first, and then delegate the command to the decider which can produce new state as a result.
 New state is then stored via `AggregateStateRepository.save` suspending function.
  
@@ -215,47 +249,9 @@ data class StateStoredAggregate<C, S, E>(
 }
 ````
 
-### Decider extensions and functions
-
-`Decider` defines a `monoid` in respect to the composition operation: `(Decider<Cx,Sx,Ex>, Decider<Cy,Sy,Ey>) -> Decider<Either<Cx,Cy>, Pair(Sx,Sy), Either<Ex,Ey>>`, and this is an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Decider<Nothing, Unit, Nothing>`
-
-> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
-> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
-
-
-#### Contravariant
-- `Decider<C, Si, So, Ei, Eo>.lmapOnC(f: (Cn) -> C): Decider<Cn, Si, So, Ei, Eo>`
-
-#### Profunctor (Contravariant and Covariant)
-- `Decider<C, Si, So, Ei, Eo>.dimapOnE(
-           fl: (Ein) -> Ei,
-           fr: (Eo) -> Eon
-       ): Decider<C, Si, So, Ein, Eon>`
-- `Decider<C, Si, So, Ei, Eo>.lmapOnE(f: (Ein) -> Ei): Decider<C, Si, So, Ein, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.rmapOnE(f: (Eo) -> Eon): Decider<C, Si, So, Ei, Eon>`
-- `Decider<C, Si, So, Ei, Eo>.dimapOnS(
-           fl: (Sin) -> Si,
-           fr: (So) -> Son
-       ): Decider<C, Sin, Son, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.lmapOnS(f: (Sin) -> Si): Decider<C, Sin, So, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.rmapOnS(f: (So) -> Son): Decider<C, Si, Son, Ei, Eo>`
-
-#### Applicative
-- `rjustOnS(so: So): Decider<C, Si, So, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.rapplyOnS(ff: Decider<C, Si, (So) -> Son, Ei, Eo>): Decider<C, Si, Son, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.rproductOnS(fb: Decider<C, Si, Son, Ei, Eo>): Decider<C, Si, Pair<So, Son>, Ei, Eo>`
-
-#### Monoid
-- `Decider<C1, Si1, So1, Ei1, Eo1>.combineDeciders(
-           y: Decider<C2, Si2, So2, Ei2, Eo2>
-       ): Decider<Either<C1, C2>, Pair<Si1, Si2>, Pair<So1, So2>, Either<Ei1, Ei2>, Either<Eo1, Eo2>>`
-- with identity element `Decider<Nothing, Unit, Nothing>`
-
->Typeclasses are interfaces that define a set of extension functions associated to one type. You may see them referred to as “extension interfaces.”
-
 
 ## View
-`_View`  is a datatype that represents the event handling algorithm, responsible for translating the events into denormalized state, which is more adequate for querying.
+`_View`  is a datatype that represents the event handling algorithm, responsible for translating the events into denormalized state, which is more adequate for querying. It belongs to the Domain layer.
 It is usually used to create the view/query side of the CQRS pattern. Obviously, the command side of the CQRS is usually event-sourced aggregate.
 
 It has three generic parameters `Si`, `So`, `E`, representing the type of the values that `_View` may contain or use.
@@ -281,6 +277,31 @@ data class _View<Si, So, E>(
 typealias View<S, E> = _View<S, S, E>
 ```
 
+
+### View extensions and functions
+
+`View` defines a `monoid` in respect to the composition operation: `(View<Sx,Ex>, View<Sy,Ey>) -> View<Pair(Sx,Sy), Either<Ex,Ey>>`, and this is an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `View<Unit, Nothing>`
+
+#### Contravariant
+- `View<Si, So, E>.lmapOnE(f: (En) -> E): View<Si, So, En>`
+
+#### Profunctor (Contravariant and Covariant)
+- `View<Si, So, E>.dimapOnS(
+  fl: (Sin) -> Si,
+  fr: (So) -> Son
+  ): View<Sin, Son, E>`
+- `View<Si, So, E>.lmapOnS(f: (Sin) -> Si): View<Sin, So, E>`
+- `View<Si, So, E>.rmapOnS(f: (So) -> Son): View<Si, Son, E>`
+
+#### Applicative
+- `View<Si, So, E>.rapplyOnS(ff: View<Si, (So) -> Son, E>): View<Si, Son, E>`
+- `rjustOnS(so: So): View<Si, So, E>`
+
+#### Monoid
+- `View<Si1, So1, E1>.combineViews(y: View<Si2, So2, E2>): View<Pair<Si1, Si2>, Pair<So1, So2>, Either<E1, E2>>`
+- with identity element `View<Unit, Nothing>`
+
+
 We can now construct `materialized` view by using this `view`.
 
 ![view image](.assets/view.jpg)
@@ -288,7 +309,7 @@ We can now construct `materialized` view by using this `view`.
 ### Materialized View
 
 Materialized view is using/delegating a `View` to handle events of type `E` and to maintain a state of denormalized projection(s) as a result.
-Essentially, it represents the query/view side of the CQRS pattern.
+Essentially, it represents the query/view side of the CQRS pattern. It belongs to the Application layer.
 
 In order to handle the event, materialized view needs to fetch the current state via `ViewStateRepository.fetchState` suspending function first, and then delegate the event to the view which can produce new state as a result.
 New state is then stored via `ViewStateRepository.save` suspending function.
@@ -308,30 +329,6 @@ data class MaterializedView<S, E>(
         }
 }
 ```
-
-### View extensions and functions
-
-`View` defines a `monoid` in respect to the composition operation: `(View<Sx,Ex>, View<Sy,Ey>) -> View<Pair(Sx,Sy), Either<Ex,Ey>>`, and this is an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `View<Unit, Nothing>`
-
-#### Contravariant
-- `View<Si, So, E>.lmapOnE(f: (En) -> E): View<Si, So, En>`
-
-#### Profunctor (Contravariant and Covariant)
-- `View<Si, So, E>.dimapOnS(
-          fl: (Sin) -> Si,
-          fr: (So) -> Son
-      ): View<Sin, Son, E>`
-- `View<Si, So, E>.lmapOnS(f: (Sin) -> Si): View<Sin, So, E>`
-- `View<Si, So, E>.rmapOnS(f: (So) -> Son): View<Si, Son, E>`
-
-#### Applicative
-- `View<Si, So, E>.rapplyOnS(ff: View<Si, (So) -> Son, E>): View<Si, Son, E>`
-- `rjustOnS(so: So): View<Si, So, E>`
-
-#### Monoid
-- `View<Si1, So1, E1>.combineViews(y: View<Si2, So2, E2>): View<Pair<Si1, Si2>, Pair<So1, So2>, Either<E1, E2>>`
-- with identity element `View<Unit, Nothing>`
-
 
 ## Kotlin
 
