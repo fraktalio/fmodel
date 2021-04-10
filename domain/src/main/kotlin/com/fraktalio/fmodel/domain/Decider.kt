@@ -155,18 +155,6 @@ data class _Decider<C, Si, So, Ei, Eo>(
      */
     fun <Son> rproductOnS(fb: _Decider<C, Si, Son, Ei, Eo>): _Decider<C, Si, Pair<So, Son>, Ei, Eo> =
         rapplyOnS(fb.rmapOnS { b: Son -> { a: So -> Pair(a, b) } })
-
-    /**
-     * Right just over S/State parameter - Applicative
-     *
-     * @param so State output
-     */
-    fun rjustOnS(so: So): _Decider<C, Si, So, Ei, Eo> = _Decider(
-        decide = { c, si -> emptyList() },
-        evolve = { si, ei -> so },
-        initialState = so,
-        isTerminal = { si -> true }
-    )
 }
 
 

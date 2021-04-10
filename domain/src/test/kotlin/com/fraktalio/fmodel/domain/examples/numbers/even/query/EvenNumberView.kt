@@ -14,28 +14,34 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.examples.numbers.even.query
+package com.fraktalio.fmodel.domain.examples.numbers.even.query
 
 import com.fraktalio.fmodel.domain.View
-import com.fraktalio.fmodel.examples.numbers.api.Description
-import com.fraktalio.fmodel.examples.numbers.api.EvenNumberState
-import com.fraktalio.fmodel.examples.numbers.api.NumberEvent
-import com.fraktalio.fmodel.examples.numbers.api.NumberValue
+import com.fraktalio.fmodel.domain.examples.numbers.api.Description
+import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberSubtracted
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 
 /**
  * Even number view -  pure declaration of our program logic
  *
  * @return Even number view instance
  */
-fun evenNumberView(): View<EvenNumberState?, NumberEvent.EvenNumberEvent?> = View(
-    initialState = EvenNumberState(Description("Initial state"), NumberValue(0)),
+fun evenNumberView(): View<EvenNumberState?, EvenNumberEvent?> = View(
+    initialState = EvenNumberState(
+        Description(
+            "Initial state"
+        ), NumberValue(0)
+    ),
     evolve = { evenNumberState, e ->
         when {
-            e is NumberEvent.EvenNumberEvent.EvenNumberAdded && (evenNumberState != null) -> EvenNumberState(
+            e is EvenNumberAdded && (evenNumberState != null) -> EvenNumberState(
                 Description(evenNumberState.description.get + ", " + e.description.get),
                 NumberValue(evenNumberState.value.get + e.value.get)
             )
-            e is NumberEvent.EvenNumberEvent.EvenNumberSubtracted && (evenNumberState != null) -> EvenNumberState(
+            e is EvenNumberSubtracted && (evenNumberState != null) -> EvenNumberState(
                 Description(evenNumberState.description.get + ", " + e.description.get),
                 NumberValue(evenNumberState.value.get - e.value.get)
             )

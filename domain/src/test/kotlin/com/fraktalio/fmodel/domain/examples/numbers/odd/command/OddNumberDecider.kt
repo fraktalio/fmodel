@@ -14,30 +14,42 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.examples.numbers.odd.command
+package com.fraktalio.fmodel.domain.examples.numbers.odd.command
 
 import com.fraktalio.fmodel.domain.Decider
-import com.fraktalio.fmodel.examples.numbers.api.*
+import com.fraktalio.fmodel.domain.examples.numbers.api.Description
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.AddOddNumber
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.SubtractOddNumber
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberAdded
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberSubtracted
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
+import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 
 /**
  * Odd number decider - pure declaration of our program logic
  *
  * @return Odd number decider instance
  */
-fun oddNumberDecider(): Decider<NumberCommand.OddNumberCommand?, OddNumberState, NumberEvent.OddNumberEvent?> =
+fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?> =
     Decider(
         isTerminal = { s -> s.value.get > 100 },
-        initialState = OddNumberState(Description("Initial state"), NumberValue(0)),
+        initialState = OddNumberState(
+            Description(
+                "Initial state"
+            ), NumberValue(0)
+        ),
         decide = { c, s ->
             when (c) {
-                is NumberCommand.OddNumberCommand.AddOddNumber -> listOf(
-                    NumberEvent.OddNumberEvent.OddNumberAdded(
+                is AddOddNumber -> listOf(
+                    OddNumberAdded(
                         c.description,
                         c.value
                     )
                 )
-                is NumberCommand.OddNumberCommand.SubtractOddNumber -> listOf(
-                    NumberEvent.OddNumberEvent.OddNumberSubtracted(
+                is SubtractOddNumber -> listOf(
+                    OddNumberSubtracted(
                         c.description,
                         c.value
                     )
@@ -47,11 +59,11 @@ fun oddNumberDecider(): Decider<NumberCommand.OddNumberCommand?, OddNumberState,
         },
         evolve = { s, e ->
             when (e) {
-                is NumberEvent.OddNumberEvent.OddNumberAdded -> OddNumberState(
+                is OddNumberAdded -> OddNumberState(
                     e.description,
                     NumberValue(s.value.get + e.value.get)
                 )
-                is NumberEvent.OddNumberEvent.OddNumberSubtracted -> OddNumberState(
+                is OddNumberSubtracted -> OddNumberState(
                     e.description,
                     NumberValue(s.value.get - e.value.get)
                 )

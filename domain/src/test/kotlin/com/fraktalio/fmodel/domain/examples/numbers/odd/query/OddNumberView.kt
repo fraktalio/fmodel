@@ -14,28 +14,34 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.examples.numbers.odd.query
+package com.fraktalio.fmodel.domain.examples.numbers.odd.query
 
 import com.fraktalio.fmodel.domain.View
-import com.fraktalio.fmodel.examples.numbers.api.Description
-import com.fraktalio.fmodel.examples.numbers.api.NumberEvent
-import com.fraktalio.fmodel.examples.numbers.api.NumberValue
-import com.fraktalio.fmodel.examples.numbers.api.OddNumberState
+import com.fraktalio.fmodel.domain.examples.numbers.api.Description
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberAdded
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberSubtracted
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
+import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 
 /**
  * Odd number view -  pure declaration of our program logic
  *
  * @return Odd number view instance
  */
-fun oddNumberView(): View<OddNumberState?, NumberEvent.OddNumberEvent?> = View(
-    initialState = OddNumberState(Description("Initial state"), NumberValue(0)),
+fun oddNumberView(): View<OddNumberState?, OddNumberEvent?> = View(
+    initialState = OddNumberState(
+        Description(
+            "Initial state"
+        ), NumberValue(0)
+    ),
     evolve = { oddNumberState, e ->
         when {
-            e is NumberEvent.OddNumberEvent.OddNumberAdded && (oddNumberState != null) -> OddNumberState(
+            e is OddNumberAdded && (oddNumberState != null) -> OddNumberState(
                 Description(oddNumberState.description.get + ", " + e.description.get),
                 NumberValue(oddNumberState.value.get + e.value.get)
             )
-            e is NumberEvent.OddNumberEvent.OddNumberSubtracted && (oddNumberState != null) -> OddNumberState(
+            e is OddNumberSubtracted && (oddNumberState != null) -> OddNumberState(
                 Description(oddNumberState.description.get + ", " + e.description.get),
                 NumberValue(oddNumberState.value.get - e.value.get)
             )
