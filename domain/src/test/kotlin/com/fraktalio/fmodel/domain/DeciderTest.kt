@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.domain.examples.numbers
+package com.fraktalio.fmodel.domain
 
 import arrow.core.Either.Left
 import arrow.core.Either.Right
-import com.fraktalio.fmodel.domain.combineDeciders
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
