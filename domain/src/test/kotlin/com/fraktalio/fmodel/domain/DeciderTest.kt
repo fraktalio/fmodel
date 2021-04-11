@@ -18,15 +18,12 @@ package com.fraktalio.fmodel.domain
 
 import arrow.core.Either.Left
 import arrow.core.Either.Right
-import com.fraktalio.fmodel.domain.examples.numbers.api.Description
-import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
+import com.fraktalio.fmodel.domain.examples.numbers.api.*
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.AddOddNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberAdded
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
-import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import org.spekframework.spek2.Spek
@@ -41,7 +38,8 @@ object DeciderTest : Spek({
     Feature("Decider") {
         val evenDecider by memoized { evenNumberDecider() }
         val oddDecider by memoized { oddNumberDecider() }
-        val combinedDecider by memoized { evenDecider.combineDeciders(oddDecider) }
+        val combinedDeciderEither by memoized { evenDecider.combineDeciders(oddDecider) }
+        val combinedDecider by memoized { evenDecider.combine(oddDecider) }
 
         Scenario("Decide") {
             lateinit var result: Iterable<EvenNumberEvent?>
@@ -68,6 +66,33 @@ object DeciderTest : Spek({
             }
 
         }
+
+        Scenario("Decide - Combine") {
+            lateinit var result: Iterable<NumberEvent?>
+
+            When("being in current/initial state of type Pair<EvenNumberState, OddNumberState> and handling command of super type NumberCommand") {
+                result = combinedDecider
+                    .decide(
+                        AddEvenNumber(
+                            Description("2"),
+                            NumberValue(2)
+                        ), combinedDecider.initialState
+                    )
+            }
+
+            Then("event of super type NumberEvent should be published") {
+                assertEquals(
+                    listOf(
+                        EvenNumberAdded(
+                            Description("2"),
+                            NumberValue(2)
+                        )
+                    ), result
+                )
+            }
+
+        }
+
 
         Scenario("Decide - left map over Command parameter - functor") {
             lateinit var result: Iterable<EvenNumberEvent?>
@@ -192,6 +217,19 @@ object DeciderTest : Spek({
 
             Then("new state of type EvenNumberState should be constructed/evolved") {
                 assertEquals(EvenNumberState(Description("2"), NumberValue(2)), result)
+            }
+
+        }
+
+        Scenario("Evolve - Combine") {
+            lateinit var result: Pair<EvenNumberState, OddNumberState>
+
+            When("being in current/initial state of type EvenNumberState and handling event of type EvenNumberEvent") {
+                result = combinedDecider.evolve(combinedDecider.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
+            }
+
+            Then("new state of type EvenNumberState should be constructed/evolved") {
+                assertEquals(Pair(EvenNumberState(Description("2"), NumberValue(2)), OddNumberState(Description("Initial state"), NumberValue(0))), result)
             }
 
         }
@@ -411,6 +449,7 @@ object DeciderTest : Spek({
             }
         }
 
+
         Scenario("Deciders are combinable - monoid") {
 
             Then("this one big decider is acting as a command bus, being able to handle both type of commands (Left command in this case) and publish appropriate event as a result") {
@@ -418,7 +457,7 @@ object DeciderTest : Spek({
 
                 assertEquals(
                     resultOfDecide,
-                    combinedDecider
+                    combinedDeciderEither
                         .decide(
                             Left(AddEvenNumber(Description("2"), NumberValue(2))),
                             Pair(
@@ -434,7 +473,7 @@ object DeciderTest : Spek({
 
                 assertEquals(
                     resultOfDecide,
-                    combinedDecider
+                    combinedDeciderEither
                         .decide(
                             Right(AddOddNumber(Description("1"), NumberValue(1))),
                             Pair(
@@ -453,7 +492,7 @@ object DeciderTest : Spek({
 
                 assertEquals(
                     resultOfDecide,
-                    combinedDecider
+                    combinedDeciderEither
                         .evolve(
                             Pair(
                                 EvenNumberState(Description("0"), NumberValue(0)),
@@ -472,7 +511,7 @@ object DeciderTest : Spek({
 
                 assertEquals(
                     resultOfDecide,
-                    combinedDecider
+                    combinedDeciderEither
                         .evolve(
                             Pair(
                                 EvenNumberState(Description("0"), NumberValue(0)),
@@ -485,7 +524,7 @@ object DeciderTest : Spek({
 
             Then("this one big decider is combining terminal state of both deciders with AND operator") {
                 assertFalse(
-                    combinedDecider
+                    combinedDeciderEither
                         .isTerminal(
                             Pair(
                                 EvenNumberState(Description("101"), NumberValue(101)),
@@ -494,7 +533,7 @@ object DeciderTest : Spek({
                         )
                 )
                 assertFalse(
-                    combinedDecider
+                    combinedDeciderEither
                         .isTerminal(
                             Pair(
                                 EvenNumberState(Description("0"), NumberValue(0)),
@@ -503,7 +542,7 @@ object DeciderTest : Spek({
                         )
                 )
                 assertTrue(
-                    combinedDecider
+                    combinedDeciderEither
                         .isTerminal(
                             Pair(
                                 EvenNumberState(Description("101"), NumberValue(101)),
@@ -512,7 +551,6 @@ object DeciderTest : Spek({
                         )
                 )
             }
-
 
         }
     }
