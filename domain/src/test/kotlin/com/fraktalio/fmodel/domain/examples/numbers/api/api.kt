@@ -22,7 +22,7 @@ inline class NumberValue(val get: Int)
 
 
 // ############ Commands ###############
-sealed class NumberCommand {
+abstract class NumberCommand {
     abstract val description: Description
     abstract val value: NumberValue
 
@@ -55,7 +55,7 @@ sealed class NumberCommand {
 
 // ############ Events ###############
 
-sealed class NumberEvent {
+abstract class NumberEvent {
     abstract val description: Description
     abstract val value: NumberValue
 
