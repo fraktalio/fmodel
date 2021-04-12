@@ -28,7 +28,11 @@
     <artifactId>application</artifactId>
     <packaging>jar</packaging>
     <name>fmodel-application</name>
-    <description>Functional Domain Modeling - Application</description>
+    <description>
+        Fmodel provides just enough tactical Domain-Driven Design patterns, optimised for Event Sourcing and CQRS.
+        The application library orchestrates the execution of the logic by loading state,
+        executing domain components and storing new state.
+    </description>
 
     <dependencies>
         <dependency>

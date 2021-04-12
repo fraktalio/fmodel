@@ -29,7 +29,6 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEve
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.numberSaga
-import com.fraktalio.fmodel.domain.examples.numbers.nunNullableEvenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
@@ -42,7 +41,6 @@ object SagaTest : Spek({
     Feature("Saga") {
         val saga by memoized { numberSaga() }
         val evenSaga by memoized { evenNumberSaga() }
-        val nonNullableEvenSaga by memoized { nunNullableEvenNumberSaga() }
         val oddSaga by memoized { oddNumberSaga() }
         val combinedSaga by memoized { evenSaga.combineSagas(oddSaga) }
 

@@ -40,7 +40,7 @@ fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEven
                 "Initial state"
             ), NumberValue(0)
         ),
-        decide = { c, s ->
+        decide = { c, _ ->
             when (c) {
                 is AddOddNumber -> listOf(
                     OddNumberAdded(

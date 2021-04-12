@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("EXPERIMENTAL_FEATURE_WARNING")
+
 package com.fraktalio.fmodel.domain.examples.numbers.api
 
 

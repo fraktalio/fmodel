@@ -44,7 +44,7 @@ data class _View<Si, So, E>(
     val initialState: So,
 ) {
     /**
-     * Left map over E/Event - Contravariant
+     * Left map over E/Event parameter - Contravariant
      *
      * @param En Event new
      * @param f
@@ -55,7 +55,7 @@ data class _View<Si, So, E>(
     )
 
     /**
-     * Dimap over S/State parameter - Contravariant on the Si (input State) - Covariant on the So (output State) = Profunctor
+     * Dimap over S/State parameter - Contravariant over the Si (input State) - Covariant over the So (output State) = Profunctor
      *
      * @param Sin State input new
      * @param Son State output new
@@ -122,8 +122,6 @@ data class _View<Si, So, E>(
 
 
 /**
- * ############### Extension ###############
- *
  * Combines [_View]s into one bigger [_View]
  *
  * @param Si State input of the first View
@@ -159,8 +157,6 @@ fun <Si, So, E, Si2, So2, E2> _View<Si, So, E?>.combineViews(y: _View<Si2, So2, 
 
 
 /**
- * ############### Extension ###############
- *
  * Combines [_View]s into one bigger [_View]
  *
  * Possible to use when [E] and [E2] have common superclass [E_SUPER]
@@ -210,8 +206,6 @@ inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER
 }
 
 /**
- * ############### Extension ###############
- *
  * Combines [_View]s into one bigger [_View]
  *
  * Possible to use when:
@@ -266,4 +260,7 @@ inline fun <reified Si : Si_SUPER, So : So_SUPER, reified E : E_SUPER, reified S
     )
 }
 
+/**
+ * A typealias for [_View]<Si, So, E>, specializing the [_View] to two generic parameters: S and E, where Si=S, So=S, E=E
+ */
 typealias View<S, E> = _View<S, S, E>

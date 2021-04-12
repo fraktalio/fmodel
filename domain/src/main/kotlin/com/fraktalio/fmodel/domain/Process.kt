@@ -47,9 +47,9 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
     val isTerminal: (Si) -> Boolean
 ) {
     /**
-     * Left map over the parameter of type [AR] - Contravariant over AR type
+     * Left map over [AR] parameter - Contravariant
      *
-     * @param ARn New ActionResult type that you are mapping to
+     * @param ARn Action Result new
      * @param f
      */
     inline fun <ARn> lmapOnAR(crossinline f: (ARn) -> AR): _Process<ARn, Si, So, Ei, Eo, A> = _Process(
@@ -64,7 +64,7 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
     /**
      * Right map over A - Covariant over the A type
      *
-     * @param An New Action type
+     * @param An Action new
      * @param f
      */
     inline fun <An> rmapOnA(crossinline f: (A) -> An): _Process<AR, Si, So, Ei, Eo, An> = _Process(
@@ -77,10 +77,10 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
     )
 
     /**
-     * Di-map over E/Event parameter - Contravariant on input event and Covariant on output event = Profunctor
+     * Dimap over E/Event parameter - Contravariant over input event (Ei) and Covariant over output event (Eo) = Profunctor
      *
-     * @param Ein New input Event
-     * @param Eon New output Event
+     * @param Ein Event input new
+     * @param Eon Event output new
      * @param fl left map function
      * @param fr right map function
      */
@@ -99,7 +99,7 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
     /**
      * Left map over E/Event parameter - Contravariant
      *
-     * @param Ein New input Event
+     * @param Ein Event input new
      * @param f
      */
     inline fun <Ein> lmapOnE(crossinline f: (Ein) -> Ei): _Process<AR, Si, So, Ein, Eo, A> =
@@ -108,17 +108,17 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
     /**
      * Right map over E/Event parameter - Covariant
      *
-     * @param Eon New output Event
+     * @param Eon Event output new
      * @param f
      */
     inline fun <Eon> rmapOnE(crossinline f: (Eo) -> Eon): _Process<AR, Si, So, Ei, Eon, A> =
         dimapOnE(::identity, f)
 
     /**
-     * Dimap over S/State parameter - Contravariant on input state and Covariant on output state = Profunctor
+     * Dimap over S/State parameter - Contravariant over input state (Si) and Covariant over output state (So) = Profunctor
      *
-     * @param Sin New input State
-     * @param Son New output State
+     * @param Sin State input new
+     * @param Son State output new
      * @param fl left map function
      * @param fr right map function
      */
@@ -138,7 +138,7 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
     /**
      * Left map over S/State parameter - Contravariant
      *
-     * @param Sin New input State
+     * @param Sin State input new
      * @param f
      */
     inline fun <Sin> lmapOnS(crossinline f: (Sin) -> Si): _Process<AR, Sin, So, Ei, Eo, A> =
@@ -147,7 +147,7 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
     /**
      * Right map over S/State parameter - Covariant
      *
-     * @param Son New output State
+     * @param Son State output new
      * @param f
      */
     inline fun <Son> rmapOnS(crossinline f: (So) -> Son): _Process<AR, Si, Son, Ei, Eo, A> =
@@ -156,7 +156,7 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
     /**
      * Right apply over S/State parameter - Applicative
      *
-     * @param Son New output State
+     * @param Son State output new
      * @param ff
      */
     fun <Son> rapplyOnS(ff: _Process<AR, Si, (So) -> Son, Ei, Eo, A>): _Process<AR, Si, Son, Ei, Eo, A> = _Process(
@@ -172,7 +172,7 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
     /**
      * Right product over S/State parameter - Applicative
      *
-     * @param Son New output State
+     * @param Son State output new
      * @param fb
      */
     fun <Son> rproductOnS(fb: _Process<AR, Si, Son, Ei, Eo, A>): _Process<AR, Si, Pair<So, Son>, Ei, Eo, A> =

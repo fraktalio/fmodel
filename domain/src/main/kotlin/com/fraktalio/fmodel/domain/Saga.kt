@@ -35,9 +35,9 @@ data class _Saga<AR, A>(
     val react: (AR) -> Iterable<A>
 ) {
     /**
-     * Left map over the parameter of type [AR] - Contravariant over AR type
+     * Left map over [AR] parameter - Contravariant
      *
-     * @param ARn New ActionResult type that you are mapping to
+     * @param ARn ActionResult type new
      * @param f
      */
     inline fun <ARn> lmapOnAR(crossinline f: (ARn) -> AR): _Saga<ARn, A> = _Saga(
@@ -45,7 +45,7 @@ data class _Saga<AR, A>(
     )
 
     /**
-     * Right map on A - Covariant over the A type
+     * Right map over A/Action parameter - Covariant
      *
      * @param An
      * @param f
@@ -57,8 +57,6 @@ data class _Saga<AR, A>(
 }
 
 /**
- * Extension
- *
  * Combine [_Saga]s into one [_Saga] - Semigroup and Monoid with identity element `_Saga<Nothing, Nothing>`
  * This is an associative binary operation which makes it a Semigroup. Additionally, the identity element makes it a Monoid
  *
@@ -89,8 +87,6 @@ fun <AR, A, ARn, An> _Saga<AR?, A>.combineSagas(y: _Saga<ARn?, An>): _Saga<Eithe
 }
 
 /**
- * Extension
- *
  * Combines [_Saga]s into one [_Saga]
  *
  * Specially convenient when:
@@ -138,6 +134,6 @@ inline fun <reified AR : AR_SUPER, A : A_SUPER, reified ARn : AR_SUPER, An : A_S
 }
 
 /**
- * Renaming [_Saga] to [Saga]
+ * A typealias for [_Saga]<AR, A>, specializing the [_Saga] to two generic parameters: AR and A
  */
 typealias Saga<AR, A> = _Saga<AR, A>

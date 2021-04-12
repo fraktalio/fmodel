@@ -13,7 +13,7 @@ This project can be used as a library, or as an inspiration, or both.
 
 ## Table of Contents
 
-* Functional domain modeling
+* [<strong>f(model)</strong> - Functional domain modeling](#fmodel---functional-domain-modeling)
     * [Abstraction and generalization](#abstraction-and-generalization)
     * [decide: (C, S) -&gt; Iterable&lt;E&gt;](#decide-c-s---iterablee)
     * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
@@ -37,9 +37,22 @@ This project can be used as a library, or as an inspiration, or both.
             * [Applicative](#applicative-1)
             * [Monoid](#monoid-1)
         * [Materialized View](#materialized-view)
+    * [Saga](#saga)
+        * [Saga extensions and functions](#saga-extensions-and-functions)
+            * [Contravariant](#contravariant-2)
+            * [Covariant](#covariant)
+            * [Monoid](#monoid-2)
+        * [Saga Manager](#saga-manager)
+    * [Process](#process)
+        * [Process extensions and functions](#process-extensions-and-functions)
+            * [Contravariant](#contravariant-3)
+            * [Covariant](#covariant-1)
+            * [Profunctor](#profunctor)
+            * [Applicative](#applicative-2)
+        * [Process Manager](#process-manager)
     * [Kotlin](#kotlin)
     * [References and further reading](#references-and-further-reading)
-
+    
 ## Abstraction and generalization
 
 The importance of abstraction is derived from its ability to hide irrelevant details and from the use of names to
@@ -169,7 +182,7 @@ initial and final state of the Decider.
 ### Decider extensions and functions
 
 `Decider` defines a `monoid` in respect to the composition
-operation: `(Decider<Cx,Sx,Ex>, Decider<Cy,Sy,Ey>) -> Decider<Either<Cx,Cy>, Pair(Sx,Sy), Either<Ex,Ey>>`, and this is
+operation: `(Decider<Cx?,Sx,Ex?>, Decider<Cy?,Sy,Ey?>) -> Decider<Either<Cx,Cy>, Pair(Sx,Sy), Either<Ex,Ey>>`, and this is
 an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Decider<Nothing, Unit, Nothing>`
 
 > A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
@@ -200,8 +213,8 @@ an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Decide
 
 #### Monoid
 
-- `Decider<C1, Si1, So1, Ei1, Eo1>.combineDeciders(
-  y: Decider<C2, Si2, So2, Ei2, Eo2>
+- `Decider<C1?, Si1, So1, Ei1?, Eo1>.combineDeciders(
+  y: Decider<C2?, Si2, So2, Ei2?, Eo2>
   ): Decider<Either<C1, C2>, Pair<Si1, Si2>, Pair<So1, So2>, Either<Ei1, Ei2>, Either<Eo1, Eo2>>`
 - with identity element `Decider<Nothing, Unit, Nothing>`
 
@@ -214,7 +227,7 @@ We can now construct event-sourcing or/and state-storing aggregate by using the 
 Event sourcing aggregate is using/delegating a `Decider` to handle commands and produce events. It belongs to the
 Application layer. In order to handle the command, aggregate needs to fetch the current state (represented as a list of
 events) via `AggregateEventRepository.fetchEvents` function, and then delegate the command to the decider which can
-produce new event(s) as a result. Produced events are then stored via `AggregateEventRepository.save` suspending
+produce new events as a result. Produced events are then stored via `AggregateEventRepository.save` suspending
 function.
 
 `EventSourcingAggregate` implements an interface `AggregateEventRepository` by delegating all of its public members to a
@@ -318,7 +331,7 @@ typealias View<S, E> = _View<S, S, E>
 ### View extensions and functions
 
 `View` defines a `monoid` in respect to the composition
-operation: `(View<Sx,Ex>, View<Sy,Ey>) -> View<Pair(Sx,Sy), Either<Ex,Ey>>`, and this is an associative binary
+operation: `(View<Sx,Ex?>, View<Sy,Ey?>) -> View<Pair(Sx,Sy), Either<Ex,Ey>>`, and this is an associative binary
 operation `a+(b+c)=(a+b)+c`, with identity element `View<Unit, Nothing>`
 
 #### Contravariant
@@ -340,7 +353,7 @@ operation `a+(b+c)=(a+b)+c`, with identity element `View<Unit, Nothing>`
 
 #### Monoid
 
-- `View<Si1, So1, E1>.combineViews(y: View<Si2, So2, E2>): View<Pair<Si1, Si2>, Pair<So1, So2>, Either<E1, E2>>`
+- `View<Si1, So1, E1?>.combineViews(y: View<Si2, So2, E2?>): View<Pair<Si1, Si2>, Pair<So1, So2>, Either<E1, E2>>`
 - with identity element `View<Unit, Nothing>`
 
 We can now construct `materialized` view by using this `view`.
@@ -371,6 +384,172 @@ data class MaterializedView<S, E>(
             newState.save().bind()
         }
 }
+```
+
+## Saga
+
+`_Saga` is a datatype that represents the central point of control, deciding what to execute next (`A`).
+It is responsible for mapping different events from many aggregates into action results `AR` that the `_Saga` then can use to calculate the next actions `A` to be mapped to commands of other aggregates.
+
+`_Saga` is stateless, it does not maintain the state.
+
+It has two generic parameters `AR`, `A`, representing the type of the values that `_Saga` may contain or use.
+`_Saga` can be specialized for any type of `AR`, `A` because these types does not affect its behavior.
+`_Saga` behaves the same for `AR`=`Int` or `AR`=`YourCustomType`, for example.
+
+`_Saga` is a pure domain component.
+
+- `AR` - Action Result
+- `A`  - Action
+
+```kotlin
+data class _Saga<AR, A>(
+    val react: (AR) -> Iterable<A>
+)
+
+typealias Saga<AR, A> = _Saga<AR, A>
+```
+
+### Saga extensions and functions
+
+`Saga` defines a `monoid` in respect to the composition
+operation: `(Saga<ARx?, Ax>, Saga<ARy?, Ay>) -> Saga<Either<ARx, ARy>, Either<Ax, Ay>>`, and this is an associative binary
+operation `a+(b+c)=(a+b)+c`, with identity element `Saga<Nothing, Nothing>`
+
+#### Contravariant
+
+- `Saga<AR, A>.lmapOnAR(f: (ARn) -> AR): Saga<ARn, A>`
+
+#### Covariant
+
+- `Saga<AR, A>.rmapOnA(f: (A) -> An): Saga<AR, An>`
+
+#### Monoid
+
+- `Saga<AR?, A>.combineSagas(y: Saga<ARn?, An>): Saga<Either<AR, ARn>, Either<A, An>>`
+- with identity element `Saga<Nothing, Nothing>`
+
+We can now construct `Saga Manager` by using this `saga`.
+
+
+### Saga Manager
+
+Saga manager is a stateless process orchestrator.
+It is reacting on Action Results of type `AR` and produces new actions `A` based on them.
+
+Saga manager is using/delegating a `Saga` to react on Action Results of type `AR` and produce new actions `A` which are going to be published via `publishActions` suspending function.
+
+It belongs to the Application layer.
+
+```kotlin
+data class SagaManager<AR, A>(
+    val saga: Saga<AR, A>,
+    val publishActions: suspend (Iterable<A>) -> Either<Error.PublishingActionsFailed<A>, Success.ActionsPublishedSuccessfully<A>>
+) {
+    suspend fun handle(actionResult: AR): Either<Error, Success.ActionsPublishedSuccessfully<A>> =
+        // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
+        either {
+            publishActions(saga.react(actionResult)).bind()
+        }
+}
+```
+
+## Process
+
+`_Process` is a datatype that represents the central point of control, deciding what to execute next (`A`).
+It is responsible for mapping different events from many aggregates into action results `AR` that the `_Process` then can use to calculate the next actions `A` to be mapped to commands of other aggregates.
+
+`_Process` is stateful, it maintains the state (via event-sourcing, if you like). It is more general than Saga.
+
+It has six generic parameters `AR`, `A`, `Si`, `So`, `Ei`, `Eo` representing the type of the values that `_Process` may contain or use.
+`_Process` can be specialized for any type of `AR`, `A`, `Si`, `So`, `Ei`, `Eo` because these types does not affect its behavior.
+`_Process` behaves the same for `AR`=`Int` or `AR`=`YourCustomType`, for example.
+
+`_Process` is a pure domain component.
+
+- `AR` - Action Result
+- `A`  - Action
+- `Si` - Input_State type
+- `So` - Output_State type
+- `Ei` - Input_Event type
+- `Eo` - Output_Event type
+
+```kotlin
+data class _Process<AR, Si, So, Ei, Eo, A>(
+    val ingest: (AR, Si) -> Iterable<Eo>,
+    val evolve: (Si, Ei) -> So,
+    val react: (Si, Ei) -> Iterable<A>,
+    val pending: (Si) -> Iterable<A>,
+    val initialState: So,
+    val isTerminal: (Si) -> Boolean
+)
+
+typealias Process<AR, S, E, A> = _Process<AR, S, S, E, E, A>
+```
+
+### Process extensions and functions
+
+#### Contravariant
+
+- `Process<AR, Si, So, Ei, Eo, A>.lmapOnAR(f: (ARn) -> AR): Process<ARn, Si, So, Ei, Eo, A>`
+
+#### Covariant
+
+- `Process<AR, Si, So, Ei, Eo, A>.rmapOnA(f: (A) -> An): _Process<AR, Si, So, Ei, Eo, An>`
+
+#### Profunctor
+
+- `Process<AR, Si, So, Ei, Eo, A>.dimapOnE(
+  fl: (Ein) -> Ei,
+  fr: (Eo) -> Eon
+  ): Process<AR, Si, So, Ein, Eon, A>`
+
+- `Process<AR, Si, So, Ei, Eo, A>.dimapOnS(
+  fl: (Sin) -> Si,
+  fr: (So) -> Son
+  ): _Process<AR, Sin, Son, Ei, Eo, A>`
+
+#### Applicative
+
+- `Process<AR, Si, So, Ei, Eo, A>.rapplyOnS(ff: Process<AR, Si, (So) -> Son, Ei, Eo, A>): Process<AR, Si, Son, Ei, Eo, A>`
+- `Process<AR, Si, So, Ei, Eo, A>.rproductOnS(fb: Process<AR, Si, Son, Ei, Eo, A>): Process<AR, Si, Pair<So, Son>, Ei, Eo, A>`
+
+
+We can now construct `Process Manager` by using this `process`.
+
+### Process Manager
+
+Process manager is a stateful process orchestrator.
+It is reacting on Action Results of type `AR` and produces new actions `A` based on them.
+
+Process manager is using/delegating a `Process` to react on Action Results of type `AR` and produce new actions `A` which are going to be published via `publishActionsAndStoreState` suspending function.
+
+It belongs to the Application layer.
+
+```kotlin
+data class ProcessManager<AR, S, E, A>(
+    val process: Process<AR, S, E, A>,
+    val publishActionsAndStoreState: suspend (S, Iterable<A>) -> Either<Error.PublishingActionsOrStoringStateFailed<S, A>, Success.ActionsPublishedAndStateStoredSuccessfully<S, A>>,
+    val fetchState: suspend (AR) -> Either<Error.FetchingStateFailed, S?>
+) {
+    suspend fun handle(actionResult: AR): Either<Error, Success.ActionsPublishedAndStateStoredSuccessfully<S, A>> =
+        // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
+        either {
+            val state = validate(fetchState(actionResult).bind() ?: process.initialState).bind()
+            val events = process.ingest(actionResult, state)
+            publishActionsAndStoreState(
+                events.fold(state, process.evolve),
+                events.map { process.react(state, it) }.flatten()
+            ).bind()
+        }
+
+    private fun validate(state: S): Either<Error, S> {
+        return if (process.isTerminal(state)) Either.Left(Error.ProcessManagerIsInTerminalState(state))
+        else Either.Right(state)
+    }
+
+}
+
 ```
 
 ## Kotlin

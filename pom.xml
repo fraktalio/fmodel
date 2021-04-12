@@ -25,18 +25,36 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>fmodel (parent pom)</name>
-    <description>Functional Domain Modeling</description>
+    <name>fmodel</name>
+    <description>
+        Fmodel provides just enough tactical Domain-Driven Design patterns, optimised for Event Sourcing and CQRS.
+        It Isolates application layer and domain model from the API-related concerns.
+        It promotes abstractions that are generalized through parameterization to provide greater utility.
+    </description>
+    <inceptionYear>2021</inceptionYear>
+    <url>https://github.com/fraktalio/fmodel</url>
+
+    <licenses>
+        <license>
+            <name>Apache 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/fraktalio/fmodel/issues</url>
+    </issueManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.4.32</kotlin.version>
+        <kotlin-test.version>1.1.0</kotlin-test.version>
         <kotlin.coroutines.version>1.4.2</kotlin.coroutines.version>
+        <kotlin.code.style>official</kotlin.code.style>
         <java.version>11</java.version>
         <arrow.version>0.13.1</arrow.version>
-        <kotlin.code.style>official</kotlin.code.style>
         <junit.version>4.13.1</junit.version>
-        <kotlin-test.version>1.1.0</kotlin-test.version>
         <spec.version>2.0.15</spec.version>
     </properties>
 
@@ -103,8 +121,8 @@
     </dependencyManagement>
 
     <build>
-        <sourceDirectory>src/main/kotlin</sourceDirectory>
-        <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+        <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -143,18 +161,6 @@
         </plugins>
     </build>
 
-    <developers>
-        <developer>
-            <name>Ivan Dugalic</name>
-            <email>ivan.dugalic@fraktalio.com</email>
-            <organization>Fraktalio</organization>
-            <organizationUrl>https://fraktalio.com</organizationUrl>
-            <roles>
-                <role>Project Owner</role>
-            </roles>
-        </developer>
-    </developers>
-
     <repositories>
         <repository>
             <id>spek-dev</id>
@@ -169,4 +175,24 @@
             <url>https://maven.pkg.github.com/fraktalio/fmodel</url>
         </repository>
     </distributionManagement>
+
+    <scm>
+        <connection>scm:git:git://github.com/fraktalio/fmodel.git</connection>
+        <developerConnection>scm:git:git@github.com:fraktalio/fmodel.git</developerConnection>
+        <url>https://github.com/fraktalio/fmodel.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Ivan Dugalic</name>
+            <email>ivan.dugalic@fraktalio.com</email>
+            <organization>Fraktalio</organization>
+            <organizationUrl>https://fraktalio.com</organizationUrl>
+            <roles>
+                <role>Project Owner</role>
+            </roles>
+        </developer>
+    </developers>
+
 </project>

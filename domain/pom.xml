@@ -28,7 +28,11 @@
     <artifactId>domain</artifactId>
     <packaging>jar</packaging>
     <name>fmodel-domain</name>
-    <description>Functional Domain Modeling - Domain - Core</description>
+    <description>
+        Fmodel provides just enough tactical Domain-Driven Design patterns, optimised for Event Sourcing and CQRS.
+        The domain model library is fully isolated from the application layer and API-related concerns.
+        It represents a pure declaration (pure functions) of the program logic.
+    </description>
 
     <dependencies>
         <dependency>
@@ -39,7 +43,6 @@
             <groupId>io.arrow-kt</groupId>
             <artifactId>arrow-core</artifactId>
         </dependency>
-
         <!-- test -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

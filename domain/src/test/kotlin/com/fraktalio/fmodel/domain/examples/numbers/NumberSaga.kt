@@ -124,26 +124,4 @@ fun oddNumberSaga() = Saga<NumberEvent.OddNumberEvent?, NumberCommand.EvenNumber
     }
 )
 
-/**
- * Nun nullable even number saga - It does not combine. Only AR? (nullable) combines
- */
-fun nunNullableEvenNumberSaga() = Saga<NumberEvent.EvenNumberEvent, NumberCommand.OddNumberCommand>(
-    react = { numberEvent ->
-        when (numberEvent) {
-            is EvenNumberAdded -> listOf(
-                AddOddNumber(
-                    Description("${numberEvent.value.get - 1}"),
-                    NumberValue(numberEvent.value.get - 1)
-                )
-            )
-            is EvenNumberSubtracted -> listOf(
-                SubtractOddNumber(
-                    Description("${numberEvent.value.get - 1}"),
-                    NumberValue(numberEvent.value.get - 1)
-                )
-            )
-            else -> emptyList()
-        }
-    }
-)
 

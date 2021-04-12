@@ -40,7 +40,7 @@ fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumber
                 "Initial state"
             ), NumberValue(0)
         ),
-        decide = { c, s ->
+        decide = { c, _ ->
             when (c) {
                 is AddEvenNumber -> listOf(
                     EvenNumberAdded(

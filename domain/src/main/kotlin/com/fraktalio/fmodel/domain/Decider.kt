@@ -98,10 +98,10 @@ data class _Decider<C, Si, So, Ei, Eo>(
         dimapOnE(::identity, f)
 
     /**
-     * Dimap over S/State parameter - Contravariant on input state and Covariant on output state = Profunctor
+     * Dimap over S/State parameter - Contravariant over input state (Si) and Covariant over output state (So) = Profunctor
      *
-     * @param Sin
-     * @param Son
+     * @param Sin State input new
+     * @param Son State output new
      * @param fl
      * @param fr
      */
@@ -159,8 +159,6 @@ data class _Decider<C, Si, So, Ei, Eo>(
 
 
 /**
- * ################ Extension ################
- *
  * Combine [_Decider]s into one big [_Decider]
  *
  * @param C Command type of the first Decider
@@ -209,8 +207,6 @@ fun <C, Si, So, Ei, Eo, Cn, Sin, Son, Ein, Eon> _Decider<C?, Si, So, Ei?, Eo>.co
 }
 
 /**
- * ################ Extension ################
- *
  * Combine [_Decider]s into one big [_Decider]
  *
  * Possible to use when:
