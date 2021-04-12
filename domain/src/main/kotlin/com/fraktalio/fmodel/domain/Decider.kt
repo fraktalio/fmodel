@@ -159,11 +159,6 @@ data class _Decider<C, Si, So, Ei, Eo>(
 
 
 /**
- * Combine [_Decider]s into one [_Decider] - Semigroup and Monoid with identity element `_Decider<Nothing, Unit, Unit, Nothing, Nothing>`
- * This is an associative binary operation which makes it a Semigroup. Additionally, the identity element makes it a Monoid
- */
-
-/**
  * ################ Extension ################
  *
  * Combine [_Decider]s into one big [_Decider]

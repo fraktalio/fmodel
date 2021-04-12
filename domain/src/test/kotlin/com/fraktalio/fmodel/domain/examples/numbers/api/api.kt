@@ -85,14 +85,17 @@ abstract class NumberEvent {
 }
 
 // ############ State ###############
-sealed class NumberState
+sealed class NumberState{
+    abstract val description: Description
+    abstract val value: NumberValue
+}
 data class EvenNumberState(
-    val description: Description,
-    val value: NumberValue
+    override val description: Description,
+    override val value: NumberValue
 ) : NumberState()
 
 data class OddNumberState(
-    val description: Description,
-    val value: NumberValue
+    override val description: Description,
+    override val value: NumberValue
 ) : NumberState()
 
