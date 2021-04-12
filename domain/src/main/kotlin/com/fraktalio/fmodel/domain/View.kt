@@ -122,9 +122,18 @@ data class _View<Si, So, E>(
 
 
 /**
- * Combine [_View]s into one [_View] - Semigroup and Monoid with identity `_View<Unit, Unit, Nothing>`
+ * ############### Extension ###############
  *
- * This is an associative binary operation which makes it a Semigroup. Additionally, the identity element makes it a Monoid.
+ * Combines [_View]s into one bigger [_View]
+ *
+ * @param Si State input of the first View
+ * @param So State output of the first View
+ * @param E Event of the first View
+ * @param Si2 State input of the second View
+ * @param So2 State output of the second View
+ * @param E2 Event of the second View
+ * @param y second View
+ * @return new View of type [_View]< [Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [Either]<[E], [E2]> >
  */
 fun <Si, So, E, Si2, So2, E2> _View<Si, So, E?>.combineViews(y: _View<Si2, So2, E2?>): _View<Pair<Si, Si2>, Pair<So, So2>, Either<E, E2>> {
     val extractE1: (Either<E, E2>) -> E? = { either -> either.fold({ it }, { null }) }
@@ -147,4 +156,114 @@ fun <Si, So, E, Si2, So2, E2> _View<Si, So, E?>.combineViews(y: _View<Si2, So2, 
         initialState = viewZ.initialState
     )
 }
+
+
+/**
+ * ############### Extension ###############
+ *
+ * Combines [_View]s into one bigger [_View]
+ *
+ * Possible to use when [E] and [E2] have common superclass [E_SUPER]
+ *
+ * @param Si State input of the first View
+ * @param So State output of the first View
+ * @param E Event of the first View
+ * @param Si2 State input of the second View
+ * @param So2 State output of the second View
+ * @param E2 Event of the second View
+ * @param E_SUPER super type for [E] and [E2]
+ * @param y second View
+ * @return new View of type [_View]<[Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [E_SUPER]>
+ */
+inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<Si, So, in E?>.combine(
+    y: _View<Si2, So2, in E2?>
+): _View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER> {
+    val extractE1: (E_SUPER) -> E? = {
+        when (it) {
+            is E -> it
+            else -> null
+        }
+    }
+    val extractE2: (E_SUPER) -> E2? = {
+        when (it) {
+            is E2 -> it
+            else -> null
+        }
+    }
+    val extractS1: (Pair<Si, Si2>) -> Si = { pair -> pair.first }
+    val extractS2: (Pair<Si, Si2>) -> Si2 = { pair -> pair.second }
+
+    val viewX = this
+        .lmapOnE(extractE1)
+        .lmapOnS(extractS1)
+
+    val viewY = y
+        .lmapOnE(extractE2)
+        .lmapOnS(extractS2)
+
+    val viewZ = viewX.rproductOnS(viewY)
+
+    return _View(
+        evolve = { si, e -> viewZ.evolve(si, e) },
+        initialState = viewZ.initialState
+    )
+}
+
+/**
+ * ############### Extension ###############
+ *
+ * Combines [_View]s into one bigger [_View]
+ *
+ * Possible to use when:
+ * - [E] and [E2] have common superclass [E_SUPER]
+ * - [Si] and [Si2] have common superclass [Si_SUPER]
+ * - [So] and [So2] have common superclass [So_SUPER]
+ *
+ * @param Si State input of the first View
+ * @param So State output of the first View
+ * @param E Event of the first View
+ * @param Si2 State input of the second View
+ * @param So2 State output of the second View
+ * @param E2 Event of the second View
+ * @param Si_SUPER super type for [Si] and [Si2]
+ * @param So_SUPER super type for [So] and [So2]
+ * @param E_SUPER super type for [E] and [E2]
+ * @param y second View
+ * @return new View of type [_View]< [List]<[Si_SUPER]>, [List]<[So_SUPER]>, [E_SUPER] >
+ */
+inline fun <reified Si : Si_SUPER, So : So_SUPER, reified E : E_SUPER, reified Si2 : Si_SUPER, So2 : So_SUPER, reified E2 : E_SUPER, Si_SUPER, So_SUPER, E_SUPER> _View<List<Si>, List<So>, in E?>.combineL(
+    y: _View<in List<Si2>, out List<So2>, in E2?>
+): _View<List<Si_SUPER>, List<So_SUPER>, E_SUPER> {
+
+    val extractE1: (E_SUPER) -> E? = {
+        when (it) {
+            is E -> it
+            else -> null
+        }
+    }
+    val extractE2: (E_SUPER) -> E2? = {
+        when (it) {
+            is E2 -> it
+            else -> null
+        }
+    }
+    val extractS1: (List<Si_SUPER>) -> List<Si> = { list -> list.filterIsInstance(Si::class.java) }
+    val extractS2: (List<Si_SUPER>) -> List<Si2> = { list -> list.filterIsInstance(Si2::class.java) }
+
+    val viewX = this
+        .lmapOnE(extractE1)
+        .lmapOnS(extractS1)
+
+    val viewY = y
+        .lmapOnE(extractE2)
+        .lmapOnS(extractS2)
+
+    val viewZ = viewX.rproductOnS(viewY).rmapOnS { pair: Pair<List<So>, List<So2>> -> pair.toList().flatten() }
+
+    return _View(
+        evolve = { si, e -> viewZ.evolve(si, e) },
+        initialState = viewZ.initialState
+    )
+}
+
 typealias View<S, E> = _View<S, S, E>

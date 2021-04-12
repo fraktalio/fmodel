@@ -14,30 +14,42 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.examples.numbers.even.command
+package com.fraktalio.fmodel.domain.examples.numbers.even.command
 
 import com.fraktalio.fmodel.domain.Decider
-import com.fraktalio.fmodel.examples.numbers.api.*
+import com.fraktalio.fmodel.domain.examples.numbers.api.Description
+import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.SubtractEvenNumber
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberSubtracted
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 
 /**
  * Even number decider - pure declaration of our program logic
  *
  * @return Even number decider instance
  */
-fun evenNumberDecider(): Decider<NumberCommand.EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?> =
+fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumberEvent?> =
     Decider(
         isTerminal = { s -> s.value.get > 100 },
-        initialState = EvenNumberState(Description("Initial state"), NumberValue(0)),
+        initialState = EvenNumberState(
+            Description(
+                "Initial state"
+            ), NumberValue(0)
+        ),
         decide = { c, s ->
             when (c) {
-                is NumberCommand.EvenNumberCommand.AddEvenNumber -> listOf(
-                    NumberEvent.EvenNumberEvent.EvenNumberAdded(
+                is AddEvenNumber -> listOf(
+                    EvenNumberAdded(
                         c.description,
                         c.value
                     )
                 )
-                is NumberCommand.EvenNumberCommand.SubtractEvenNumber -> listOf(
-                    NumberEvent.EvenNumberEvent.EvenNumberSubtracted(
+                is SubtractEvenNumber -> listOf(
+                    EvenNumberSubtracted(
                         c.description,
                         c.value
                     )
@@ -47,11 +59,11 @@ fun evenNumberDecider(): Decider<NumberCommand.EvenNumberCommand?, EvenNumberSta
         },
         evolve = { s, e ->
             when (e) {
-                is NumberEvent.EvenNumberEvent.EvenNumberAdded -> EvenNumberState(
+                is EvenNumberAdded -> EvenNumberState(
                     e.description,
                     NumberValue(s.value.get + e.value.get)
                 )
-                is NumberEvent.EvenNumberEvent.EvenNumberSubtracted -> EvenNumberState(
+                is EvenNumberSubtracted -> EvenNumberState(
                     e.description,
                     NumberValue(s.value.get - e.value.get)
                 )

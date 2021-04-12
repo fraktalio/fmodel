@@ -36,12 +36,13 @@
         <arrow.version>0.13.1</arrow.version>
         <kotlin.code.style>official</kotlin.code.style>
         <junit.version>4.13.1</junit.version>
+        <kotlin-test.version>1.1.0</kotlin-test.version>
+        <spec.version>2.0.15</spec.version>
     </properties>
 
     <modules>
         <module>domain</module>
         <module>application</module>
-        <module>examples</module>
     </modules>
 
     <dependencyManagement>
@@ -61,15 +62,49 @@
                 <artifactId>arrow-core</artifactId>
                 <version>${arrow.version}</version>
             </dependency>
+            <!-- test -->
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-test</artifactId>
+                <version>${kotlin-test.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.spekframework.spek2</groupId>
+                <artifactId>spek-dsl-jvm</artifactId>
+                <version>${spec.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.spekframework.spek2</groupId>
+                <artifactId>spek-runner-junit5</artifactId>
+                <version>${spec.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-reflect</artifactId>
+                <version>${kotlin.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
-
     </dependencyManagement>
-
 
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
         <testSourceDirectory>src/test/kotlin</testSourceDirectory>
-
         <plugins>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -100,6 +135,11 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.0</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -114,6 +154,13 @@
             </roles>
         </developer>
     </developers>
+
+    <repositories>
+        <repository>
+            <id>spek-dev</id>
+            <url>https://dl.bintray.com/spekframework/spek-dev</url>
+        </repository>
+    </repositories>
 
     <distributionManagement>
         <repository>

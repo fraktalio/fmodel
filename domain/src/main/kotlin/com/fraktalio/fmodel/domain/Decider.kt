@@ -155,25 +155,26 @@ data class _Decider<C, Si, So, Ei, Eo>(
      */
     fun <Son> rproductOnS(fb: _Decider<C, Si, Son, Ei, Eo>): _Decider<C, Si, Pair<So, Son>, Ei, Eo> =
         rapplyOnS(fb.rmapOnS { b: Son -> { a: So -> Pair(a, b) } })
-
-    /**
-     * Right just over S/State parameter - Applicative
-     *
-     * @param so State output
-     */
-    fun rjustOnS(so: So): _Decider<C, Si, So, Ei, Eo> = _Decider(
-        decide = { c, si -> emptyList() },
-        evolve = { si, ei -> so },
-        initialState = so,
-        isTerminal = { si -> true }
-    )
 }
 
 
 /**
- * Combine [_Decider]s into one [_Decider] - Semigroup and Monoid with identity element `_Decider<Nothing, Unit, Unit, Nothing, Nothing>`
- * This is an associative binary operation which makes it a Semigroup. Additionally, the identity element makes it a Monoid
-
+ * ################ Extension ################
+ *
+ * Combine [_Decider]s into one big [_Decider]
+ *
+ * @param C Command type of the first Decider
+ * @param Si Input_State type of the first Decider
+ * @param So Output_State type of the first Decider
+ * @param Ei Input_Event type of the first Decider
+ * @param Eo Output_Event type of the first Decider
+ * @param Cn Command type of the second Decider
+ * @param Sin Input_State type of the second Decider
+ * @param Son Output_State type of the second Decider
+ * @param Ein Input_Event type of the second Decider
+ * @param Eon Output_Event type of the second Decider
+ * @param y second Decider
+ * @return [_Decider]< [Either]<[C], [Cn]>, [Pair]<[Si], [Sin]>, [Pair]<[So], [Son]>, [Either]<[Ei], [Ein]>, [Either]<[Eo], [Eon]> >
  */
 fun <C, Si, So, Ei, Eo, Cn, Sin, Son, Ein, Eon> _Decider<C?, Si, So, Ei?, Eo>.combineDeciders(
     y: _Decider<Cn?, Sin, Son, Ein?, Eon>
@@ -196,6 +197,86 @@ fun <C, Si, So, Ei, Eo, Cn, Sin, Son, Ein, Eon> _Decider<C?, Si, So, Ei?, Eo>.co
         .lmapOnC(getC2)
         .lmapOnS(getS2)
         .dimapOnE(getE2, getE2Either)
+
+    val deciderZ = deciderX.rproductOnS(deciderY)
+
+    return _Decider(
+        decide = { c, si -> deciderZ.decide(c, si) },
+        evolve = { pair, ei -> deciderZ.evolve(pair, ei) },
+        initialState = deciderZ.initialState,
+        isTerminal = { pair -> deciderZ.isTerminal(pair) }
+    )
+}
+
+/**
+ * ################ Extension ################
+ *
+ * Combine [_Decider]s into one big [_Decider]
+ *
+ * Possible to use when:
+ *
+ * - [Ei] and [Ein] have common superclass [Ei_SUPER]
+ * - [Eo] and [Eon] have common superclass [Eo_SUPER]
+ * - [C] and [Cn] have common superclass [C_SUPER]
+ *
+ * @param C Command type of the first Decider
+ * @param Si Input_State type of the first Decider
+ * @param So Output_State type of the first Decider
+ * @param Ei Input_Event type of the first Decider
+ * @param Eo Output_Event type of the first Decider
+ * @param Cn Command type of the second Decider
+ * @param Sin Input_State type of the second Decider
+ * @param Son Output_State type of the second Decider
+ * @param Ein Input_Event type of the second Decider
+ * @param Eon Output_Event type of the second Decider
+ * @param C_SUPER super type of the command types C and Cn
+ * @param Ei_SUPER super type of the Ei and Ein types
+ * @param Eo_SUPER super type of the Eo and Eon types
+ * @param y second Decider
+ * @return [_Decider]<[C_SUPER], [Pair]<[Si], [Sin]>, [Pair]<[So], [Son]>, [Ei_SUPER], [Eo_SUPER]>
+ */
+inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified Cn : C_SUPER, Sin, Son, reified Ein : Ei_SUPER, reified Eon : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<in C?, Si, So, in Ei?, out Eo>.combine(
+    y: _Decider<in Cn?, Sin, Son, in Ein?, out Eon>
+): _Decider<C_SUPER, Pair<Si, Sin>, Pair<So, Son>, Ei_SUPER, Eo_SUPER> {
+
+    val extractS1: (Pair<Si, Sin>) -> Si = { pair -> pair.first }
+    val extractS2: (Pair<Si, Sin>) -> Sin = { pair -> pair.second }
+    val extractE1: (Ei_SUPER) -> Ei? = {
+        when (it) {
+            is Ei -> it
+            else -> null
+        }
+    }
+    val extractE2: (Ei_SUPER) -> Ein? = {
+        when (it) {
+            is Ein -> it
+            else -> null
+        }
+    }
+    val extractC1: (C_SUPER) -> C? = {
+        when (it) {
+            is C -> it
+            else -> null
+        }
+    }
+    val extractC2: (C_SUPER) -> Cn? = {
+        when (it) {
+            is Cn -> it
+            else -> null
+        }
+    }
+    val extractEoSUPER: (Eo) -> Eo_SUPER = { it }
+    val extractEo2SUPER: (Eon) -> Eo_SUPER = { it }
+
+    val deciderX = this
+        .lmapOnC(extractC1)
+        .lmapOnS(extractS1)
+        .dimapOnE(extractE1, extractEoSUPER)
+
+    val deciderY = y
+        .lmapOnC(extractC2)
+        .lmapOnS(extractS2)
+        .dimapOnE(extractE2, extractEo2SUPER)
 
     val deciderZ = deciderX.rproductOnS(deciderY)
 
