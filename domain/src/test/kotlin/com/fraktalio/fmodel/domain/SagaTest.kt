@@ -229,7 +229,7 @@ object SagaTest : Spek({
             Then("AddOddNumber should be published") {
                 val result2 = result.first()
                 assertTrue(result2 is Right)
-                if (result2 is Right) assertEquals(2, result2.value.value.get)
+                assertEquals(2, result2.value.value.get)
                 assertTrue(result.count() == 1)
             }
 
