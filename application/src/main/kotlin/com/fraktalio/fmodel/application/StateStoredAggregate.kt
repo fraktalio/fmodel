@@ -51,15 +51,14 @@ data class StateStoredAggregate<C, S, E>(
     suspend fun handle(command: C): Either<Error, Success.StateStoredAndEventsPublishedSuccessfully<S, E>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            val currentState = command.fetchState().bind()
-            val state = validate(currentState ?: decider.initialState).bind()
+            val state = (command.fetchState().bind() ?: decider.initialState).validate().bind()
             val events = decider.decide(command, state)
             events.fold(state, decider.evolve).save()
                 .map { s -> Success.StateStoredAndEventsPublishedSuccessfully(s.state, events) }.bind()
         }
 
-    private fun validate(state: S): Either<Error, S> =
-        if (decider.isTerminal(state)) Either.Left(Error.AggregateIsInTerminalState(state))
-        else Either.Right(state)
+    private fun S.validate(): Either<Error, S> =
+        if (decider.isTerminal(this)) Either.Left(Error.AggregateIsInTerminalState(this))
+        else Either.Right(this)
 }
 

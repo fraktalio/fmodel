@@ -27,9 +27,9 @@ import com.fraktalio.fmodel.domain.Saga
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class SagaManager<AR, A>(
-    val saga: Saga<AR, A>,
-    val publishActions: suspend (Iterable<A>) -> Either<Error.PublishingActionsFailed<A>, Success.ActionsPublishedSuccessfully<A>>
-) {
+    private val saga: Saga<AR, A>,
+    private val actionPublisher: ActionPublisher<A>,
+) : ActionPublisher<A> by actionPublisher {
 
     /**
      * Handles the action result of type [AR]
@@ -37,23 +37,10 @@ data class SagaManager<AR, A>(
      * @param actionResult Action Result represent the outcome of some action you want to handle in some way
      * @return Either [Error] or [Success]
      */
-    suspend fun handle(actionResult: AR): Either<Error, Success.ActionsPublishedSuccessfully<A>> =
+    suspend fun handle(actionResult: AR): Either<Error, Iterable<Success.ActionPublishedSuccessfully<A>>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            publishActions(saga.react(actionResult)).bind()
+            saga.react(actionResult).publish().bind()
         }
-
-    /**
-     * Left map over the parameter of type AR (ActionResult) - Contravariant over the AR (ActionResult) parameter
-     *
-     * @param ARn new Action Result type
-     * @param f
-     */
-    inline fun <ARn> lmapOnAR(crossinline f: (ARn) -> AR): SagaManager<ARn, A> = SagaManager(
-        saga = this.saga.lmapOnAR(f),
-        publishActions = this.publishActions,
-
-        )
-
 }
 

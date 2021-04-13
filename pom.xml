@@ -76,6 +76,12 @@
                 <version>${kotlin.coroutines.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.jetbrains.kotlinx</groupId>
+                <artifactId>kotlinx-coroutines-test</artifactId>
+                <version>${kotlin.coroutines.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>io.arrow-kt</groupId>
                 <artifactId>arrow-core</artifactId>
                 <version>${arrow.version}</version>

@@ -1,0 +1,69 @@
+/*
+ * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.fraktalio.fmodel.application.examples.numbers.even.query
+
+import arrow.core.Either
+import com.fraktalio.fmodel.application.Error
+import com.fraktalio.fmodel.application.Success
+import com.fraktalio.fmodel.application.ViewStateRepository
+import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
+/**
+ * A very simple state store ;)  It is initially empty.
+ */
+private var evenNumberStateStorage: EvenNumberState? = null
+private val evenNumberStateStorageMutex = Mutex()
+
+/**
+ * Even number repository implementation
+ *
+ * @constructor Creates Even number repository
+ */
+class EvenNumberViewRepository : ViewStateRepository<EvenNumberEvent?, EvenNumberState?> {
+
+    override suspend fun EvenNumberEvent?.fetchState(): Either<Error.FetchingStateFailed, EvenNumberState?> =
+
+        Either.catch {
+            evenNumberStateStorage
+        }.mapLeft { throwable ->
+            Error.FetchingStateFailed(throwable)
+        }
+
+
+    override suspend fun EvenNumberState?.save(): Either<Error.StoringStateFailed<EvenNumberState?>, Success.StateStoredSuccessfully<EvenNumberState?>> =
+
+        Either.catch {
+            evenNumberStateStorageMutex.withLock {
+                evenNumberStateStorage = this
+            }
+            Success.StateStoredSuccessfully(this)
+        }.mapLeft { throwable ->
+            Error.StoringStateFailed(this, throwable)
+        }
+}
+
+/**
+ * Even number state repository
+ *
+ * @return state repository instance for Even numbers
+ */
+fun evenNumberViewRepository(): ViewStateRepository<EvenNumberEvent?, EvenNumberState?> =
+    EvenNumberViewRepository()
+
