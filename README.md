@@ -244,21 +244,20 @@ of `AggregateEventRepository` that forward to `eventRepository`
 ```kotlin
 data class EventSourcingAggregate<C, S, E>(
     private val decider: Decider<C, S, E>,
-    private val eventRepository: EventRepository<C, E>
-) : AggregateEventRepository<C, E> by eventRepository {
-
+    private val aggregateEventRepository: AggregateEventRepository<C, E>
+) : AggregateEventRepository<C, E> by aggregateEventRepository {
+    
     suspend fun handle(command: C): Either<Error, Iterable<Success.EventStoredSuccessfully<E>>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
             val events = command.fetchEvents().bind()
-            val state: S = validate(events.fold(decider.initialState, decider.evolve)).bind()
-            val newEvents = decider.decide(command, state)
-            newEvents.save().bind()
+            val state = events.fold(decider.initialState, decider.evolve).validate().bind()
+            decider.decide(command, state).save().bind()
         }
 
-    private fun validate(state: S): Either<Error, S> =
-        if (decider.isTerminal(state)) Either.Left(Error.AggregateIsInTerminalState(state))
-        else Either.Right(state)
+    private fun S.validate(): Either<Error, S> =
+        if (decider.isTerminal(this)) Either.Left(Error.AggregateIsInTerminalState(this))
+        else Either.Right(this)
 
 }
 ```
@@ -283,20 +282,19 @@ data class StateStoredAggregate<C, S, E>(
     private val decider: Decider<C, S, E>,
     private val aggregateStateRepository: AggregateStateRepository<C, S>
 ) : AggregateStateRepository<C, S> by aggregateStateRepository {
-
+    
     suspend fun handle(command: C): Either<Error, Success.StateStoredAndEventsPublishedSuccessfully<S, E>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            val currentState = command.fetchState().bind()
-            val state = validate(currentState ?: decider.initialState).bind()
+            val state = (command.fetchState().bind() ?: decider.initialState).validate().bind()
             val events = decider.decide(command, state)
             events.fold(state, decider.evolve).save()
                 .map { s -> Success.StateStoredAndEventsPublishedSuccessfully(s.state, events) }.bind()
         }
 
-    private fun validate(state: S): Either<Error, S> =
-        if (decider.isTerminal(state)) Either.Left(Error.AggregateIsInTerminalState(state))
-        else Either.Right(state)
+    private fun S.validate(): Either<Error, S> =
+        if (decider.isTerminal(this)) Either.Left(Error.AggregateIsInTerminalState(this))
+        else Either.Right(this)
 }
 ````
 
@@ -375,7 +373,7 @@ data class MaterializedView<S, E>(
     private val view: View<S, E>,
     private val viewStateRepository: ViewStateRepository<E, S>,
 ) : ViewStateRepository<E, S> by viewStateRepository {
-
+    
     suspend fun handle(event: E): Either<Error, Success.StateStoredSuccessfully<S>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
