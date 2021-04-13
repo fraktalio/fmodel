@@ -36,17 +36,10 @@ sealed class Error : Result() {
     data class FetchingStateFailed(val throwable: Throwable?) : Error()
     data class FetchingEventsFailed(val throwable: Throwable?) : Error()
     data class StoringEventFailed<E>(val event: E, val throwable: Throwable?) : Error()
-    data class StoringEventsFailed<E>(val event: Iterable<E>, val throwable: Throwable?) : Error()
     data class StoringStateFailed<S>(val state: S, val throwable: Throwable?) : Error()
     data class AggregateIsInTerminalState<S>(val state: S) : Error()
     data class ProcessManagerIsInTerminalState<S>(val state: S) : Error()
-    data class PublishingActionsOrStoringStateFailed<S, A>(
-        val state: S,
-        val action: Iterable<A>,
-        val throwable: Throwable?
-    ) : Error()
-
-    data class PublishingActionsFailed<A>(val action: Iterable<A>, val throwable: Throwable?) : Error()
+    data class PublishingActionFailed<A>(val action: A, val throwable: Throwable?) : Error()
 
 
 }
@@ -60,12 +53,10 @@ sealed class Error : Result() {
  */
 sealed class Success : Result() {
     data class EventStoredSuccessfully<E>(val event: E) : Success()
-    data class EventsStoredSuccessfully<E>(val event: Iterable<E>) : Success()
     data class StateStoredSuccessfully<S>(val state: S) : Success()
     data class StateStoredAndEventsPublishedSuccessfully<S, E>(val state: S, val event: Iterable<E> = emptyList()) :
         Success()
 
-    data class ActionsPublishedAndStateStoredSuccessfully<S, A>(val state: S, val action: Iterable<A>) : Success()
-    data class ActionsPublishedSuccessfully<A>(val action: Iterable<A>) : Success()
+    data class ActionPublishedSuccessfully<A>(val action: A) : Success()
 
 }

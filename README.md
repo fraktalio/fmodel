@@ -437,19 +437,20 @@ We can now construct `Saga Manager` by using this `saga`.
 Saga manager is a stateless process orchestrator.
 It is reacting on Action Results of type `AR` and produces new actions `A` based on them.
 
-Saga manager is using/delegating a `Saga` to react on Action Results of type `AR` and produce new actions `A` which are going to be published via `publishActions` suspending function.
+Saga manager is using/delegating a `Saga` to react on Action Results of type `AR` and produce new actions `A` which are going to be published via `ActionPublisher.publish` suspending function.
 
 It belongs to the Application layer.
 
 ```kotlin
 data class SagaManager<AR, A>(
-    val saga: Saga<AR, A>,
-    val publishActions: suspend (Iterable<A>) -> Either<Error.PublishingActionsFailed<A>, Success.ActionsPublishedSuccessfully<A>>
-) {
-    suspend fun handle(actionResult: AR): Either<Error, Success.ActionsPublishedSuccessfully<A>> =
+    private val saga: Saga<AR, A>,
+    private val actionPublisher: ActionPublisher<A>,
+) : ActionPublisher<A> by actionPublisher {
+
+    suspend fun handle(actionResult: AR): Either<Error, Iterable<Success.ActionPublishedSuccessfully<A>>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            publishActions(saga.react(actionResult)).bind()
+            saga.react(actionResult).publish().bind()
         }
 }
 ```
@@ -522,34 +523,32 @@ We can now construct `Process Manager` by using this `process`.
 Process manager is a stateful process orchestrator.
 It is reacting on Action Results of type `AR` and produces new actions `A` based on them.
 
-Process manager is using/delegating a `Process` to react on Action Results of type `AR` and produce new actions `A` which are going to be published via `publishActionsAndStoreState` suspending function.
+Process manager is using/delegating a `Process` to react on Action Results of type `AR` and produce new actions `A` which are going to be published via `ActionPublisher.publish` suspending function.
 
 It belongs to the Application layer.
 
 ```kotlin
 data class ProcessManager<AR, S, E, A>(
-    val process: Process<AR, S, E, A>,
-    val publishActionsAndStoreState: suspend (S, Iterable<A>) -> Either<Error.PublishingActionsOrStoringStateFailed<S, A>, Success.ActionsPublishedAndStateStoredSuccessfully<S, A>>,
-    val fetchState: suspend (AR) -> Either<Error.FetchingStateFailed, S?>
-) {
-    suspend fun handle(actionResult: AR): Either<Error, Success.ActionsPublishedAndStateStoredSuccessfully<S, A>> =
+    private val process: Process<AR, S, E, A>,
+    private val actionPublisher: ActionPublisher<A>,
+    private val processManagerRepository: ProcessManagerRepository<AR, S>
+) : ActionPublisher<A> by actionPublisher, ProcessManagerRepository<AR, S> by processManagerRepository {
+    
+    suspend fun handle(actionResult: AR): Either<Error, Iterable<Success.ActionPublishedSuccessfully<A>>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            val state = validate(fetchState(actionResult).bind() ?: process.initialState).bind()
+            val state = (actionResult.fetchState().bind() ?: process.initialState).validate().bind()
             val events = process.ingest(actionResult, state)
-            publishActionsAndStoreState(
-                events.fold(state, process.evolve),
-                events.map { process.react(state, it) }.flatten()
-            ).bind()
+            events.fold(state, process.evolve).save().bind()
+            events.map { process.react(state, it) }.flatten().publish().bind()
         }
 
-    private fun validate(state: S): Either<Error, S> {
-        return if (process.isTerminal(state)) Either.Left(Error.ProcessManagerIsInTerminalState(state))
-        else Either.Right(state)
+    private fun S.validate(): Either<Error, S> {
+        return if (process.isTerminal(this)) Either.Left(Error.ProcessManagerIsInTerminalState(this))
+        else Either.Right(this)
     }
 
 }
-
 ```
 
 ## Kotlin
