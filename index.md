@@ -164,7 +164,7 @@ typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
 Additionally, `initialState` of the Decider and `isTerminal` function are introduced to gain more control over the
 initial and final state of the Decider.
 
-![decider image](https://github.com/fraktalio/fmodel/blob/main/.assets/decider.jpg)
+![decider image](https://github.com/fraktalio/fmodel/raw/main/.assets/decider.jpg)
 
 ### Decider extensions and functions
 
@@ -311,7 +311,7 @@ data class _View<Si, So, E>(
 typealias View<S, E> = _View<S, S, E>
 ```
 
-![view image](https://github.com/fraktalio/fmodel/blob/main/.assets/view.jpg)
+![view image](https://github.com/fraktalio/fmodel/raw/main/.assets/view.jpg)
 
 ### View extensions and functions
 
@@ -393,7 +393,7 @@ data class _Saga<AR, A>(
 typealias Saga<AR, A> = _Saga<AR, A>
 ```
 
-![saga image](https://github.com/fraktalio/fmodel/blob/main/.assets/saga.jpg)
+![saga image](https://github.com/fraktalio/fmodel/raw/main/.assets/saga.jpg)
 
 ### Saga extensions and functions
 
@@ -473,7 +473,7 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
 typealias Process<AR, S, E, A> = _Process<AR, S, S, E, E, A>
 ```
 
-![process image](https://github.com/fraktalio/fmodel/blob/main/.assets/process.jpg)
+![process image](https://github.com/fraktalio/fmodel/raw/main/.assets/process.jpg)
 
 ### Process extensions and functions
 
