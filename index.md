@@ -127,7 +127,7 @@ data class Decider<C, S, E>(
 
 `Decider` is the most important datatype, but it is not the only one. There are others:
 
-![onion architecture image](https://github.com/fraktalio/fmodel/blob/main/.assets/onion.png)
+![onion architecture image](https://github.com/fraktalio/fmodel/raw/main/.assets/onion.png)
 
 ## Decider
 
