@@ -130,7 +130,7 @@ data class Decider<C, S, E>(
 
 `Decider` is the most important datatype, but it is not the only one. There are others:
 
-![onion architecture image](.assets/onion.png)
+![onion architecture image](https://github.com/fraktalio/fmodel/blob/main/.assets/onion.png)
 
 ## Decider
 
@@ -164,7 +164,7 @@ typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
 Additionally, `initialState` of the Decider and `isTerminal` function are introduced to gain more control over the
 initial and final state of the Decider.
 
-![decider image](.assets/decider.jpg)
+![decider image](https://github.com/fraktalio/fmodel/blob/main/.assets/decider.jpg)
 
 ### Decider extensions and functions
 
@@ -311,7 +311,7 @@ data class _View<Si, So, E>(
 typealias View<S, E> = _View<S, S, E>
 ```
 
-![view image](.assets/view.jpg)
+![view image](https://github.com/fraktalio/fmodel/blob/main/.assets/view.jpg)
 
 ### View extensions and functions
 
@@ -393,7 +393,7 @@ data class _Saga<AR, A>(
 typealias Saga<AR, A> = _Saga<AR, A>
 ```
 
-![saga image](.assets/saga.jpg)
+![saga image](https://github.com/fraktalio/fmodel/blob/main/.assets/saga.jpg)
 
 ### Saga extensions and functions
 
@@ -473,7 +473,7 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
 typealias Process<AR, S, E, A> = _Process<AR, S, S, E, E, A>
 ```
 
-![process image](.assets/process.jpg)
+![process image](https://github.com/fraktalio/fmodel/blob/main/.assets/process.jpg)
 
 ### Process extensions and functions
 
@@ -546,14 +546,6 @@ data class ProcessManager<AR, S, E, A>(
 the two. With first-class support for features such as higher-order functions, function types and lambdas, Kotlin is a
 great choice if you’re doing or exploring functional programming."*
 
-## References and further reading
-
-- https://www.youtube.com/watch?v=kgYGMVDHQHs
-- https://www.manning.com/books/functional-and-reactive-domain-modeling
-- https://www.manning.com/books/functional-programming-in-kotlin
-- https://www.47deg.com/blog/functional-domain-modeling/
-- https://www.47deg.com/blog/functional-domain-modeling-part-2/
-- https://www.youtube.com/watch?v=I8LbkfSSR58&list=PLbgaMIhjbmEnaH_LTkxLI7FMa2HsnawM_
 
 ---
 Created with :heart: by [Fraktalio](https://fraktalio.com/)
