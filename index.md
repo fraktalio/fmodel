@@ -546,4 +546,4 @@ great choice if you’re doing or exploring functional programming."*
 
 
 ---
-Created with :heart: by [Fraktalio](https://fraktalio.com/)
+Created with love by [Fraktalio](https://fraktalio.com/)
