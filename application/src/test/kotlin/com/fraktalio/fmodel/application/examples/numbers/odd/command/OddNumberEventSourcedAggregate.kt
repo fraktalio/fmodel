@@ -16,7 +16,7 @@
 
 package com.fraktalio.fmodel.application.examples.numbers.odd.command
 
-import com.fraktalio.fmodel.application.AggregateEventRepository
+import com.fraktalio.fmodel.application.EventRepository
 import com.fraktalio.fmodel.application.EventSourcingAggregate
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
@@ -32,10 +32,10 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
  */
 fun oddNumberAggregate(
     decider: Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?>,
-    repository: AggregateEventRepository<OddNumberCommand?, OddNumberEvent?>
+    repository: EventRepository<OddNumberCommand?, OddNumberEvent?>
 ): EventSourcingAggregate<OddNumberCommand?, OddNumberState, OddNumberEvent?> =
 
     EventSourcingAggregate(
         decider = decider,
-        aggregateEventRepository = repository
+        eventRepository = repository
     )

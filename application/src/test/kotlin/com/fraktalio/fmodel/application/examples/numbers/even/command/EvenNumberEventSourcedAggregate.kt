@@ -16,7 +16,7 @@
 
 package com.fraktalio.fmodel.application.examples.numbers.even.command
 
-import com.fraktalio.fmodel.application.AggregateEventRepository
+import com.fraktalio.fmodel.application.EventRepository
 import com.fraktalio.fmodel.application.EventSourcingAggregate
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
@@ -33,10 +33,10 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEv
  */
 fun evenNumberAggregate(
     decider: Decider<EvenNumberCommand?, EvenNumberState, EvenNumberEvent?>,
-    repository: AggregateEventRepository<EvenNumberCommand?, EvenNumberEvent?>
+    repository: EventRepository<EvenNumberCommand?, EvenNumberEvent?>
 ): EventSourcingAggregate<EvenNumberCommand?, EvenNumberState, EvenNumberEvent?> =
 
     EventSourcingAggregate(
         decider = decider,
-        aggregateEventRepository = repository
+        eventRepository = repository
     )

@@ -20,16 +20,18 @@ import arrow.core.Either
 import arrow.core.computations.either
 
 /**
- * Event repository interface
+ * State repository interface.
  *
- * @param C Command
- * @param E Event
+ * Used by StateStoredAggregate and ProcessManager
+ *
+ * @param C Command / ActionResult
+ * @param S State
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-interface AggregateEventRepository<C, E> {
-    suspend fun C.fetchEvents(): Either<Error.FetchingEventsFailed, Iterable<E>>
-    suspend fun E.save(): Either<Error.StoringEventFailed<E>, Success.EventStoredSuccessfully<E>>
-    suspend fun Iterable<E>.save(): Either<Error.StoringEventFailed<E>, Iterable<Success.EventStoredSuccessfully<E>>> =
+interface StateRepository<C, S> {
+    suspend fun C.fetchState(): Either<Error.FetchingStateFailed, S?>
+    suspend fun S.save(): Either<Error.StoringStateFailed<S>, Success.StateStoredSuccessfully<S>>
+    suspend fun List<S>.save(): Either<Error.StoringStateFailed<S>, Iterable<Success.StateStoredSuccessfully<S>>> =
         either { map { it.save().bind() } }
 }

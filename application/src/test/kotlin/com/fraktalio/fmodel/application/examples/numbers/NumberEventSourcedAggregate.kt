@@ -17,7 +17,7 @@
 package com.fraktalio.fmodel.application.examples.numbers
 
 import arrow.core.Either
-import com.fraktalio.fmodel.application.AggregateEventRepository
+import com.fraktalio.fmodel.application.EventRepository
 import com.fraktalio.fmodel.application.EventSourcingAggregate
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.combineDeciders
@@ -42,10 +42,10 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 fun numberAggregate(
     evenNumberDecider: Decider<EvenNumberCommand?, EvenNumberState, EvenNumberEvent?>,
     oddNumberDecider: Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?>,
-    repository: AggregateEventRepository<Either<EvenNumberCommand?, OddNumberCommand?>, Either<EvenNumberEvent?, OddNumberEvent?>>
+    repository: EventRepository<Either<EvenNumberCommand?, OddNumberCommand?>, Either<EvenNumberEvent?, OddNumberEvent?>>
 ): EventSourcingAggregate<Either<EvenNumberCommand?, OddNumberCommand?>, Pair<EvenNumberState, OddNumberState>, Either<EvenNumberEvent?, OddNumberEvent?>> =
 
     EventSourcingAggregate(
         decider = evenNumberDecider.combineDeciders(oddNumberDecider),
-        aggregateEventRepository = repository
+        eventRepository = repository
     )

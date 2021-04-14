@@ -29,8 +29,8 @@ import com.fraktalio.fmodel.domain.Process
  * @param E Events of type [E] that are used internally to build/fold the new state of the process manager.
  * @param A Actions of type [A] that should be taken. Actions can be mapped to aggregate commands.
  * @property process A process component of type  [Process]<[AR], [S], [E], [A]>
- * @property publishActionsAndStoreState A suspending function that takes the newly produced state by [Process] and stores it by additionally publishing actions that should be taken further.
- * @property fetchState A suspending function that takes the action result of type [AR] and results with [either] error [Error.FetchingStateFailed] or success [S]?
+ * @property actionPublisher Interface for [A]ction publishing - dependencies by delegation
+ * @property stateRepository Interface for [S]tate management/persistence - dependencies by delegation
  * @constructor Creates [ProcessManager]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
@@ -38,8 +38,8 @@ import com.fraktalio.fmodel.domain.Process
 data class ProcessManager<AR, S, E, A>(
     private val process: Process<AR, S, E, A>,
     private val actionPublisher: ActionPublisher<A>,
-    private val processManagerRepository: ProcessManagerRepository<AR, S>
-) : ActionPublisher<A> by actionPublisher, ProcessManagerRepository<AR, S> by processManagerRepository {
+    private val stateRepository: StateRepository<AR, S>
+) : ActionPublisher<A> by actionPublisher, StateRepository<AR, S> by stateRepository {
 
     /**
      * Handles the action result of type [AR]

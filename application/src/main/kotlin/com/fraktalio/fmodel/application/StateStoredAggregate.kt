@@ -22,25 +22,25 @@ import com.fraktalio.fmodel.domain.Decider
 
 /**
  * State stored aggregate is using/delegating a [Decider] to handle commands and produce new state.
- * In order to handle the command, aggregate needs to fetch the current state via [AggregateStateRepository.fetchState] function first, and then delegate the command to the decider which can produce new state as a result.
- * New state is then stored via [AggregateStateRepository.save] suspending function.
+ * In order to handle the command, aggregate needs to fetch the current state via [StateRepository.fetchState] function first, and then delegate the command to the decider which can produce new state as a result.
+ * New state is then stored via [StateRepository.save] suspending function.
  *
- * [StateStoredAggregate] implements an interface [AggregateStateRepository] by delegating all of its public members to a specified object.
+ * [StateStoredAggregate] implements an interface [StateRepository] by delegating all of its public members to a specified object.
  * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
  *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
  * @param E Events of type [E] that are used internally to build/fold new state
  * @property decider A decider component of type [Decider]<[C], [S], [E]>.
- * @property aggregateStateRepository Interface for [S]tate management/persistence - dependencies by delegation
+ * @property stateRepository Interface for [S]tate management/persistence - dependencies by delegation
  * @constructor Creates [StateStoredAggregate]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class StateStoredAggregate<C, S, E>(
     private val decider: Decider<C, S, E>,
-    private val aggregateStateRepository: AggregateStateRepository<C, S>
-) : AggregateStateRepository<C, S> by aggregateStateRepository {
+    private val stateRepository: StateRepository<C, S>
+) : StateRepository<C, S> by stateRepository {
 
     /**
      * Handles the command message of type [C]

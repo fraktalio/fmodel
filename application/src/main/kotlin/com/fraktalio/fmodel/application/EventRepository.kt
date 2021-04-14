@@ -20,18 +20,16 @@ import arrow.core.Either
 import arrow.core.computations.either
 
 /**
- * Process Manager repository interface.
+ * Event repository/store interface
  *
- * Used by Process Manager
- *
- * @param AR Action Result
- * @param S State
+ * @param C Command
+ * @param E Event
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-interface ProcessManagerRepository<AR, S> {
-    suspend fun AR.fetchState(): Either<Error.FetchingStateFailed, S?>
-    suspend fun S.save(): Either<Error.StoringStateFailed<S>, Success.StateStoredSuccessfully<S>>
-    suspend fun List<S>.save(): Either<Error.StoringStateFailed<S>, Iterable<Success.StateStoredSuccessfully<S>>> =
+interface EventRepository<C, E> {
+    suspend fun C.fetchEvents(): Either<Error.FetchingEventsFailed, Iterable<E>>
+    suspend fun E.save(): Either<Error.StoringEventFailed<E>, Success.EventStoredSuccessfully<E>>
+    suspend fun Iterable<E>.save(): Either<Error.StoringEventFailed<E>, Iterable<Success.EventStoredSuccessfully<E>>> =
         either { map { it.save().bind() } }
 }
