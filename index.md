@@ -34,7 +34,6 @@ This project can be used as a library, or as an inspiration, or both.
         * [Process extensions and functions](#process-extensions-and-functions)
         * [Process Manager](#process-manager)
     * [Kotlin](#kotlin)
-    * [References and further reading](#references-and-further-reading)
 
 ## Abstraction and generalization
 
