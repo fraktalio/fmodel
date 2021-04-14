@@ -1,4 +1,4 @@
-# **f`(`model`)`** - Functional domain modeling
+# [fraktalio](https://fraktalio.com/) / **f`(`model`)`** - Functional domain modeling
 
 The word `domain` here means the area of interest in the business. When you’re developing an `information system` to
 automate activities of that business, you’re modeling the business. The abstractions that you design, the behaviors that
@@ -8,8 +8,6 @@ of the domain*.
 ## `IOR<Library, Inspiration>`
 
 This project can be used as a library, or as an inspiration, or both.
-
-**Please note, that this project is in the experimental phase. The API will most probably change.**
 
 ## Table of Contents
 
