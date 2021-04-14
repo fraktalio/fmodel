@@ -22,25 +22,25 @@ import com.fraktalio.fmodel.domain.Decider
 
 /**
  * Event sourcing aggregate is using/delegating a [Decider] to handle commands and produce events.
- * In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via [AggregateEventRepository.fetchEvents] function, and then delegate the command to the decider which can produce new event(s) as a result.
- * Produced events are then stored via [AggregateEventRepository.save] suspending function.
+ * In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via [EventRepository.fetchEvents] function, and then delegate the command to the decider which can produce new event(s) as a result.
+ * Produced events are then stored via [EventRepository.save] suspending function.
  *
- * [EventSourcingAggregate] implements an interface [AggregateEventRepository] by delegating all of its public members to a specified object.
+ * [EventSourcingAggregate] implements an interface [EventRepository] by delegating all of its public members to a specified object.
  * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
  *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
  * @param E Events of type [E] that this aggregate can publish
  * @property decider A decider component of type [Decider]<[C], [S], [E]>.
- * @property aggregateEventRepository Interface for [E]vent management/persistence - dependencies by delegation
+ * @property eventRepository Interface for [E]vent management/persistence - dependencies by delegation
  * @constructor Creates [EventSourcingAggregate]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class EventSourcingAggregate<C, S, E>(
     private val decider: Decider<C, S, E>,
-    private val aggregateEventRepository: AggregateEventRepository<C, E>
-) : AggregateEventRepository<C, E> by aggregateEventRepository {
+    private val eventRepository: EventRepository<C, E>
+) : EventRepository<C, E> by eventRepository {
 
     /**
      * Handles the command message of type [C]

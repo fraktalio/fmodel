@@ -17,8 +17,8 @@
 package com.fraktalio.fmodel.application.examples.numbers.even.command
 
 import arrow.core.Either
-import com.fraktalio.fmodel.application.AggregateEventRepository
 import com.fraktalio.fmodel.application.Error
+import com.fraktalio.fmodel.application.EventRepository
 import com.fraktalio.fmodel.application.Success
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
@@ -36,7 +36,7 @@ private val evenNumberEventStorageMutex = Mutex()
  *
  * @constructor Creates Even number repository
  */
-class EvenNumberRepository : AggregateEventRepository<EvenNumberCommand?, EvenNumberEvent?> {
+class EvenNumberRepository : EventRepository<EvenNumberCommand?, EvenNumberEvent?> {
 
     override suspend fun EvenNumberCommand?.fetchEvents(): Either<Error.FetchingEventsFailed, Iterable<EvenNumberEvent?>> =
         Either.catch {
@@ -58,6 +58,6 @@ class EvenNumberRepository : AggregateEventRepository<EvenNumberCommand?, EvenNu
  *
  * @return event repository instance for Even numbers
  */
-fun evenNumberRepository(): AggregateEventRepository<EvenNumberCommand?, EvenNumberEvent?> =
+fun evenNumberRepository(): EventRepository<EvenNumberCommand?, EvenNumberEvent?> =
     EvenNumberRepository()
 

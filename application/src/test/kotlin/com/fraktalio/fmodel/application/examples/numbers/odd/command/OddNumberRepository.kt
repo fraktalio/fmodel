@@ -17,8 +17,8 @@
 package com.fraktalio.fmodel.application.examples.numbers.odd.command
 
 import arrow.core.Either
-import com.fraktalio.fmodel.application.AggregateEventRepository
 import com.fraktalio.fmodel.application.Error
+import com.fraktalio.fmodel.application.EventRepository
 import com.fraktalio.fmodel.application.Success
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
@@ -36,7 +36,7 @@ private val oddNumberEventStorageMutex = Mutex()
  *
  * @constructor Creates Odd number repository
  */
-class OddNumberRepository : AggregateEventRepository<OddNumberCommand?, OddNumberEvent?> {
+class OddNumberRepository : EventRepository<OddNumberCommand?, OddNumberEvent?> {
 
     override suspend fun OddNumberCommand?.fetchEvents(): Either<Error.FetchingEventsFailed, Iterable<OddNumberEvent?>> =
         Either.catch {
@@ -58,6 +58,6 @@ class OddNumberRepository : AggregateEventRepository<OddNumberCommand?, OddNumbe
  *
  * @return Odd number repository instance
  */
-fun oddNumberRepository(): AggregateEventRepository<OddNumberCommand?, OddNumberEvent?> =
+fun oddNumberRepository(): EventRepository<OddNumberCommand?, OddNumberEvent?> =
     OddNumberRepository()
 

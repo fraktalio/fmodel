@@ -24,31 +24,16 @@ This project can be used as a library, or as an inspiration, or both.
         * [State-stored system decide: (C, S) -&gt; S](#state-stored-system-decide-c-s---s)
     * [Decider](#decider)
         * [Decider extensions and functions](#decider-extensions-and-functions)
-            * [Contravariant](#contravariant)
-            * [Profunctor (Contravariant and Covariant)](#profunctor-contravariant-and-covariant)
-            * [Applicative](#applicative)
-            * [Monoid](#monoid)
         * [Event-sourcing aggregate](#event-sourcing-aggregate)
         * [State-stored aggregate](#state-stored-aggregate)
     * [View](#view)
         * [View extensions and functions](#view-extensions-and-functions)
-            * [Contravariant](#contravariant-1)
-            * [Profunctor (Contravariant and Covariant)](#profunctor-contravariant-and-covariant-1)
-            * [Applicative](#applicative-1)
-            * [Monoid](#monoid-1)
         * [Materialized View](#materialized-view)
     * [Saga](#saga)
         * [Saga extensions and functions](#saga-extensions-and-functions)
-            * [Contravariant](#contravariant-2)
-            * [Covariant](#covariant)
-            * [Monoid](#monoid-2)
         * [Saga Manager](#saga-manager)
     * [Process](#process)
         * [Process extensions and functions](#process-extensions-and-functions)
-            * [Contravariant](#contravariant-3)
-            * [Covariant](#covariant-1)
-            * [Profunctor](#profunctor)
-            * [Applicative](#applicative-2)
         * [Process Manager](#process-manager)
     * [Kotlin](#kotlin)
     * [References and further reading](#references-and-further-reading)
@@ -179,6 +164,8 @@ typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
 Additionally, `initialState` of the Decider and `isTerminal` function are introduced to gain more control over the
 initial and final state of the Decider.
 
+![decider image](.assets/decider.jpg)
+
 ### Decider extensions and functions
 
 `Decider` defines a `monoid` in respect to the composition
@@ -220,23 +207,21 @@ an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Decide
 
 We can now construct event-sourcing or/and state-storing aggregate by using the same `decider`.
 
-![aggregate image](.assets/aggregate.jpg)
-
 ### Event-sourcing aggregate
 
 Event sourcing aggregate is using/delegating a `Decider` to handle commands and produce events. It belongs to the
 Application layer. In order to handle the command, aggregate needs to fetch the current state (represented as a list of
-events) via `AggregateEventRepository.fetchEvents` function, and then delegate the command to the decider which can
-produce new events as a result. Produced events are then stored via `AggregateEventRepository.save` suspending
+events) via `EventRepository.fetchEvents` function, and then delegate the command to the decider which can
+produce new events as a result. Produced events are then stored via `EventRepository.save` suspending
 function.
 
-`EventSourcingAggregate` implements an interface `AggregateEventRepository` by delegating all of its public members to a
+`EventSourcingAggregate` implements an interface `EventRepository` by delegating all of its public members to a
 specified object. The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin
 supports it natively requiring zero boilerplate code.
 
 The `by` -clause in the supertype list for `EventSourcingAggregate` indicates that `eventRepository` will be stored
 internally in objects of `EventSourcingAggregate` and the compiler will generate all the methods
-of `AggregateEventRepository` that forward to `eventRepository`
+of `EventRepository` that forward to `eventRepository`
 
 > Flagging a computation as suspend enforces a calling context, meaning the compiler can ensure that we can’t call the effect from anywhere other than an environment prepared to run suspended effects. That will be another suspended function or a Coroutine.
 > This effectively means we’re decoupling the pure declaration of our program logic (frequently called algebras in the functional world) from the runtime. And therefore, the runtime has the chance to see the big picture of our program and decide how to run and optimize it.
@@ -244,8 +229,8 @@ of `AggregateEventRepository` that forward to `eventRepository`
 ```kotlin
 data class EventSourcingAggregate<C, S, E>(
     private val decider: Decider<C, S, E>,
-    private val aggregateEventRepository: AggregateEventRepository<C, E>
-) : AggregateEventRepository<C, E> by aggregateEventRepository {
+    private val eventRepository: EventRepository<C, E>
+) : EventRepository<C, E> by eventRepository {
     
     suspend fun handle(command: C): Either<Error, Iterable<Success.EventStoredSuccessfully<E>>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
@@ -266,22 +251,22 @@ data class EventSourcingAggregate<C, S, E>(
 
 State stored aggregate is using/delegating a `Decider` to handle commands and produce new state. It belongs to the
 Application layer. In order to handle the command, aggregate needs to fetch the current state
-via `AggregateStateRepository.fetchState` function first, and then delegate the command to the decider which can produce
-new state as a result. New state is then stored via `AggregateStateRepository.save` suspending function.
+via `StateRepository.fetchState` function first, and then delegate the command to the decider which can produce
+new state as a result. New state is then stored via `StateRepository.save` suspending function.
 
-`StateStoredAggregate` implements an interface `AggregateStateRepository` by delegating all of its public members to a
+`StateStoredAggregate` implements an interface `StateRepository` by delegating all of its public members to a
 specified object. The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin
 supports it natively requiring zero boilerplate code.
 
 The `by` -clause in the supertype list for `StateStoredAggregate` indicates that `aggregateStateRepository` will be
 stored internally in objects of `StateStoredAggregate` and the compiler will generate all the methods
-of `AggregateStateRepository` that forward to `aggregateStateRepository`
+of `StateRepository` that forward to `stateRepository`
 
 ```kotlin
 data class StateStoredAggregate<C, S, E>(
     private val decider: Decider<C, S, E>,
-    private val aggregateStateRepository: AggregateStateRepository<C, S>
-) : AggregateStateRepository<C, S> by aggregateStateRepository {
+    private val stateRepository: StateRepository<C, S>
+) : StateRepository<C, S> by stateRepository {
     
     suspend fun handle(command: C): Either<Error, Success.StateStoredAndEventsPublishedSuccessfully<S, E>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
@@ -326,6 +311,8 @@ data class _View<Si, So, E>(
 typealias View<S, E> = _View<S, S, E>
 ```
 
+![view image](.assets/view.jpg)
+
 ### View extensions and functions
 
 `View` defines a `monoid` in respect to the composition
@@ -355,8 +342,6 @@ operation `a+(b+c)=(a+b)+c`, with identity element `View<Unit, Nothing>`
 - with identity element `View<Unit, Nothing>`
 
 We can now construct `materialized` view by using this `view`.
-
-![view image](.assets/view.jpg)
 
 ### Materialized View
 
@@ -407,6 +392,8 @@ data class _Saga<AR, A>(
 
 typealias Saga<AR, A> = _Saga<AR, A>
 ```
+
+![saga image](.assets/saga.jpg)
 
 ### Saga extensions and functions
 
@@ -486,6 +473,8 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
 typealias Process<AR, S, E, A> = _Process<AR, S, S, E, E, A>
 ```
 
+![process image](.assets/process.jpg)
+
 ### Process extensions and functions
 
 #### Contravariant
@@ -516,12 +505,14 @@ typealias Process<AR, S, E, A> = _Process<AR, S, S, E, E, A>
 
 We can now construct `Process Manager` by using this `process`.
 
+
 ### Process Manager
 
 Process manager is a stateful process orchestrator.
 It is reacting on Action Results of type `AR` and produces new actions `A` based on them.
 
 Process manager is using/delegating a `Process` to react on Action Results of type `AR` and produce new actions `A` which are going to be published via `ActionPublisher.publish` suspending function.
+It is using/delegating a StateRepository to manage its own state. 
 
 It belongs to the Application layer.
 
@@ -529,8 +520,8 @@ It belongs to the Application layer.
 data class ProcessManager<AR, S, E, A>(
     private val process: Process<AR, S, E, A>,
     private val actionPublisher: ActionPublisher<A>,
-    private val processManagerRepository: ProcessManagerRepository<AR, S>
-) : ActionPublisher<A> by actionPublisher, ProcessManagerRepository<AR, S> by processManagerRepository {
+    private val stateRepository: StateRepository<AR, S>
+) : ActionPublisher<A> by actionPublisher, StateRepository<AR, S> by stateRepository {
     
     suspend fun handle(actionResult: AR): Either<Error, Iterable<Success.ActionPublishedSuccessfully<A>>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
@@ -561,8 +552,8 @@ great choice if you’re doing or exploring functional programming."*
 - https://www.manning.com/books/functional-and-reactive-domain-modeling
 - https://www.manning.com/books/functional-programming-in-kotlin
 - https://www.47deg.com/blog/functional-domain-modeling/
+- https://www.47deg.com/blog/functional-domain-modeling-part-2/  
 - https://www.youtube.com/watch?v=I8LbkfSSR58&list=PLbgaMIhjbmEnaH_LTkxLI7FMa2HsnawM_
-- https://www.raywenderlich.com/9527-functional-programming-with-kotlin-and-arrow-getting-started
 
 ---
 Created with :heart: by [Fraktalio](https://fraktalio.com/)

@@ -40,8 +40,6 @@ sealed class Error : Result() {
     data class AggregateIsInTerminalState<S>(val state: S) : Error()
     data class ProcessManagerIsInTerminalState<S>(val state: S) : Error()
     data class PublishingActionFailed<A>(val action: A, val throwable: Throwable?) : Error()
-
-
 }
 
 /**
@@ -58,5 +56,4 @@ sealed class Success : Result() {
         Success()
 
     data class ActionPublishedSuccessfully<A>(val action: A) : Success()
-
 }
