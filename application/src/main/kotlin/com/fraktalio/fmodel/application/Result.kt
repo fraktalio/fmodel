@@ -33,13 +33,15 @@ sealed class Result
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 sealed class Error : Result() {
-    data class FetchingStateFailed(val throwable: Throwable?) : Error()
-    data class FetchingEventsFailed(val throwable: Throwable?) : Error()
-    data class StoringEventFailed<E>(val event: E, val throwable: Throwable?) : Error()
-    data class StoringStateFailed<S>(val state: S, val throwable: Throwable?) : Error()
-    data class AggregateIsInTerminalState<S>(val state: S) : Error()
-    data class ProcessManagerIsInTerminalState<S>(val state: S) : Error()
-    data class PublishingActionFailed<A>(val action: A, val throwable: Throwable?) : Error()
+    abstract val throwable: Throwable?
+
+    data class FetchingStateFailed(override val throwable: Throwable? = null) : Error()
+    data class FetchingEventsFailed(override val throwable: Throwable? = null) : Error()
+    data class StoringEventFailed<E>(val event: E, override val throwable: Throwable? = null) : Error()
+    data class StoringStateFailed<S>(val state: S, override val throwable: Throwable? = null) : Error()
+    data class AggregateIsInTerminalState<S>(val state: S, override val throwable: Throwable? = null) : Error()
+    data class ProcessManagerIsInTerminalState<S>(val state: S, override val throwable: Throwable? = null) : Error()
+    data class PublishingActionFailed<A>(val action: A, override val throwable: Throwable? = null) : Error()
 }
 
 /**
