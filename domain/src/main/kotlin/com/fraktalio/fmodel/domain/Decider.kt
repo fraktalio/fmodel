@@ -47,12 +47,12 @@ data class _Decider<C, Si, So, Ei, Eo>(
     val isTerminal: (Si) -> Boolean
 ) {
     /**
-     * Left map over C/Command parameter - Contravariant
+     * Left map on C/Command parameter - Contravariant
      *
      * @param Cn Command new
      * @param f
      */
-    inline fun <Cn> lmapOnC(crossinline f: (Cn) -> C): _Decider<Cn, Si, So, Ei, Eo> = _Decider(
+    inline fun <Cn> mapLeftOnCommand(crossinline f: (Cn) -> C): _Decider<Cn, Si, So, Ei, Eo> = _Decider(
         decide = { cn, s -> this.decide(f(cn), s) },
         evolve = { si, ei -> this.evolve(si, ei) },
         initialState = this.initialState,
@@ -62,14 +62,14 @@ data class _Decider<C, Si, So, Ei, Eo>(
     /**
      *
      *
-     * Dimap over E/Event parameter - Contravariant on input event and Covariant on output event = Profunctor
+     * Dimap on E/Event parameter - Contravariant on input event and Covariant on output event = Profunctor
      *
      * @param Ein Event input new
      * @param Eon Event output new
      * @param fl
      * @param fr
      */
-    inline fun <Ein, Eon> dimapOnE(
+    inline fun <Ein, Eon> dimapOnEvent(
         crossinline fl: (Ein) -> Ei,
         crossinline fr: (Eo) -> Eon
     ): _Decider<C, Si, So, Ein, Eon> = _Decider(
@@ -80,32 +80,32 @@ data class _Decider<C, Si, So, Ei, Eo>(
     )
 
     /**
-     * Left map over E/Event parameter - Contravariant
+     * Left map on E/Event parameter - Contravariant
      *
      * @param Ein Event input new
      * @param f
      */
-    inline fun <Ein> lmapOnE(crossinline f: (Ein) -> Ei): _Decider<C, Si, So, Ein, Eo> =
-        dimapOnE(f, ::identity)
+    inline fun <Ein> mapLeftOnEvent(crossinline f: (Ein) -> Ei): _Decider<C, Si, So, Ein, Eo> =
+        dimapOnEvent(f, ::identity)
 
     /**
-     * Right map over E/Event parameter - Covariant
+     * Right map on E/Event parameter - Covariant
      *
      * @param Eon Event output new
      * @param f
      */
-    inline fun <Eon> rmapOnE(crossinline f: (Eo) -> Eon): _Decider<C, Si, So, Ei, Eon> =
-        dimapOnE(::identity, f)
+    inline fun <Eon> mapOnEvent(crossinline f: (Eo) -> Eon): _Decider<C, Si, So, Ei, Eon> =
+        dimapOnEvent(::identity, f)
 
     /**
-     * Dimap over S/State parameter - Contravariant over input state (Si) and Covariant over output state (So) = Profunctor
+     * Dimap on S/State parameter - Contravariant on input state (Si) and Covariant on output state (So) = Profunctor
      *
      * @param Sin State input new
      * @param Son State output new
      * @param fl
      * @param fr
      */
-    inline fun <Sin, Son> dimapOnS(
+    inline fun <Sin, Son> dimapOnState(
         crossinline fl: (Sin) -> Si,
         crossinline fr: (So) -> Son
     ): _Decider<C, Sin, Son, Ei, Eo> = _Decider(
@@ -116,31 +116,31 @@ data class _Decider<C, Si, So, Ei, Eo>(
     )
 
     /**
-     * Left map over S/State parameter - Contravariant
+     * Left map on S/State parameter - Contravariant
      *
      * @param Sin State input new
      * @param f
      */
-    inline fun <Sin> lmapOnS(crossinline f: (Sin) -> Si): _Decider<C, Sin, So, Ei, Eo> =
-        dimapOnS(f, ::identity)
+    inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _Decider<C, Sin, So, Ei, Eo> =
+        dimapOnState(f, ::identity)
 
     /**
-     * Right map over S/State parameter - Covariant
+     * Right map on S/State parameter - Covariant
      *
      * @param Son State output new
      * @param f
      */
-    inline fun <Son> rmapOnS(crossinline f: (So) -> Son): _Decider<C, Si, Son, Ei, Eo> =
-        dimapOnS(::identity, f)
+    inline fun <Son> mapOnState(crossinline f: (So) -> Son): _Decider<C, Si, Son, Ei, Eo> =
+        dimapOnState(::identity, f)
 
 
     /**
-     * Right apply over S/State parameter - Applicative
+     * Right apply on S/State parameter - Applicative
      *
      * @param Son State output new
      * @param ff
      */
-    fun <Son> rapplyOnS(ff: _Decider<C, Si, (So) -> Son, Ei, Eo>): _Decider<C, Si, Son, Ei, Eo> = _Decider(
+    fun <Son> applyOnState(ff: _Decider<C, Si, (So) -> Son, Ei, Eo>): _Decider<C, Si, Son, Ei, Eo> = _Decider(
         decide = { c, si -> ff.decide(c, si).plus(this.decide(c, si)) },
         evolve = { si, ei -> ff.evolve(si, ei).invoke(this.evolve(si, ei)) },
         initialState = ff.initialState.invoke(this.initialState),
@@ -148,13 +148,13 @@ data class _Decider<C, Si, So, Ei, Eo>(
     )
 
     /**
-     * Right product over S/State parameter - Applicative
+     * Right product on S/State parameter - Applicative
      *
      * @param Son State output new
      * @param fb
      */
-    fun <Son> rproductOnS(fb: _Decider<C, Si, Son, Ei, Eo>): _Decider<C, Si, Pair<So, Son>, Ei, Eo> =
-        rapplyOnS(fb.rmapOnS { b: Son -> { a: So -> Pair(a, b) } })
+    fun <Son> productOnState(fb: _Decider<C, Si, Son, Ei, Eo>): _Decider<C, Si, Pair<So, Son>, Ei, Eo> =
+        applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
 }
 
 
@@ -187,16 +187,16 @@ fun <C, Si, So, Ei, Eo, Cn, Sin, Son, Ein, Eon> _Decider<C?, Si, So, Ei?, Eo>.co
     val getS2: (Pair<Si, Sin>) -> Sin = { pair -> pair.second }
 
     val deciderX = this
-        .lmapOnC(getC1)
-        .lmapOnS(getS1)
-        .dimapOnE(getE1, getE1Either)
+        .mapLeftOnCommand(getC1)
+        .mapLeftOnState(getS1)
+        .dimapOnEvent(getE1, getE1Either)
 
     val deciderY = y
-        .lmapOnC(getC2)
-        .lmapOnS(getS2)
-        .dimapOnE(getE2, getE2Either)
+        .mapLeftOnCommand(getC2)
+        .mapLeftOnState(getS2)
+        .dimapOnEvent(getE2, getE2Either)
 
-    val deciderZ = deciderX.rproductOnS(deciderY)
+    val deciderZ = deciderX.productOnState(deciderY)
 
     return _Decider(
         decide = { c, si -> deciderZ.decide(c, si) },
@@ -265,16 +265,16 @@ inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, reified Eo : Eo_
     val extractEo2SUPER: (Eon) -> Eo_SUPER = { it }
 
     val deciderX = this
-        .lmapOnC(extractC1)
-        .lmapOnS(extractS1)
-        .dimapOnE(extractE1, extractEoSUPER)
+        .mapLeftOnCommand(extractC1)
+        .mapLeftOnState(extractS1)
+        .dimapOnEvent(extractE1, extractEoSUPER)
 
     val deciderY = y
-        .lmapOnC(extractC2)
-        .lmapOnS(extractS2)
-        .dimapOnE(extractE2, extractEo2SUPER)
+        .mapLeftOnCommand(extractC2)
+        .mapLeftOnState(extractS2)
+        .dimapOnEvent(extractE2, extractEo2SUPER)
 
-    val deciderZ = deciderX.rproductOnS(deciderY)
+    val deciderZ = deciderX.productOnState(deciderY)
 
     return _Decider(
         decide = { c, si -> deciderZ.decide(c, si) },

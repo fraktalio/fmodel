@@ -35,22 +35,22 @@ data class _Saga<AR, A>(
     val react: (AR) -> Iterable<A>
 ) {
     /**
-     * Left map over [AR] parameter - Contravariant
+     * Left map on AR/ActionResult parameter - Contravariant
      *
      * @param ARn ActionResult type new
      * @param f
      */
-    inline fun <ARn> lmapOnAR(crossinline f: (ARn) -> AR): _Saga<ARn, A> = _Saga(
+    inline fun <ARn> mapLeftOnActionResult(crossinline f: (ARn) -> AR): _Saga<ARn, A> = _Saga(
         react = { ar -> this.react(f(ar)) }
     )
 
     /**
-     * Right map over A/Action parameter - Covariant
+     * Right map on A/Action parameter - Covariant
      *
      * @param An
      * @param f
      */
-    inline fun <An> rmapOnA(crossinline f: (A) -> An): _Saga<AR, An> = _Saga(
+    inline fun <An> mapOnAction(crossinline f: (A) -> An): _Saga<AR, An> = _Saga(
         react = { ar -> this.react(ar).map(f) }
     )
 
@@ -74,12 +74,12 @@ fun <AR, A, ARn, An> _Saga<AR?, A>.combineSagas(y: _Saga<ARn?, An>): _Saga<Eithe
     val getAnEither: (An) -> Either<A, An> = { an -> Either.Right(an) }
 
     val sagaX = this
-        .lmapOnAR(getAR)
-        .rmapOnA(getAEither)
+        .mapLeftOnActionResult(getAR)
+        .mapOnAction(getAEither)
 
     val sagaY = y
-        .lmapOnAR(getARn)
-        .rmapOnA(getAnEither)
+        .mapLeftOnActionResult(getARn)
+        .mapOnAction(getAnEither)
 
     return _Saga(
         react = { eitherAr -> sagaX.react(eitherAr).plus(sagaY.react(eitherAr)) }
@@ -121,12 +121,12 @@ inline fun <reified AR : AR_SUPER, A : A_SUPER, reified ARn : AR_SUPER, An : A_S
     val getAnBase: (An) -> A_SUPER = { it }
 
     val sagaX = this
-        .lmapOnAR(getAR)
-        .rmapOnA(getABase)
+        .mapLeftOnActionResult(getAR)
+        .mapOnAction(getABase)
 
     val sagaY = y
-        .lmapOnAR(getARn)
-        .rmapOnA(getAnBase)
+        .mapLeftOnActionResult(getARn)
+        .mapOnAction(getAnBase)
 
     return _Saga(
         react = { eitherAr -> sagaX.react(eitherAr).plus(sagaY.react(eitherAr)) }
