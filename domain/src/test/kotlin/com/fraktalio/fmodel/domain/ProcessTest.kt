@@ -55,7 +55,7 @@ object ProcessTest : Spek({
 
             When("when react on Event of type Int, publish list of Actions/Commands of type NumberCommand") {
                 result = process
-                    .dimapOnE(
+                    .dimapOnEvent(
                         fr = { evenNumberEvent: NumberEvent -> evenNumberEvent.value.get },
                         fl = { number: Int ->
                             EvenNumberAdded(
@@ -97,7 +97,7 @@ object ProcessTest : Spek({
 
             When("when receive Event of type NumberEvent, evolve new state of type Int") {
                 result = process
-                    .dimapOnS(
+                    .dimapOnState(
                         fr = { evenNumberState: NumberState? -> evenNumberState?.value?.get },
                         fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
                     )
@@ -141,7 +141,7 @@ object ProcessTest : Spek({
 
             When("when provided with State of type NumberState, and ingesting Action Result of type Int") {
                 result = process
-                    .lmapOnAR { aRn: Int -> EvenNumberAdded(Description(aRn.toString()), NumberValue(aRn)) }
+                    .mapLeftOnActionResult { aRn: Int -> EvenNumberAdded(Description(aRn.toString()), NumberValue(aRn)) }
                     .ingest(2, null)
             }
 
