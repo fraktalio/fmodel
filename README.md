@@ -1,15 +1,10 @@
 # **f`(`model`)`** - Functional domain modeling
 
-The word `domain` here means the area of interest in the business. When you’re developing an `information system` to
-automate activities of that business, you’re modeling the business. The abstractions that you design, the behaviors that
-you implement, and the UI interactions that you build all reflect the business — *together they constitute the `model`
-of the domain*.
+When you’re developing an information system to automate the activities of the business, you are modeling the business. The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect the business — together, they constitute the model of the domain.
 
 ## `IOR<Library, Inspiration>`
 
 This project can be used as a library, or as an inspiration, or both.
-
-**Please note, that this project is in the experimental phase. The API will most probably change.**
 
 ## Table of Contents
 
@@ -40,9 +35,11 @@ This project can be used as a library, or as an inspiration, or both.
     
 ## Abstraction and generalization
 
-The importance of abstraction is derived from its ability to hide irrelevant details and use names to reference objects. Programming languages provide abstraction through procedures, functions, and modules that permit the programmer to distinguish between what a program does and its implementation. Abstraction is essential in the construction of programs. It places emphasis on what an object is or does rather than how it is represented or how it works. Thus, it is the primary means of managing complexity in large programs.
+Abstractions can hide irrelevant details and use names to reference objects. It emphasizes what an object is or does rather than how it is represented or how it works.
 
-While abstraction reduces complexity by hiding irrelevant detail, generalization reduces complexity by replacing multiple entities which perform similar functions with a single construct. Abstraction and generalization are often used together. Abstracts are generalized through parameterization to provide more excellent utility.
+Generalization reduces complexity by replacing multiple entities which perform similar functions with a single construct.
+
+Abstraction and generalization are often used together. Abstracts are generalized through parameterization to provide more excellent utility.
 
 ## `decide: (C, S) -> Iterable<E>`
 
