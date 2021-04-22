@@ -37,26 +37,26 @@ object ViewTest : Spek({
         val combinedViewEither by memoized { evenView.combineViews(oddView) }
         val combinedView by memoized { evenView.combine(oddView) }
         val combinedViewList by memoized {
-            evenView.dimapOnS(
+            evenView.dimapOnState(
                 fr = { v -> listOfNotNull(v) },
                 fl = { sin: List<EvenNumberState> -> sin.first() })
                 .combineL(
-                    oddView.dimapOnS(
+                    oddView.dimapOnState(
                         fr = { v -> listOfNotNull(v) },
                         fl = { sin: List<OddNumberState> -> sin.first() })
                 )
         }
         val combinedViewList2 by memoized {
-            evenView.dimapOnS(
+            evenView.dimapOnState(
                 fr = { v -> listOfNotNull(v) },
                 fl = { sin: List<EvenNumberState> -> sin.first() })
                 .combineL(
-                    oddView.dimapOnS(
+                    oddView.dimapOnState(
                         fr = { v -> listOfNotNull(v) },
                         fl = { sin: List<OddNumberState> -> sin.first() })
                 )
                 .combineL(
-                    evenView.dimapOnS(
+                    evenView.dimapOnState(
                         fr = { v -> listOfNotNull(v) },
                         fl = { sin: List<EvenNumberState> -> sin.first() })
                 )
@@ -80,7 +80,7 @@ object ViewTest : Spek({
 
             When("being in current/initial state of type EvenNumberState and handling event of type Int") {
                 result = evenView
-                    .lmapOnE { number: Int -> EvenNumberAdded(Description(number.toString()), NumberValue(number)) }
+                    .mapLeftOnEvent { number: Int -> EvenNumberAdded(Description(number.toString()), NumberValue(number)) }
                     .evolve(evenView.initialState, 2)
             }
 
@@ -96,7 +96,7 @@ object ViewTest : Spek({
             When("being in current/initial state of type Int and handling event of type EvenNumberEvent") {
                 result = evenView.initialState?.value?.let {
                     evenView
-                        .dimapOnS(
+                        .dimapOnState(
                             fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
                             fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
                         )
@@ -114,9 +114,9 @@ object ViewTest : Spek({
             lateinit var result: Pair<EvenNumberState?, Int?>
 
             When("being in current/initial state, and handling event of type EvenNumberEvent by the product of 2 views") {
-                val view2 = evenView.rmapOnS { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
+                val view2 = evenView.mapOnState { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
                 result = evenView
-                    .rproductOnS(view2)
+                    .productOnState(view2)
                     .evolve(evenView.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
 
             }
@@ -142,7 +142,7 @@ object ViewTest : Spek({
             Then("it should be in the initial state of type EvenNumberState") {
                 assertEquals(
                     result, evenView
-                        .lmapOnE { e: Int ->
+                        .mapLeftOnEvent { e: Int ->
                             EvenNumberAdded(
                                 Description(e.toString()),
                                 NumberValue(e)
@@ -157,7 +157,7 @@ object ViewTest : Spek({
 
             Then("it should be in the initial state of type Int") {
                 assertEquals(result, evenView
-                    .dimapOnS(
+                    .dimapOnState(
                         fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
                         fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
                     ).initialState
@@ -170,9 +170,9 @@ object ViewTest : Spek({
                 Pair(EvenNumberState(Description("Initial state"), NumberValue(0)), 0)
 
             Then("it should be in the initial state of type Pair<EvenNumberState, Int>") {
-                val view2 = evenView.rmapOnS { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
+                val view2 = evenView.mapOnState { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
 
-                assertEquals(result, evenView.rproductOnS(view2).initialState)
+                assertEquals(result, evenView.productOnState(view2).initialState)
             }
         }
 

@@ -123,7 +123,7 @@ object SagaTest : Spek({
 
             When("when react on ActionResult/Event of type Int, publish list of Actions/Commands of type NumberCommand") {
                 result = saga
-                    .lmapOnAR { aRn: Int -> EvenNumberAdded(Description("$aRn"), NumberValue(aRn)) }
+                    .mapLeftOnActionResult { aRn: Int -> EvenNumberAdded(Description("$aRn"), NumberValue(aRn)) }
                     .react(2)
             }
 
@@ -142,7 +142,7 @@ object SagaTest : Spek({
 
             When("when react on ActionResult/Event of type Int, publish list of Actions/Commands of type NumberCommand") {
                 result = evenSaga.combine(oddSaga)
-                    .lmapOnAR { aRn: Int -> EvenNumberAdded(Description("$aRn"), NumberValue(aRn)) }
+                    .mapLeftOnActionResult { aRn: Int -> EvenNumberAdded(Description("$aRn"), NumberValue(aRn)) }
                     .react(2)
             }
 
@@ -161,7 +161,7 @@ object SagaTest : Spek({
 
             When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type Int") {
                 result = saga
-                    .rmapOnA { numberCommand -> numberCommand.value.get }
+                    .mapOnAction { numberCommand -> numberCommand.value.get }
                     .react(EvenNumberAdded(Description("2"), NumberValue(2)))
             }
 
@@ -181,7 +181,7 @@ object SagaTest : Spek({
 
             When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type Int") {
                 result = evenSaga.combine(oddSaga)
-                    .rmapOnA { numberCommand -> numberCommand.value.get }
+                    .mapOnAction { numberCommand -> numberCommand.value.get }
                     .react(EvenNumberAdded(Description("2"), NumberValue(2)))
             }
 

@@ -44,25 +44,25 @@ data class _View<Si, So, E>(
     val initialState: So,
 ) {
     /**
-     * Left map over E/Event parameter - Contravariant
+     * Left map on E/Event parameter - Contravariant
      *
      * @param En Event new
      * @param f
      */
-    inline fun <En> lmapOnE(crossinline f: (En) -> E): _View<Si, So, En> = _View(
+    inline fun <En> mapLeftOnEvent(crossinline f: (En) -> E): _View<Si, So, En> = _View(
         evolve = { si, e -> this.evolve(si, f(e)) },
         initialState = this.initialState
     )
 
     /**
-     * Dimap over S/State parameter - Contravariant over the Si (input State) - Covariant over the So (output State) = Profunctor
+     * Dimap on S/State parameter - Contravariant on the Si (input State) - Covariant on the So (output State) = Profunctor
      *
      * @param Sin State input new
      * @param Son State output new
      * @param fl
      * @param fr
      */
-    inline fun <Sin, Son> dimapOnS(
+    inline fun <Sin, Son> dimapOnState(
         crossinline fl: (Sin) -> Si,
         crossinline fr: (So) -> Son
     ): _View<Sin, Son, E> = _View(
@@ -71,49 +71,49 @@ data class _View<Si, So, E>(
     )
 
     /**
-     * Left map over S/State parameter - Contravariant
+     * Left map on S/State parameter - Contravariant
      *
      * @param Sin State input new
      * @param f
      */
-    inline fun <Sin> lmapOnS(crossinline f: (Sin) -> Si): _View<Sin, So, E> =
-        dimapOnS(f, ::identity)
+    inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _View<Sin, So, E> =
+        dimapOnState(f, ::identity)
 
     /**
-     * Right map over S/State parameter - Covariant
+     * Right map on S/State parameter - Covariant
      *
      * @param Son State output new
      * @param f
      */
-    inline fun <Son> rmapOnS(crossinline f: (So) -> Son): _View<Si, Son, E> =
-        dimapOnS(::identity, f)
+    inline fun <Son> mapOnState(crossinline f: (So) -> Son): _View<Si, Son, E> =
+        dimapOnState(::identity, f)
 
     /**
-     * Right apply over S/State parameter - Applicative
+     * Right apply on S/State parameter - Applicative
      *
      * @param Son State output new
      * @param ff
      */
-    fun <Son> rapplyOnS(ff: _View<Si, (So) -> Son, E>): _View<Si, Son, E> = _View(
+    fun <Son> applyOnState(ff: _View<Si, (So) -> Son, E>): _View<Si, Son, E> = _View(
         evolve = { si, e -> ff.evolve(si, e).invoke(this.evolve(si, e)) },
         initialState = ff.initialState.invoke(this.initialState)
     )
 
     /**
-     * Right product over S/State - Applicative
+     * Right product on S/State parameter - Applicative
      *
      * @param Son State output new
      * @param fb
      */
-    fun <Son> rproductOnS(fb: _View<Si, Son, E>): _View<Si, Pair<So, Son>, E> =
-        rapplyOnS(fb.rmapOnS { b: Son -> { a: So -> Pair(a, b) } })
+    fun <Son> productOnState(fb: _View<Si, Son, E>): _View<Si, Pair<So, Son>, E> =
+        applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
 
     /**
-     * Right just over S/State - Applicative
+     * Right just on S/State parameter - Applicative
      *
      * @param so State output
      */
-    fun rjustOnS(so: So): _View<Si, So, E> = _View(
+    fun justOnState(so: So): _View<Si, So, E> = _View(
         evolve = { _, _ -> so },
         initialState = so
     )
@@ -140,14 +140,14 @@ fun <Si, So, E, Si2, So2, E2> _View<Si, So, E?>.combineViews(y: _View<Si2, So2, 
     val extractS2: (Pair<Si, Si2>) -> Si2 = { pair -> pair.second }
 
     val viewX = this
-        .lmapOnE(extractE1)
-        .lmapOnS(extractS1)
+        .mapLeftOnEvent(extractE1)
+        .mapLeftOnState(extractS1)
 
     val viewY = y
-        .lmapOnE(extractE2)
-        .lmapOnS(extractS2)
+        .mapLeftOnEvent(extractE2)
+        .mapLeftOnState(extractS2)
 
-    val viewZ = viewX.rproductOnS(viewY)
+    val viewZ = viewX.productOnState(viewY)
 
     return _View(
         evolve = { si, e -> viewZ.evolve(si, e) },
@@ -190,14 +190,14 @@ inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER
     val extractS2: (Pair<Si, Si2>) -> Si2 = { pair -> pair.second }
 
     val viewX = this
-        .lmapOnE(extractE1)
-        .lmapOnS(extractS1)
+        .mapLeftOnEvent(extractE1)
+        .mapLeftOnState(extractS1)
 
     val viewY = y
-        .lmapOnE(extractE2)
-        .lmapOnS(extractS2)
+        .mapLeftOnEvent(extractE2)
+        .mapLeftOnState(extractS2)
 
-    val viewZ = viewX.rproductOnS(viewY)
+    val viewZ = viewX.productOnState(viewY)
 
     return _View(
         evolve = { si, e -> viewZ.evolve(si, e) },
@@ -245,14 +245,14 @@ inline fun <reified Si : Si_SUPER, So : So_SUPER, reified E : E_SUPER, reified S
     val extractS2: (List<Si_SUPER>) -> List<Si2> = { list -> list.filterIsInstance(Si2::class.java) }
 
     val viewX = this
-        .lmapOnE(extractE1)
-        .lmapOnS(extractS1)
+        .mapLeftOnEvent(extractE1)
+        .mapLeftOnState(extractS1)
 
     val viewY = y
-        .lmapOnE(extractE2)
-        .lmapOnS(extractS2)
+        .mapLeftOnEvent(extractE2)
+        .mapLeftOnState(extractS2)
 
-    val viewZ = viewX.rproductOnS(viewY).rmapOnS { pair: Pair<List<So>, List<So2>> -> pair.toList().flatten() }
+    val viewZ = viewX.productOnState(viewY).mapOnState { pair: Pair<List<So>, List<So2>> -> pair.toList().flatten() }
 
     return _View(
         evolve = { si, e -> viewZ.evolve(si, e) },

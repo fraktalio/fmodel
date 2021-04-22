@@ -150,32 +150,35 @@ an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Decide
 
 #### Contravariant
 
-- `Decider<C, Si, So, Ei, Eo>.lmapOnC(f: (Cn) -> C): Decider<Cn, Si, So, Ei, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.mapLeftOnCommand(f: (Cn) -> C): Decider<Cn, Si, So, Ei, Eo>`
 
 #### Profunctor (Contravariant and Covariant)
 
-- `Decider<C, Si, So, Ei, Eo>.dimapOnE(
+- `Decider<C, Si, So, Ei, Eo>.dimapOnEvent(
   fl: (Ein) -> Ei, fr: (Eo) -> Eon
   ): Decider<C, Si, So, Ein, Eon>`
-- `Decider<C, Si, So, Ei, Eo>.lmapOnE(f: (Ein) -> Ei): Decider<C, Si, So, Ein, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.rmapOnE(f: (Eo) -> Eon): Decider<C, Si, So, Ei, Eon>`
-- `Decider<C, Si, So, Ei, Eo>.dimapOnS(
+- `Decider<C, Si, So, Ei, Eo>.mapLeftOnEvent(f: (Ein) -> Ei): Decider<C, Si, So, Ein, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.mapOnEvent(f: (Eo) -> Eon): Decider<C, Si, So, Ei, Eon>`
+- `Decider<C, Si, So, Ei, Eo>.dimapOnState(
   fl: (Sin) -> Si, fr: (So) -> Son
   ): Decider<C, Sin, Son, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.lmapOnS(f: (Sin) -> Si): Decider<C, Sin, So, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.rmapOnS(f: (So) -> Son): Decider<C, Si, Son, Ei, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.mapLeftOnState(f: (Sin) -> Si): Decider<C, Sin, So, Ei, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.mapOnState(f: (So) -> Son): Decider<C, Si, Son, Ei, Eo>`
 
 #### Applicative
 
 - `rjustOnS(so: So): Decider<C, Si, So, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.rapplyOnS(ff: Decider<C, Si, (So) -> Son, Ei, Eo>): Decider<C, Si, Son, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.rproductOnS(fb: Decider<C, Si, Son, Ei, Eo>): Decider<C, Si, Pair<So, Son>, Ei, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.applyOnState(ff: Decider<C, Si, (So) -> Son, Ei, Eo>): Decider<C, Si, Son, Ei, Eo>`
+- `Decider<C, Si, So, Ei, Eo>.productOnState(fb: Decider<C, Si, Son, Ei, Eo>): Decider<C, Si, Pair<So, Son>, Ei, Eo>`
 
 #### Monoid
 
-- `Decider<C1?, Si1, So1, Ei1?, Eo1>.combineDeciders(
-  y: Decider<C2?, Si2, So2, Ei2?, Eo2>
-  ): Decider<Either<C1, C2>, Pair<Si1, Si2>, Pair<So1, So2>, Either<Ei1, Ei2>, Either<Eo1, Eo2>>`
+- `Decider<in C?, Si, So, in Ei?, out Eo>.combine(
+  y: Decider<in Cn?, Sin, Son, in Ein?, out Eon>
+  ): Decider<C_SUPER, Pair<Si, Sin>, Pair<So, Son>, Ei_SUPER, Eo_SUPER>`
+- `Decider<C?, Si, So, Ei?, Eo>.combineDeciders(
+  y: Decider<Cn?, Sin, Son, Ein?, Eon>
+  ): Decider<Either<C, Cn>, Pair<Si, Sin>, Pair<So, Son>, Either<Ei, Ein>, Either<Eo, Eon>>`
 - with identity element `Decider<Nothing, Unit, Nothing>`
 
 We can now construct event-sourcing or/and state-storing aggregate by using the same `decider`.
@@ -294,23 +297,24 @@ operation `a+(b+c)=(a+b)+c`, with identity element `View<Unit, Nothing>`
 
 #### Contravariant
 
-- `View<Si, So, E>.lmapOnE(f: (En) -> E): View<Si, So, En>`
+- `View<Si, So, E>.mapLeftOnEvent(f: (En) -> E): View<Si, So, En>`
 
 #### Profunctor (Contravariant and Covariant)
 
-- `View<Si, So, E>.dimapOnS(
+- `View<Si, So, E>.dimapOnState(
   fl: (Sin) -> Si, fr: (So) -> Son
   ): View<Sin, Son, E>`
-- `View<Si, So, E>.lmapOnS(f: (Sin) -> Si): View<Sin, So, E>`
-- `View<Si, So, E>.rmapOnS(f: (So) -> Son): View<Si, Son, E>`
+- `View<Si, So, E>.mapLeftOnState(f: (Sin) -> Si): View<Sin, So, E>`
+- `View<Si, So, E>.mapOnState(f: (So) -> Son): View<Si, Son, E>`
 
 #### Applicative
 
-- `View<Si, So, E>.rapplyOnS(ff: View<Si, (So) -> Son, E>): View<Si, Son, E>`
-- `rjustOnS(so: So): View<Si, So, E>`
+- `View<Si, So, E>.applyOnState(ff: View<Si, (So) -> Son, E>): View<Si, Son, E>`
+- `justOnState(so: So): View<Si, So, E>`
 
 #### Monoid
 
+- `View<Si, So, in E?>.combine(y: View<Si2, So2, in E2?>): View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER>`
 - `View<Si1, So1, E1?>.combineViews(y: View<Si2, So2, E2?>): View<Pair<Si1, Si2>, Pair<So1, So2>, Either<E1, E2>>`
 - with identity element `View<Unit, Nothing>`
 
@@ -376,14 +380,15 @@ operation `a+(b+c)=(a+b)+c`, with identity element `Saga<Nothing, Nothing>`
 
 #### Contravariant
 
-- `Saga<AR, A>.lmapOnAR(f: (ARn) -> AR): Saga<ARn, A>`
+- `Saga<AR, A>.mapLeftOnActionResult(f: (ARn) -> AR): Saga<ARn, A>`
 
 #### Covariant
 
-- `Saga<AR, A>.rmapOnA(f: (A) -> An): Saga<AR, An>`
+- `Saga<AR, A>.mapOnAction(f: (A) -> An): Saga<AR, An>`
 
 #### Monoid
 
+- `Saga<in AR?, out A>.combine(y: _Saga<in ARn?, out An>): Saga<AR_SUPER, A_SUPER>`
 - `Saga<AR?, A>.combineSagas(y: Saga<ARn?, An>): Saga<Either<AR, ARn>, Either<A, An>>`
 - with identity element `Saga<Nothing, Nothing>`
 
@@ -452,28 +457,28 @@ typealias Process<AR, S, E, A> = _Process<AR, S, S, E, E, A>
 
 #### Contravariant
 
-- `Process<AR, Si, So, Ei, Eo, A>.lmapOnAR(f: (ARn) -> AR): Process<ARn, Si, So, Ei, Eo, A>`
+- `Process<AR, Si, So, Ei, Eo, A>.mapLeftOnActionResult(f: (ARn) -> AR): Process<ARn, Si, So, Ei, Eo, A>`
 
 #### Covariant
 
-- `Process<AR, Si, So, Ei, Eo, A>.rmapOnA(f: (A) -> An): _Process<AR, Si, So, Ei, Eo, An>`
+- `Process<AR, Si, So, Ei, Eo, A>.mapOnAction(f: (A) -> An): Process<AR, Si, So, Ei, Eo, An>`
 
 #### Profunctor
 
-- `Process<AR, Si, So, Ei, Eo, A>.dimapOnE(
+- `Process<AR, Si, So, Ei, Eo, A>.dimapOnEvent(
   fl: (Ein) -> Ei,
   fr: (Eo) -> Eon
   ): Process<AR, Si, So, Ein, Eon, A>`
 
-- `Process<AR, Si, So, Ei, Eo, A>.dimapOnS(
+- `Process<AR, Si, So, Ei, Eo, A>.dimapOnState(
   fl: (Sin) -> Si,
   fr: (So) -> Son
   ): _Process<AR, Sin, Son, Ei, Eo, A>`
 
 #### Applicative
 
-- `Process<AR, Si, So, Ei, Eo, A>.rapplyOnS(ff: Process<AR, Si, (So) -> Son, Ei, Eo, A>): Process<AR, Si, Son, Ei, Eo, A>`
-- `Process<AR, Si, So, Ei, Eo, A>.rproductOnS(fb: Process<AR, Si, Son, Ei, Eo, A>): Process<AR, Si, Pair<So, Son>, Ei, Eo, A>`
+- `Process<AR, Si, So, Ei, Eo, A>.applyOnState(ff: Process<AR, Si, (So) -> Son, Ei, Eo, A>): Process<AR, Si, Son, Ei, Eo, A>`
+- `Process<AR, Si, So, Ei, Eo, A>.productOnState(fb: Process<AR, Si, Son, Ei, Eo, A>): Process<AR, Si, Pair<So, Son>, Ei, Eo, A>`
 
 
 We can now construct `Process Manager` by using this `process`.

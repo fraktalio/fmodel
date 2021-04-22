@@ -99,7 +99,7 @@ object DeciderTest : Spek({
 
             When("being in current/initial state of type EvenNumberState and handling command of type Int") {
                 result = evenDecider
-                    .lmapOnC { cn: Int ->
+                    .mapLeftOnCommand { cn: Int ->
                         AddEvenNumber(
                             Description(cn.toString()),
                             NumberValue(cn)
@@ -125,7 +125,7 @@ object DeciderTest : Spek({
 
             When("being in current/initial state of type EvenNumberState and handling command of type AddEvenNumber") {
                 result = evenDecider
-                    .dimapOnE(
+                    .dimapOnEvent(
                         fr = { evenNumberEvent: EvenNumberEvent? -> evenNumberEvent?.value?.get },
                         fl = { number: Int ->
                             EvenNumberAdded(
@@ -153,7 +153,7 @@ object DeciderTest : Spek({
 
             When("being in current/initial state of type Int and handling command of type AddEvenNumber") {
                 result = evenDecider
-                    .dimapOnS(
+                    .dimapOnState(
                         fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
                         fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
                     )
@@ -181,9 +181,9 @@ object DeciderTest : Spek({
             lateinit var result: Iterable<EvenNumberEvent?>
 
             When("being in current/initial of type EvenNumberState and handling command of type AddEvenNumber by the product of two deciders") {
-                val decider2 = evenDecider.rmapOnS { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
+                val decider2 = evenDecider.mapOnState { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
                 result = evenDecider
-                    .rproductOnS(decider2)
+                    .productOnState(decider2)
                     .decide(
                         AddEvenNumber(
                             Description("2"),
@@ -239,7 +239,7 @@ object DeciderTest : Spek({
 
             When("being in current/initial state of type EvenNumberState and handling event of type EvenNumberEvent") {
                 result = evenDecider
-                    .lmapOnC { cn: Int ->
+                    .mapLeftOnCommand { cn: Int ->
                         AddEvenNumber(
                             Description(cn.toString()),
                             NumberValue(cn)
@@ -259,7 +259,7 @@ object DeciderTest : Spek({
 
             When("being in current/initial state of type EvenNumberState and handling event of type Int") {
                 result = evenDecider
-                    .dimapOnE(
+                    .dimapOnEvent(
                         fr = { evenNumberEvent: EvenNumberEvent? -> evenNumberEvent?.value?.get },
                         fl = { number: Int -> EvenNumberAdded(Description(number.toString()), NumberValue(number)) }
                     )
@@ -277,7 +277,7 @@ object DeciderTest : Spek({
 
             When("being in current/initial state of type Int and handling event of type EvenNumberEvent") {
                 result = evenDecider
-                    .dimapOnS(
+                    .dimapOnState(
                         fr = { evenNumberState: EvenNumberState -> evenNumberState.value.get },
                         fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
                     )
@@ -294,9 +294,9 @@ object DeciderTest : Spek({
             lateinit var result: Pair<EvenNumberState, Int>
 
             When("being in current/initial state of type Int and handling event of type EvenNumberEvent by the product of 2 deciders") {
-                val decider2 = evenDecider.rmapOnS { evenNumberState: EvenNumberState -> evenNumberState.value.get }
+                val decider2 = evenDecider.mapOnState { evenNumberState: EvenNumberState -> evenNumberState.value.get }
                 result = evenDecider
-                    .rproductOnS(decider2)
+                    .productOnState(decider2)
                     .evolve(evenDecider.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
 
             }
@@ -324,7 +324,7 @@ object DeciderTest : Spek({
 
             When("being in current/initial state of type EvenNumberState and handling new state of type EvenNumberState > 100") {
                 isTerminalResult = evenDecider
-                    .lmapOnC { cn: Int ->
+                    .mapLeftOnCommand { cn: Int ->
                         AddEvenNumber(
                             Description(cn.toString()),
                             NumberValue(cn)
@@ -343,7 +343,7 @@ object DeciderTest : Spek({
 
             When("being in current/initial state of type EvenNumberState and handling new state of type EvenNumberState > 100") {
                 isTerminalResult = evenDecider
-                    .dimapOnE(
+                    .dimapOnEvent(
                         fr = { evenNumberEvent: EvenNumberEvent? -> evenNumberEvent?.value?.get },
                         fl = { number: Int -> EvenNumberAdded(Description(number.toString()), NumberValue(number)) }
                     )
@@ -360,7 +360,7 @@ object DeciderTest : Spek({
 
             When("being in current/initial state of type Int and handling new state of type Int > 100") {
                 isTerminalResult = evenDecider
-                    .dimapOnS(
+                    .dimapOnState(
                         fr = { evenNumberState: EvenNumberState -> evenNumberState.value.get },
                         fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
                     )
@@ -376,9 +376,9 @@ object DeciderTest : Spek({
             var isTerminalResult: Boolean = false
 
             When("being in current/initial state of type Int and handling event of type EvenNumberEvent by the product of 2 deciders") {
-                val decider2 = evenDecider.rmapOnS { evenNumberState: EvenNumberState -> evenNumberState.value.get }
+                val decider2 = evenDecider.mapOnState { evenNumberState: EvenNumberState -> evenNumberState.value.get }
                 isTerminalResult = evenDecider
-                    .rproductOnS(decider2)
+                    .productOnState(decider2)
                     .isTerminal(EvenNumberState(Description("101"), NumberValue(101)))
 
             }
@@ -404,7 +404,7 @@ object DeciderTest : Spek({
             Then("it should be in the initial state of type EvenNumberState") {
                 assertEquals(
                     result, evenDecider
-                        .lmapOnC { cn: Int ->
+                        .mapLeftOnCommand { cn: Int ->
                             AddEvenNumber(
                                 Description(cn.toString()),
                                 NumberValue(cn)
@@ -419,7 +419,7 @@ object DeciderTest : Spek({
 
             Then("it should be in the initial state of type EvenNumberState") {
                 assertEquals(result, evenDecider
-                    .dimapOnE(
+                    .dimapOnEvent(
                         fr = { evenNumberEvent: EvenNumberEvent? -> evenNumberEvent?.value?.get },
                         fl = { number: Int -> EvenNumberAdded(Description(number.toString()), NumberValue(number)) }
                     ).initialState
@@ -431,7 +431,7 @@ object DeciderTest : Spek({
             val result = 0
 
             Then("it should be in the initial state of type EvenNumberState") {
-                assertEquals(result, evenDecider.dimapOnS(
+                assertEquals(result, evenDecider.dimapOnState(
                     fr = { evenNumberState: EvenNumberState -> evenNumberState.value.get },
                     fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
                 ).initialState)
@@ -443,9 +443,9 @@ object DeciderTest : Spek({
                 Pair(EvenNumberState(Description("Initial state"), NumberValue(0)), 0)
 
             Then("it should be in the initial state of type Pair<EvenNumberState, Int>") {
-                val decider2 = evenDecider.rmapOnS { evenNumberState: EvenNumberState -> evenNumberState.value.get }
+                val decider2 = evenDecider.mapOnState { evenNumberState: EvenNumberState -> evenNumberState.value.get }
 
-                assertEquals(result, evenDecider.rproductOnS(decider2).initialState)
+                assertEquals(result, evenDecider.productOnState(decider2).initialState)
             }
         }
 
