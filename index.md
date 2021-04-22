@@ -1,9 +1,6 @@
 # [fraktalio](https://fraktalio.com/) / **f`(`model`)`** - Functional domain modeling
 
-The word `domain` here means the area of interest in the business. When you’re developing an `information system` to
-automate activities of that business, you’re modeling the business. The abstractions that you design, the behaviors that
-you implement, and the UI interactions that you build all reflect the business — *together they constitute the `model`
-of the domain*.
+When you’re developing an information system to automate the activities of the business, you are modeling the business. The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect the business — together, they constitute the model of the domain.
 
 ## `IOR<Library, Inspiration>`
 
@@ -38,86 +35,62 @@ This project can be used as a library, or as an inspiration, or both.
 
 ## Abstraction and generalization
 
-The importance of abstraction is derived from its ability to hide irrelevant details and from the use of names to
-reference objects. Programming languages provide abstraction through procedures, functions, and modules which permit the
-programmer to distinguish between what a program does and how it is implemented. The primary concern of the user of a
-program is with what it does. This is in contrast with the writer of the program whose primary concern is with how it is
-implemented. Abstraction is essential in the construction of programs. It places the emphasis on what an object is or
-does rather than how it is represented or how it works. Thus, it is the primary means of managing complexity in large
-programs.
+Abstractions can hide irrelevant details and use names to reference objects. It emphasizes what an object is or does rather than how it is represented or how it works.
 
-While abstraction reduces complexity by hiding irrelevant detail, generalization reduces complexity by replacing
-multiple entities which perform similar functions with a single construct. Programming languages provide generalization
-through variables, parameterization, generics and polymorphism. Generalization is essential in the construction of
-programs. It places the emphasis on the similarities between objects. Thus, it helps to manage complexity by collecting
-individuals into groups and providing a representative which can be used to specify any individual of the group.
+Generalization reduces complexity by replacing multiple entities which perform similar functions with a single construct.
 
-Abstraction and generalization are often used together. Abstracts are generalized through parameterization to provide
-greater utility.
+Abstraction and generalization are often used together. Abstracts are generalized through parameterization to provide more excellent utility.
+
 
 ## `decide: (C, S) -> Iterable<E>`
 
-**On a higher level of abstraction**, any information system is responsible for handling the intent (`Command`) and
-based on the current `State` produce new facts (`Events`):
+On a higher level of abstraction, any information system is responsible for handling the intent (`Command`) and
+based on the current `State`, produce new facts (`Events`):
 
-- given the current `S`tate *on the input*,
-- when `C`ommand is handled *on the input*,
-- expect `list/iterable` of new `E`vents to be published *on the output*
+- given the current `State/S` *on the input*,
+- when `Command/C` is handled *on the input*,
+- expect `list/iterable` of new `Events/E` to be published *on the output*
 
 ## `evolve: (S, E) -> S`
 
 The new state is always evolved out of the current state `S` and the current event `E`:
 
-- given the current `S`tate *on the input*,
-- when `E`vent is handled *on the input*,
-- expect new `S`tate to be published *on the output*
+- given the current `State/S` *on the input*,
+- when `Event/E` is handled *on the input*,
+- expect new `State/S` to be published *on the output*
 
 ## Event-sourced or State-stored systems
 
-- State-stored systems are traditional systems that are only storing the current state by overwriting the previous state
-  in the storage.
-- Event-sourced systems are storing the events in an immutable storage by only appending.
+- State-stored systems are traditional systems that are only storing the current State by overwriting the previous State in the storage.
+- Event-sourced systems are storing the events in immutable storage by only appending.
 
 ### A statement:
 
-Both types of the systems can be designed by using only these two functions and three generic parameters
+Both types of systems can be designed by using only these two functions and three generic parameters:
 
 - `decide: (C, S) -> Iterable<E>`
 - `evolve: (S, E) -> S`
 
-There is more to it! You can switch from one system type to another, or have both flavors included within your systems
-landscape.
+There is more to it! You can switch from one system type to another or have both flavors included within your systems landscape.
 
 ### A proof:
 
 We can fold/recreate the new state out of the list of events by using `evolve` function `(S, E) -> S` and providing the
 initialState of type S as a starting point.
 
-`Iterable<E>.fold(initialState: S, ((S, E) -> S)): S`
+- `Iterable<E>.fold(initialState: S, ((S, E) -> S)): S`
 
-Essentially, this `fold` is a function that is mapping a list of Events to the State: `(Iterable<E>) -> S`
+Essentially, this `fold` is a function that is mapping a list of Events to the State: 
+
+- `(Iterable<E>) -> S`
 
 We can now use this function `(Iterable<E>) -> S` to:
 
-- **contra-map our `decide` function type (`(C, S) -> Iterable<E>`) over `S` type**: `(C, Iterable<E>) -> Iterable<E>`
-  - this is an event-sourced system
-- **or to map it over `E` type**: `(C, S) -> S`   - this is a state-stored system
+- contra-map our `decide` function (`(C, S) -> Iterable<E>`) over `S` type to: `(C, Iterable<E>) -> Iterable<E>`  - **this is an event-sourced system**
+- or to map our `decide` function (`(C, S) -> Iterable<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored system**
 
-### Event-sourced system `decide: (C, Iterable<E>) -> Iterable<E>`
 
-- The `decide` function of the event-sourced system can be derived from the more general `decide` function that was
-  mentioned before: `( (C, S) -> Iterable<E> ).contramapOverE((Iterable<E>) -> S):  (C, Iterable<E>) -> Iterable<E>`
-- The `evolve` function is now internal to the `decide` function, and not part of the public API.
-
-### State-stored system `decide: (C, S) -> S`
-
-- The `decide` function of the state-stored system can be derived from the more general `decide` function that was
-  mentioned before: `( (C, S) -> Iterable<E> ).mapOverS((Iterable<E>) -> S): (C, S) -> S`
-- The `evolve` function is now internal to the `decide` function, and not part of the public API.
-
-**We can verify that we are able to design any information system (event-sourced or/and state-stored) in this way**, by
-using these two functions wrapped in a datatype class (algebraic data structure) which is generalized with 3 generic
-parameters:
+We can verify that we can design any information system (event-sourced or/and state-stored) in this way by using these two functions wrapped in a datatype class (algebraic data structure), which is generalized with three generic parameters:
 
 ```kotlin
 data class Decider<C, S, E>(
@@ -126,7 +99,7 @@ data class Decider<C, S, E>(
 )
 ```
 
-`Decider` is the most important datatype, but it is not the only one. There are others:
+`Decider` is the most important datatype, but it is not the only one. There are others! Let's cover them all in more details:
 
 ![onion architecture image](https://github.com/fraktalio/fmodel/raw/main/.assets/onion.png)
 
