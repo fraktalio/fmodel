@@ -522,6 +522,19 @@ data class ProcessManager<AR, S, E, A>(
 the two. With first-class support for features such as higher-order functions, function types and lambdas, Kotlin is a
 great choice if you’re doing or exploring functional programming."*
 
+## Videos
+
+
+### Domain modeling - introduction
+<div class="embed-container">
+  <iframe
+      src="https://www.youtube.com/embed/_6857zy7bqg"
+      width="700"
+      height="480"
+      frameborder="0"
+      allowfullscreen="">
+  </iframe>
+</div>
 
 ---
 Created with love by [Fraktalio](https://fraktalio.com/)
