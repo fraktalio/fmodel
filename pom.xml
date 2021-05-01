@@ -53,7 +53,7 @@
         <kotlin.coroutines.version>1.4.2</kotlin.coroutines.version>
         <kotlin.code.style>official</kotlin.code.style>
         <java.version>11</java.version>
-        <arrow.version>0.13.1</arrow.version>
+        <arrow.version>0.13.2</arrow.version>
         <junit.version>4.13.1</junit.version>
         <spec.version>2.0.16</spec.version>
     </properties>
