@@ -31,6 +31,8 @@ This project can be used as a library, or as an inspiration, or both.
         * [Process extensions and functions](#process-extensions-and-functions)
         * [Process Manager](#process-manager)
     * [Kotlin](#kotlin)
+    * [Examples](#examples)
+    * [Videos](#videos)
 
 
 ## Abstraction and generalization
@@ -522,8 +524,10 @@ data class ProcessManager<AR, S, E, A>(
 the two. With first-class support for features such as higher-order functions, function types and lambdas, Kotlin is a
 great choice if you’re doing or exploring functional programming."*
 
-## Videos
+## Examples
+These [examples](https://github.com/fraktalio/fmodel-demos) are demonstrating the usage of the `fmodel` library.
 
+## Videos
 
 ### Domain modeling - introduction
 <div class="embed-container">
