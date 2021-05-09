@@ -141,7 +141,12 @@ object ProcessTest : Spek({
 
             When("when provided with State of type NumberState, and ingesting Action Result of type Int") {
                 result = process
-                    .mapLeftOnActionResult { aRn: Int -> EvenNumberAdded(Description(aRn.toString()), NumberValue(aRn)) }
+                    .mapLeftOnActionResult { aRn: Int ->
+                        EvenNumberAdded(
+                            Description(aRn.toString()),
+                            NumberValue(aRn)
+                        )
+                    }
                     .ingest(2, null)
             }
 

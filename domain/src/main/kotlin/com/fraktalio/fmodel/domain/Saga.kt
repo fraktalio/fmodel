@@ -16,8 +16,6 @@
 
 package com.fraktalio.fmodel.domain
 
-import arrow.core.Either
-
 /**
  * [_Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).
  * It is responsible for mapping different events from aggregates into action results ([AR]) that the [_Saga] then can use to calculate the next actions ([A]) to be mapped to commands of other aggregates.
@@ -54,36 +52,6 @@ data class _Saga<AR, A>(
         react = { ar -> this.react(ar).map(f) }
     )
 
-}
-
-/**
- * Combine [_Saga]s into one [_Saga] - Semigroup and Monoid with identity element `_Saga<Nothing, Nothing>`
- * This is an associative binary operation which makes it a Semigroup. Additionally, the identity element makes it a Monoid
- *
- * @param AR Action Result (usually event) of the first Saga
- * @param A Action (usually command) of the first Saga
- * @param ARn Action Result (usually event) of the second Saga
- * @param An Action (usually command) of the second Saga
- * @param y second saga
- * @return new Saga of type `[_Saga]<[Either]<[AR], [ARn]>, [Either]<[A], [An]>>`
- */
-fun <AR, A, ARn, An> _Saga<AR?, A>.combineSagas(y: _Saga<ARn?, An>): _Saga<Either<AR, ARn>, Either<A, An>> {
-    val getAR: (Either<AR, ARn>) -> AR? = { either -> either.fold({ it }, { null }) }
-    val getARn: (Either<AR, ARn>) -> ARn? = { either -> either.fold({ null }, { it }) }
-    val getAEither: (A) -> Either<A, An> = { a -> Either.Left(a) }
-    val getAnEither: (An) -> Either<A, An> = { an -> Either.Right(an) }
-
-    val sagaX = this
-        .mapLeftOnActionResult(getAR)
-        .mapOnAction(getAEither)
-
-    val sagaY = y
-        .mapLeftOnActionResult(getARn)
-        .mapOnAction(getAnEither)
-
-    return _Saga(
-        react = { eitherAr -> sagaX.react(eitherAr).plus(sagaY.react(eitherAr)) }
-    )
 }
 
 /**

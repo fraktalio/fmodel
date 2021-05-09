@@ -20,13 +20,13 @@ import arrow.core.Either
 import com.fraktalio.fmodel.application.EventRepository
 import com.fraktalio.fmodel.application.EventSourcingAggregate
 import com.fraktalio.fmodel.domain.Decider
-import com.fraktalio.fmodel.domain.combineDeciders
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
+import com.fraktalio.fmodel.domain.extension.combineDeciders
 
 
 /**

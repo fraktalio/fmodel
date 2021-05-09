@@ -16,8 +16,6 @@
 
 package com.fraktalio.fmodel.domain
 
-import arrow.core.Either
-import arrow.core.identity
 
 /**
  * [_Decider] is a datatype that represents the main decision making algorithm.
@@ -157,54 +155,6 @@ data class _Decider<C, Si, So, Ei, Eo>(
         applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
 }
 
-
-/**
- * Combine [_Decider]s into one big [_Decider]
- *
- * @param C Command type of the first Decider
- * @param Si Input_State type of the first Decider
- * @param So Output_State type of the first Decider
- * @param Ei Input_Event type of the first Decider
- * @param Eo Output_Event type of the first Decider
- * @param Cn Command type of the second Decider
- * @param Sin Input_State type of the second Decider
- * @param Son Output_State type of the second Decider
- * @param Ein Input_Event type of the second Decider
- * @param Eon Output_Event type of the second Decider
- * @param y second Decider
- * @return [_Decider]< [Either]<[C], [Cn]>, [Pair]<[Si], [Sin]>, [Pair]<[So], [Son]>, [Either]<[Ei], [Ein]>, [Either]<[Eo], [Eon]> >
- */
-fun <C, Si, So, Ei, Eo, Cn, Sin, Son, Ein, Eon> _Decider<C?, Si, So, Ei?, Eo>.combineDeciders(
-    y: _Decider<Cn?, Sin, Son, Ein?, Eon>
-): _Decider<Either<C, Cn>, Pair<Si, Sin>, Pair<So, Son>, Either<Ei, Ein>, Either<Eo, Eon>> {
-    val getC1: (Either<C, Cn>) -> C? = { either -> either.fold({ it }, { null }) }
-    val getC2: (Either<C, Cn>) -> Cn? = { either -> either.fold({ null }, { it }) }
-    val getE1: (Either<Ei, Ein>) -> Ei? = { either -> either.fold({ it }, { null }) }
-    val getE1Either: (Eo) -> Either<Eo, Eon> = { eo1 -> Either.Left(eo1) }
-    val getE2: (Either<Ei, Ein>) -> Ein? = { either -> either.fold({ null }, { it }) }
-    val getE2Either: (Eon) -> Either<Eo, Eon> = { eo2 -> Either.Right(eo2) }
-    val getS1: (Pair<Si, Sin>) -> Si = { pair -> pair.first }
-    val getS2: (Pair<Si, Sin>) -> Sin = { pair -> pair.second }
-
-    val deciderX = this
-        .mapLeftOnCommand(getC1)
-        .mapLeftOnState(getS1)
-        .dimapOnEvent(getE1, getE1Either)
-
-    val deciderY = y
-        .mapLeftOnCommand(getC2)
-        .mapLeftOnState(getS2)
-        .dimapOnEvent(getE2, getE2Either)
-
-    val deciderZ = deciderX.productOnState(deciderY)
-
-    return _Decider(
-        decide = { c, si -> deciderZ.decide(c, si) },
-        evolve = { pair, ei -> deciderZ.evolve(pair, ei) },
-        initialState = deciderZ.initialState,
-        isTerminal = { pair -> deciderZ.isTerminal(pair) }
-    )
-}
 
 /**
  * Combine [_Decider]s into one big [_Decider]

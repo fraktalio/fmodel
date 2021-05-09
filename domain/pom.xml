@@ -39,10 +39,6 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.arrow-kt</groupId>
-            <artifactId>arrow-core</artifactId>
-        </dependency>
         <!-- test -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

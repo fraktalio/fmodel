@@ -16,20 +16,15 @@
 
 package com.fraktalio.fmodel.domain
 
-import arrow.core.Either.Left
-import arrow.core.Either.Right
 import com.fraktalio.fmodel.domain.examples.numbers.api.*
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.AddOddNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 
@@ -38,7 +33,6 @@ object DeciderTest : Spek({
     Feature("Decider") {
         val evenDecider by memoized { evenNumberDecider() }
         val oddDecider by memoized { oddNumberDecider() }
-        val combinedDeciderEither by memoized { evenDecider.combineDeciders(oddDecider) }
         val combinedDecider by memoized { evenDecider.combine(oddDecider) }
 
         Scenario("Decide") {
@@ -181,7 +175,8 @@ object DeciderTest : Spek({
             lateinit var result: Iterable<EvenNumberEvent?>
 
             When("being in current/initial of type EvenNumberState and handling command of type AddEvenNumber by the product of two deciders") {
-                val decider2 = evenDecider.mapOnState { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
+                val decider2 =
+                    evenDecider.mapOnState { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
                 result = evenDecider
                     .productOnState(decider2)
                     .decide(
@@ -225,11 +220,19 @@ object DeciderTest : Spek({
             lateinit var result: Pair<EvenNumberState, OddNumberState>
 
             When("being in current/initial state of type EvenNumberState and handling event of type EvenNumberEvent") {
-                result = combinedDecider.evolve(combinedDecider.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
+                result = combinedDecider.evolve(
+                    combinedDecider.initialState,
+                    EvenNumberAdded(Description("2"), NumberValue(2))
+                )
             }
 
             Then("new state of type EvenNumberState should be constructed/evolved") {
-                assertEquals(Pair(EvenNumberState(Description("2"), NumberValue(2)), OddNumberState(Description("Initial state"), NumberValue(0))), result)
+                assertEquals(
+                    Pair(
+                        EvenNumberState(Description("2"), NumberValue(2)),
+                        OddNumberState(Description("Initial state"), NumberValue(0))
+                    ), result
+                )
             }
 
         }
@@ -449,110 +452,6 @@ object DeciderTest : Spek({
             }
         }
 
-
-        Scenario("Deciders are combinable - monoid") {
-
-            Then("this one big decider is acting as a command bus, being able to handle both type of commands (Left command in this case) and publish appropriate event as a result") {
-                val resultOfDecide = listOf(Left(EvenNumberAdded(Description("2"), NumberValue(2))))
-
-                assertEquals(
-                    resultOfDecide,
-                    combinedDeciderEither
-                        .decide(
-                            Left(AddEvenNumber(Description("2"), NumberValue(2))),
-                            Pair(
-                                EvenNumberState(Description("0"), NumberValue(0)),
-                                OddNumberState(Description("1"), NumberValue(1))
-                            )
-                        )
-                )
-            }
-
-            Then("this one big decider is acting as a command bus, being able to handle both type of commands (Right command in this case) and publish appropriate event as a result") {
-                val resultOfDecide = listOf(Right(OddNumberAdded(Description("1"), NumberValue(1))))
-
-                assertEquals(
-                    resultOfDecide,
-                    combinedDeciderEither
-                        .decide(
-                            Right(AddOddNumber(Description("1"), NumberValue(1))),
-                            Pair(
-                                EvenNumberState(Description("0"), NumberValue(0)),
-                                OddNumberState(Description("1"), NumberValue(1))
-                            )
-                        )
-                )
-            }
-
-            Then("this one big decider is acting as a event bus, being able to handle both type of events (Left event in this case) and construct the new Decider state as a result") {
-                val resultOfDecide = Pair(
-                    EvenNumberState(Description("2+0"), NumberValue(2)),
-                    OddNumberState(Description("1"), NumberValue(1))
-                )
-
-                assertEquals(
-                    resultOfDecide,
-                    combinedDeciderEither
-                        .evolve(
-                            Pair(
-                                EvenNumberState(Description("0"), NumberValue(0)),
-                                OddNumberState(Description("1"), NumberValue(1))
-                            ),
-                            Left(EvenNumberAdded(Description("2+0"), NumberValue(2)))
-                        )
-                )
-            }
-
-            Then("this one big decider is acting as a event bus, being able to handle both type of events (Right event in this case) and construct the new Decider state as a result") {
-                val resultOfDecide = Pair(
-                    EvenNumberState(Description("0"), NumberValue(0)),
-                    OddNumberState(Description("3+1"), NumberValue(4))
-                )
-
-                assertEquals(
-                    resultOfDecide,
-                    combinedDeciderEither
-                        .evolve(
-                            Pair(
-                                EvenNumberState(Description("0"), NumberValue(0)),
-                                OddNumberState(Description("1"), NumberValue(1))
-                            ),
-                            Right(OddNumberAdded(Description("3+1"), NumberValue(3)))
-                        )
-                )
-            }
-
-            Then("this one big decider is combining terminal state of both deciders with AND operator") {
-                assertFalse(
-                    combinedDeciderEither
-                        .isTerminal(
-                            Pair(
-                                EvenNumberState(Description("101"), NumberValue(101)),
-                                OddNumberState(Description("1"), NumberValue(1))
-                            )
-                        )
-                )
-                assertFalse(
-                    combinedDeciderEither
-                        .isTerminal(
-                            Pair(
-                                EvenNumberState(Description("0"), NumberValue(0)),
-                                OddNumberState(Description("101"), NumberValue(101))
-                            )
-                        )
-                )
-                assertTrue(
-                    combinedDeciderEither
-                        .isTerminal(
-                            Pair(
-                                EvenNumberState(Description("101"), NumberValue(101)),
-                                OddNumberState(Description("102"), NumberValue(102))
-                            )
-                        )
-                )
-            }
-
-        }
     }
 })
 

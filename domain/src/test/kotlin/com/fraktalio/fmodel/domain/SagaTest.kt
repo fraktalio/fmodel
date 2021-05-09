@@ -16,23 +16,16 @@
 
 package com.fraktalio.fmodel.domain
 
-import arrow.core.Either
-import arrow.core.Either.Left
-import arrow.core.Either.Right
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.AddOddNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.numberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 
@@ -42,7 +35,6 @@ object SagaTest : Spek({
         val saga by memoized { numberSaga() }
         val evenSaga by memoized { evenNumberSaga() }
         val oddSaga by memoized { oddNumberSaga() }
-        val combinedSaga by memoized { evenSaga.combineSagas(oddSaga) }
 
         Scenario("React") {
             var result: Iterable<NumberCommand> = emptyList()
@@ -191,46 +183,6 @@ object SagaTest : Spek({
 
             Then("Int should be published") {
                 assertTrue(result.first() == 1)
-            }
-
-        }
-
-
-        Scenario("React - CombinedSagas with Either - left side") {
-            var result: Iterable<Either<OddNumberCommand, EvenNumberCommand>> = emptyList()
-
-            When("when react on ActionResult/Event of type `Either.Left(EvenNumberEvent)`, publish list of Actions/Commands of type `Either.Left(OddNumberCommand)`") {
-                result = combinedSaga.react(Left(EvenNumberAdded(Description("2"), NumberValue(2))))
-            }
-
-            Then("non empty list of Actions/Commands of type `Either.Left(OddNumberCommand)` should be published") {
-                assertTrue(result.any())
-            }
-
-            Then("AddOddNumber should be published") {
-                val result2 = result.first()
-                assertTrue(result2 is Left && result2.value.value.get == 1)
-                assertTrue(result.count() == 1)
-            }
-
-        }
-
-        Scenario("React - CombinedSagas with Either - right side") {
-            var result: Iterable<Either<OddNumberCommand, EvenNumberCommand>> = emptyList()
-
-            When("when react on ActionResult/Event of type `Either.Right(OddNumberEvent)`, publish list of Actions/Commands of type `Either.Left(EvenNumberCommand)`") {
-                result = combinedSaga.react(Right(OddNumberAdded(Description("1"), NumberValue(1))))
-            }
-
-            Then("non empty list of Actions/Commands of type `Either.Right(EvenNumberCommand)` should be published") {
-                assertTrue(result.any())
-            }
-
-            Then("AddOddNumber should be published") {
-                val result2 = result.first()
-                assertTrue(result2 is Right)
-                assertEquals(2, result2.value.value.get)
-                assertTrue(result.count() == 1)
             }
 
         }

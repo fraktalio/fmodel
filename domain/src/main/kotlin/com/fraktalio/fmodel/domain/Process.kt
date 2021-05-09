@@ -16,8 +16,6 @@
 
 package com.fraktalio.fmodel.domain
 
-import arrow.core.identity
-
 /**
  * [_Process] is a datatype that represents the central point of control deciding what to execute next ([A]).
  * It is responsible for mapping different events from aggregates into action results ([AR]) that the _[Process] then can use to calculate the next actions ([A]) to be mapped to commands of other aggregates.

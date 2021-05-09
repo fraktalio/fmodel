@@ -16,11 +16,8 @@
 
 package com.fraktalio.fmodel.domain
 
-import arrow.core.Either.Left
-import arrow.core.Either.Right
 import com.fraktalio.fmodel.domain.examples.numbers.api.*
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.even.query.evenNumberView
 import com.fraktalio.fmodel.domain.examples.numbers.odd.query.oddNumberView
 import org.spekframework.spek2.Spek
@@ -34,7 +31,6 @@ object ViewTest : Spek({
 
         val evenView by memoized { evenNumberView() }
         val oddView by memoized { oddNumberView() }
-        val combinedViewEither by memoized { evenView.combineViews(oddView) }
         val combinedView by memoized { evenView.combine(oddView) }
         val combinedViewList by memoized {
             evenView.dimapOnState(
@@ -80,7 +76,12 @@ object ViewTest : Spek({
 
             When("being in current/initial state of type EvenNumberState and handling event of type Int") {
                 result = evenView
-                    .mapLeftOnEvent { number: Int -> EvenNumberAdded(Description(number.toString()), NumberValue(number)) }
+                    .mapLeftOnEvent { number: Int ->
+                        EvenNumberAdded(
+                            Description(number.toString()),
+                            NumberValue(number)
+                        )
+                    }
                     .evolve(evenView.initialState, 2)
             }
 
@@ -234,49 +235,6 @@ object ViewTest : Spek({
                     result
                 )
             }
-
-        }
-
-        Scenario("Combine - Either") {
-
-            Then("this one big view is acting as an event bus, being able to handle both type of events (Left event in this case) and construct the new View state as a result") {
-                val resultOfEvolve = Pair(
-                    EvenNumberState(Description("0, 2+0"), NumberValue(2)),
-                    OddNumberState(Description("1"), NumberValue(1))
-                )
-
-                assertEquals(
-                    resultOfEvolve,
-                    combinedViewEither
-                        .evolve(
-                            Pair(
-                                EvenNumberState(Description("0"), NumberValue(0)),
-                                OddNumberState(Description("1"), NumberValue(1))
-                            ),
-                            Left(EvenNumberAdded(Description("2+0"), NumberValue(2)))
-                        )
-                )
-            }
-
-            Then("this one big view is acting as a event bus, being able to handle both type of events (Right event in this case) and construct the new View state as a result") {
-                val resultOfEvolve = Pair(
-                    EvenNumberState(Description("0"), NumberValue(0)),
-                    OddNumberState(Description("1, 3+1"), NumberValue(4))
-                )
-
-                assertEquals(
-                    resultOfEvolve,
-                    combinedViewEither
-                        .evolve(
-                            Pair(
-                                EvenNumberState(Description("0"), NumberValue(0)),
-                                OddNumberState(Description("1"), NumberValue(1))
-                            ),
-                            Right(OddNumberAdded(Description("3+1"), NumberValue(3)))
-                        )
-                )
-            }
-
         }
     }
 })
