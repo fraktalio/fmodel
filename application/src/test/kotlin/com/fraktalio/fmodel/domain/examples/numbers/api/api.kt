@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-@file:Suppress("EXPERIMENTAL_FEATURE_WARNING")
-
 package com.fraktalio.fmodel.domain.examples.numbers.api
 
+@JvmInline
+value class Description(val get: String)
 
-inline class Description(val get: String)
-inline class NumberValue(val get: Int)
+@JvmInline
+value class NumberValue(val get: Int)
 
 
 // ############ Commands ###############

@@ -16,4 +16,4 @@
 
 package com.fraktalio.fmodel.domain
 
-inline fun <A> identity(a: A): A = a
+fun <A> identity(a: A): A = a
