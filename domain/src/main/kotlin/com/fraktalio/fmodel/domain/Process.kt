@@ -178,6 +178,176 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
 
 }
 
+/**
+ * Combine [_Process]es into one big [_Process]
+ *
+ * @param AR Action Result type
+ * @param Si Input_State type
+ * @param So Output_State type
+ * @param Ei Input_Event type
+ * @param Eo Output_Event type
+ * @param A Action type
+ * @param AR2 Action Result type of the second process
+ * @param Si2 Input_State type of the second process
+ * @param So2 Output_State type of the second process
+ * @param Ei2 Input_Event type of the second process
+ * @param Eo2 Output_Event type of the second process
+ * @param A2 Action type of the second process
+ * @param AR_SUPER super type of the action result types [AR] and [AR2]
+ * @param Ei_SUPER super type of the event types [Ei] and [Ei2]
+ * @param Eo_SUPER super type of the event types [Eo] and [Eo2]
+ * @param A_SUPER super type of the action types [A] and [A2]
+ * @param y second Process
+ * @return  _Process<AR_SUPER, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER, A_SUPER>
+ */
+inline fun <reified AR : AR_SUPER, Si, So, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified A : A_SUPER, reified AR2 : AR_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, reified A2 : A_SUPER, AR_SUPER, Ei_SUPER, Eo_SUPER, A_SUPER> _Process<AR?, Si, So, Ei?, Eo, A>.combine(
+    y: _Process<AR2?, Si2, So2, Ei2?, Eo2, A2>
+): _Process<in AR_SUPER, in Pair<Si, Si2>, out Pair<So, So2>, in Ei_SUPER, out Eo_SUPER, out A_SUPER> {
+
+    val extractS1: (Pair<Si, Si2>) -> Si = { pair -> pair.first }
+    val extractS2: (Pair<Si, Si2>) -> Si2 = { pair -> pair.second }
+
+    val extractE1: (Ei_SUPER) -> Ei? = {
+        when (it) {
+            is Ei -> it
+            else -> null
+        }
+    }
+    val extractE2: (Ei_SUPER) -> Ei2? = {
+        when (it) {
+            is Ei2 -> it
+            else -> null
+        }
+    }
+    val extractAR1: (AR_SUPER) -> AR? = {
+        when (it) {
+            is AR -> it
+            else -> null
+        }
+    }
+    val extractAR2: (AR_SUPER) -> AR2? = {
+        when (it) {
+            is AR2 -> it
+            else -> null
+        }
+    }
+
+    val extractA1SUPER: (A) -> A_SUPER = { it }
+    val extractA2SUPER: (A2) -> A_SUPER = { it }
+
+    val extractEoSUPER: (Eo) -> Eo_SUPER = { it }
+    val extractEo2SUPER: (Eo2) -> Eo_SUPER = { it }
+
+    val processX = this
+        .mapLeftOnActionResult(extractAR1)
+        .mapLeftOnState(extractS1)
+        .mapOnAction(extractA1SUPER)
+        .dimapOnEvent(extractE1, extractEoSUPER)
+
+    val processY = y
+        .mapLeftOnActionResult(extractAR2)
+        .mapLeftOnState(extractS2)
+        .mapOnAction(extractA2SUPER)
+        .dimapOnEvent(extractE2, extractEo2SUPER)
+
+    val processZ = processX.productOnState(processY)
+
+    return _Process(
+        ingest = { ar, si -> processZ.ingest(ar, si) },
+        react = { si, ei -> processZ.react(si, ei) },
+        evolve = { si, ei -> processZ.evolve(si, ei) },
+        pending = { si -> processZ.pending(si) },
+        isTerminal = { pair -> processZ.isTerminal(pair) },
+        initialState = processZ.initialState
+    )
+}
+
+/**
+ * Combine [_Process]es into one big [_Process]
+ *
+ * @param AR Action Result type
+ * @param Si Input_State type
+ * @param So Output_State type
+ * @param Ei Input_Event type
+ * @param Eo Output_Event type
+ * @param A Action type
+ * @param AR2 Action Result type of the second process
+ * @param Si2 Input_State type of the second process
+ * @param So2 Output_State type of the second process
+ * @param Ei2 Input_Event type of the second process
+ * @param Eo2 Output_Event type of the second process
+ * @param A2 Action type of the second process
+ * @param AR_SUPER super type of the action result types [AR] and [AR2]
+ * @param Ei_SUPER super type of the event types [Ei] and [Ei2]
+ * @param Eo_SUPER super type of the event types [Eo] and [Eo2]
+ * @param Si_SUPER super type of the event types [Si] and [Si2]
+ * @param So_SUPER super type of the event types [So] and [So2]
+ * @param A_SUPER super type of the action types [A] and [A2]
+ * @param y second Process
+ * @return  _Process<AR_SUPER, List<Si_SUPER>, List<So_SUPER>, Ei_SUPER, Eo_SUPER, A_SUPER>
+ */
+inline fun <reified AR : AR_SUPER, reified Si : Si_SUPER, So : So_SUPER, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified A : A_SUPER, reified AR2 : AR_SUPER, reified Si2 : Si_SUPER, So2 : So_SUPER, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, reified A2 : A_SUPER, AR_SUPER, Si_SUPER, So_SUPER, Ei_SUPER, Eo_SUPER, A_SUPER> _Process<in AR?, in List<Si>, out List<So>, in Ei?, out Eo, out A>.combineL(
+    y: _Process<in AR2?, in List<Si2>, out List<So2>, in Ei2?, out Eo2, out A2>
+): _Process<in AR_SUPER, in List<Si_SUPER>, out List<So_SUPER>, in Ei_SUPER, out Eo_SUPER, out A_SUPER> {
+
+    val extractS1: (List<Si_SUPER>) -> List<Si> = { list -> list.filterIsInstance(Si::class.java) }
+    val extractS2: (List<Si_SUPER>) -> List<Si2> = { list -> list.filterIsInstance(Si2::class.java) }
+
+    val extractE1: (Ei_SUPER) -> Ei? = {
+        when (it) {
+            is Ei -> it
+            else -> null
+        }
+    }
+    val extractE2: (Ei_SUPER) -> Ei2? = {
+        when (it) {
+            is Ei2 -> it
+            else -> null
+        }
+    }
+    val extractAR1: (AR_SUPER) -> AR? = {
+        when (it) {
+            is AR -> it
+            else -> null
+        }
+    }
+    val extractAR2: (AR_SUPER) -> AR2? = {
+        when (it) {
+            is AR2 -> it
+            else -> null
+        }
+    }
+
+    val extractA1SUPER: (A) -> A_SUPER = { it }
+    val extractA2SUPER: (A2) -> A_SUPER = { it }
+
+    val extractEoSUPER: (Eo) -> Eo_SUPER = { it }
+    val extractEo2SUPER: (Eo2) -> Eo_SUPER = { it }
+
+    val processX = this
+        .mapLeftOnActionResult(extractAR1)
+        .mapLeftOnState(extractS1)
+        .mapOnAction(extractA1SUPER)
+        .dimapOnEvent(extractE1, extractEoSUPER)
+
+    val processY = y
+        .mapLeftOnActionResult(extractAR2)
+        .mapLeftOnState(extractS2)
+        .mapOnAction(extractA2SUPER)
+        .dimapOnEvent(extractE2, extractEo2SUPER)
+
+    val processZ =
+        processX.productOnState(processY).mapOnState { pair: Pair<List<So>, List<So2>> -> pair.toList().flatten() }
+
+    return _Process(
+        ingest = { ar, si -> processZ.ingest(ar, si) },
+        react = { si, ei -> processZ.react(si, ei) },
+        evolve = { si, ei -> processZ.evolve(si, ei) },
+        pending = { si -> processZ.pending(si) },
+        isTerminal = { pair -> processZ.isTerminal(pair) },
+        initialState = processZ.initialState
+    )
+}
 
 /**
  * A typealias for [_Process]<AR, Si, So, Ei, Eo, A>, specializing the [_Process] to four generic parameters: AR, S, E, A, where AR=AR, Si=S, So=S, Ei=E, Eo=E, A=A

@@ -34,6 +34,16 @@ object DeciderTest : Spek({
         val evenDecider by memoized { evenNumberDecider() }
         val oddDecider by memoized { oddNumberDecider() }
         val combinedDecider by memoized { evenDecider.combine(oddDecider) }
+        val combinedDeciderList by memoized {
+            evenDecider.dimapOnState(
+                fr = { v -> listOfNotNull(v) },
+                fl = { sin: List<EvenNumberState> -> sin.first() })
+                .combineL(
+                    oddDecider.dimapOnState(
+                        fr = { v -> listOfNotNull(v) },
+                        fl = { sin: List<OddNumberState> -> sin.first() })
+                )
+        }
 
         Scenario("Decide") {
             lateinit var result: Iterable<EvenNumberEvent?>
@@ -71,6 +81,32 @@ object DeciderTest : Spek({
                             Description("2"),
                             NumberValue(2)
                         ), combinedDecider.initialState
+                    )
+            }
+
+            Then("event of super type NumberEvent should be published") {
+                assertEquals(
+                    listOf(
+                        EvenNumberAdded(
+                            Description("2"),
+                            NumberValue(2)
+                        )
+                    ), result
+                )
+            }
+
+        }
+
+        Scenario("Decide - Combine List") {
+            lateinit var result: Iterable<NumberEvent?>
+
+            When("being in current/initial state of type Pair<EvenNumberState, OddNumberState> and handling command of super type NumberCommand") {
+                result = combinedDeciderList
+                    .decide(
+                        AddEvenNumber(
+                            Description("2"),
+                            NumberValue(2)
+                        ), combinedDeciderList.initialState
                     )
             }
 

@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.domain.examples.numbers
+package com.fraktalio.fmodel.domain.examples.numbers.odd.process
 
 import com.fraktalio.fmodel.domain.examples.numbers.api.*
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.*
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.SubtractEvenNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.AddOddNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.SubtractOddNumber
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.*
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberSubtracted
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberAdded
@@ -29,31 +31,18 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEve
 /**
  * Very simple Number (stateless) process, just for fun ;)
  *
- * It reacts on Action Results of type of any Event (Even or Odd) and issue a Command/Action (Odd or Even)
- * For example if the EvenNumberAdded happened with value 4, a new command of type AddOddNumber will be published with value EvenNumberAdded-1=3
+ * It reacts on Action Results of type of any Event (Even) and issue a Command/Action (Odd)
+ * For example if the OddNumberAdded happened with value 4, a new command of type AddEvenNumber will be published with value OddNumberAdded+1=5
  *
- * In addition to Saga, the Process can keep its own state (as series of internal process events, if you like).
- * Saga is a special case of any Process.
+ * The Process can keep its own state (as series of internal process events, if you like).
  *
- * AR = NumberEvent, S = NumberState, E = NumberEvent, A = NumberCommand
+ * AR = OddNumberEvent, S = OddNumberState, E = OddNumberEvent, A = EvenNumberCommand
  *
  * @return number Process instance
  */
-fun numberProcess() = com.fraktalio.fmodel.domain.Process<NumberEvent, NumberState?, NumberEvent, NumberCommand>(
-    react = { _: NumberState?, e: NumberEvent ->
+fun oddNumberProcess() = com.fraktalio.fmodel.domain.Process<OddNumberEvent?, OddNumberState?, OddNumberEvent?, EvenNumberCommand>(
+    react = { _: OddNumberState?, e: OddNumberEvent? ->
         when (e) {
-            is EvenNumberAdded -> listOf(
-                AddOddNumber(
-                    Description("${e.value.get - 1}"),
-                    NumberValue(e.value.get - 1)
-                )
-            )
-            is EvenNumberSubtracted -> listOf(
-                SubtractOddNumber(
-                    Description("${e.value.get - 1}"),
-                    NumberValue(e.value.get - 1)
-                )
-            )
             is OddNumberAdded -> listOf(
                 AddEvenNumber(
                     Description("${e.value.get + 1}"),
@@ -70,14 +59,14 @@ fun numberProcess() = com.fraktalio.fmodel.domain.Process<NumberEvent, NumberSta
         }
     },
     // Simplest case for `evolve` function: we do not maintain the state at all ;)
-    evolve = { _: NumberState?, _: NumberEvent ->
+    evolve = { _: OddNumberState?, _: OddNumberEvent? ->
         null
     },
     initialState = null,
     // Never terminal
     isTerminal = { false },
-    // Simplest case for ingest: ingesting the Action Result of type NumberEvent and forwarding them as list of Events to the output. State is ignored.
-    ingest = { ar: NumberEvent, _: NumberState? ->
+    // Simplest case for ingest: ingesting the Action Result of type OddNumberEvent and forwarding them as list of Events to the output. State is ignored.
+    ingest = { ar: OddNumberEvent?, _: OddNumberState? ->
         listOf(ar)
     },
     // Simplest case for pending: the list of pending Actions is always empty. We only react on React function

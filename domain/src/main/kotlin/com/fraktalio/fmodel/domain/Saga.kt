@@ -58,43 +58,43 @@ data class _Saga<AR, A>(
  * Combines [_Saga]s into one [_Saga]
  *
  * Specially convenient when:
- * - [AR] and [ARn] have common superclass [AR_SUPER], or
- * - [A] and [An] have common superclass [A_SUPER]
+ * - [AR] and [AR2] have common superclass [AR_SUPER], or
+ * - [A] and [A2] have common superclass [A_SUPER]
  *
  * @param AR Action Result (usually event) of the first Saga
  * @param A Action (usually command) of the first Saga
- * @param ARn Action Result (usually event) of the second Saga
- * @param An Action (usually command) of the second Saga
- * @param AR_SUPER common superclass for [AR] and [ARn]
- * @param A_SUPER common superclass for [A] and [An]
+ * @param AR2 Action Result (usually event) of the second Saga
+ * @param A2 Action (usually command) of the second Saga
+ * @param AR_SUPER common superclass for [AR] and [AR2]
+ * @param A_SUPER common superclass for [A] and [A2]
  * @param y second saga
  * @return new Saga of type `[_Saga]<[AR_SUPER], [A_SUPER]>`
  */
-inline fun <reified AR : AR_SUPER, A : A_SUPER, reified ARn : AR_SUPER, An : A_SUPER, AR_SUPER, A_SUPER> _Saga<in AR?, out A>.combine(
-    y: _Saga<in ARn?, out An>
-): _Saga<AR_SUPER, A_SUPER> {
+inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> _Saga<in AR?, out A>.combine(
+    y: _Saga<in AR2?, out A2>
+): _Saga<in AR_SUPER, out A_SUPER> {
     val getAR: (AR_SUPER) -> AR? = {
         when (it) {
             is AR -> it
             else -> null
         }
     }
-    val getARn: (AR_SUPER) -> ARn? = {
+    val getAR2: (AR_SUPER) -> AR2? = {
         when (it) {
-            is ARn -> it
+            is AR2 -> it
             else -> null
         }
     }
     val getABase: (A) -> A_SUPER = { it }
-    val getAnBase: (An) -> A_SUPER = { it }
+    val getA2Base: (A2) -> A_SUPER = { it }
 
     val sagaX = this
         .mapLeftOnActionResult(getAR)
         .mapOnAction(getABase)
 
     val sagaY = y
-        .mapLeftOnActionResult(getARn)
-        .mapOnAction(getAnBase)
+        .mapLeftOnActionResult(getAR2)
+        .mapOnAction(getA2Base)
 
     return _Saga(
         react = { eitherAr -> sagaX.react(eitherAr).plus(sagaY.react(eitherAr)) }

@@ -19,7 +19,8 @@ package com.fraktalio.fmodel.domain
 import com.fraktalio.fmodel.domain.examples.numbers.api.*
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.AddOddNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
-import com.fraktalio.fmodel.domain.examples.numbers.numberProcess
+import com.fraktalio.fmodel.domain.examples.numbers.even.process.evenNumberProcess
+import com.fraktalio.fmodel.domain.examples.numbers.odd.process.oddNumberProcess
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
 import kotlin.test.assertEquals
@@ -30,13 +31,13 @@ import kotlin.test.assertTrue
 object ProcessTest : Spek({
 
     Feature("Process") {
-        val process by memoized { numberProcess() }
+        val process by memoized { evenNumberProcess().combine(oddNumberProcess()) }
 
         Scenario("React") {
             var result: Iterable<NumberCommand> = emptyList()
 
             When("when react on Event of type NumberEvent, publish list of Actions/Commands of type NumberCommand") {
-                result = process.react(null, EvenNumberAdded(Description("2"), NumberValue(2)))
+                result = process.react(Pair(null, null), EvenNumberAdded(Description("2"), NumberValue(2)))
             }
 
             Then("non empty list of Actions/Commands of type NumberCommand should be published") {
@@ -56,7 +57,7 @@ object ProcessTest : Spek({
             When("when react on Event of type Int, publish list of Actions/Commands of type NumberCommand") {
                 result = process
                     .dimapOnEvent(
-                        fr = { evenNumberEvent: NumberEvent -> evenNumberEvent.value.get },
+                        fr = { evenNumberEvent: NumberEvent? -> evenNumberEvent?.value?.get },
                         fl = { number: Int ->
                             EvenNumberAdded(
                                 Description(
@@ -65,7 +66,7 @@ object ProcessTest : Spek({
                             )
                         }
                     )
-                    .react(null, 2)
+                    .react(Pair(null, null), 2)
             }
 
             Then("non empty list of Actions/Commands of type NumberCommand should be published") {
@@ -80,14 +81,15 @@ object ProcessTest : Spek({
         }
 
         Scenario("Evolve") {
-            var result: NumberState? = null
+            var result: Pair<EvenNumberState?, OddNumberState?> = Pair(null, null)
 
             When("when receive Event of type NumberEvent, evolve new state of type NumberState") {
-                result = process.evolve(null, EvenNumberAdded(Description("2"), NumberValue(2)))
+                result = process.evolve(Pair(null, null), EvenNumberAdded(Description("2"), NumberValue(2)))
             }
 
             Then("expect the new state of type NumberState is evolved (in this case process is stateless and does not maintain the state)") {
-                assertNull(result)
+                assertNull(result.first)
+                assertNull(result.second)
             }
 
         }
@@ -98,8 +100,19 @@ object ProcessTest : Spek({
             When("when receive Event of type NumberEvent, evolve new state of type Int") {
                 result = process
                     .dimapOnState(
-                        fr = { evenNumberState: NumberState? -> evenNumberState?.value?.get },
-                        fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
+                        fr = { numberState: Pair<EvenNumberState?, OddNumberState?> ->
+                            numberState.second?.value?.get?.let {
+                                numberState.first?.value?.get?.plus(
+                                    it
+                                )
+                            }
+                        },
+                        fl = { number: Int ->
+                            Pair(
+                                EvenNumberState(Description(number.toString()), NumberValue(number)),
+                                null
+                            )
+                        }
                     )
                     .evolve(0, EvenNumberAdded(Description("2"), NumberValue(2)))
             }
@@ -114,7 +127,7 @@ object ProcessTest : Spek({
             var result: Iterable<NumberCommand> = emptyList()
 
             When("when provided with State of type NumberState") {
-                result = process.pending(null)
+                result = process.pending(Pair(null, null))
             }
 
             Then("`empty` list of Actions/Commands of type NumberCommand should be published") {
@@ -124,10 +137,10 @@ object ProcessTest : Spek({
         }
 
         Scenario("Ingest") {
-            var result: Iterable<NumberEvent> = emptyList()
+            var result: Iterable<NumberEvent?> = emptyList()
 
             When("when provided with State of type NumberState, and ingesting Action Result of type NumberEvent") {
-                result = process.ingest(EvenNumberAdded(Description("2"), NumberValue(2)), null)
+                result = process.ingest(EvenNumberAdded(Description("2"), NumberValue(2)), Pair(null, null)).filterNotNull()
             }
 
             Then("list of Events of type NumberEvent should be published") {
@@ -137,7 +150,7 @@ object ProcessTest : Spek({
         }
 
         Scenario("Ingest - left map over AR parameter - functor") {
-            var result: Iterable<NumberEvent> = emptyList()
+            var result: Iterable<NumberEvent?> = emptyList()
 
             When("when provided with State of type NumberState, and ingesting Action Result of type Int") {
                 result = process
@@ -147,7 +160,7 @@ object ProcessTest : Spek({
                             NumberValue(aRn)
                         )
                     }
-                    .ingest(2, null)
+                    .ingest(2, Pair(null, null)).filterNotNull()
             }
 
             Then("list of Events of type NumberEvent should be published") {
