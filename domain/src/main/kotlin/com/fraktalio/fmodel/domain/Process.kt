@@ -200,9 +200,9 @@ data class _Process<AR, Si, So, Ei, Eo, A>(
  * @param y second Process
  * @return  _Process<AR_SUPER, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER, A_SUPER>
  */
-inline fun <reified AR : AR_SUPER, Si, So, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified A : A_SUPER, reified AR2 : AR_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, reified A2 : A_SUPER, AR_SUPER, Ei_SUPER, Eo_SUPER, A_SUPER> _Process<AR?, Si, So, Ei?, Eo, A>.combine(
-    y: _Process<AR2?, Si2, So2, Ei2?, Eo2, A2>
-): _Process<in AR_SUPER, in Pair<Si, Si2>, out Pair<So, So2>, in Ei_SUPER, out Eo_SUPER, out A_SUPER> {
+inline fun <reified AR : AR_SUPER, Si, So, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified A : A_SUPER, reified AR2 : AR_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, reified A2 : A_SUPER, AR_SUPER, Ei_SUPER, Eo_SUPER, A_SUPER> _Process<in AR?, in Si, out So, in Ei?, out Eo, out A>.combine(
+    y: _Process<in AR2?, in Si2, out So2, in Ei2?, out Eo2, out A2>
+): _Process<AR_SUPER, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER, A_SUPER> {
 
     val extractS1: (Pair<Si, Si2>) -> Si = { pair -> pair.first }
     val extractS2: (Pair<Si, Si2>) -> Si2 = { pair -> pair.second }
@@ -286,9 +286,9 @@ inline fun <reified AR : AR_SUPER, Si, So, reified Ei : Ei_SUPER, reified Eo : E
  * @param y second Process
  * @return  _Process<AR_SUPER, List<Si_SUPER>, List<So_SUPER>, Ei_SUPER, Eo_SUPER, A_SUPER>
  */
-inline fun <reified AR : AR_SUPER, reified Si : Si_SUPER, So : So_SUPER, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified A : A_SUPER, reified AR2 : AR_SUPER, reified Si2 : Si_SUPER, So2 : So_SUPER, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, reified A2 : A_SUPER, AR_SUPER, Si_SUPER, So_SUPER, Ei_SUPER, Eo_SUPER, A_SUPER> _Process<in AR?, in List<Si>, out List<So>, in Ei?, out Eo, out A>.combineL(
-    y: _Process<in AR2?, in List<Si2>, out List<So2>, in Ei2?, out Eo2, out A2>
-): _Process<in AR_SUPER, in List<Si_SUPER>, out List<So_SUPER>, in Ei_SUPER, out Eo_SUPER, out A_SUPER> {
+inline fun <reified AR : AR_SUPER, reified Si : Si_SUPER, So : So_SUPER, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified A : A_SUPER, reified AR2 : AR_SUPER, reified Si2 : Si_SUPER, So2 : So_SUPER, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, reified A2 : A_SUPER, AR_SUPER, Si_SUPER, So_SUPER, Ei_SUPER, Eo_SUPER, A_SUPER> _Process<in AR?, List<Si>, List<So>, in Ei?, out Eo, out A>.combineL(
+    y: _Process<in AR2?, List<Si2>, List<So2>, in Ei2?, out Eo2, out A2>
+): _Process<AR_SUPER, List<Si_SUPER>, List<So_SUPER>, Ei_SUPER, Eo_SUPER, A_SUPER> {
 
     val extractS1: (List<Si_SUPER>) -> List<Si> = { list -> list.filterIsInstance(Si::class.java) }
     val extractS2: (List<Si_SUPER>) -> List<Si2> = { list -> list.filterIsInstance(Si2::class.java) }

@@ -132,8 +132,8 @@ data class _View<Si, So, E>(
  * @param y second View
  * @return new View of type [_View]<[Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [E_SUPER]>
  */
-inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<Si, So, in E?>.combine(
-    y: _View<Si2, So2, in E2?>
+inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<in Si, out So, in E?>.combine(
+    y: _View<in Si2, out So2, in E2?>
 ): _View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER> {
     val extractE1: (E_SUPER) -> E? = {
         when (it) {
@@ -187,7 +187,7 @@ inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER
  * @return new View of type [_View]< [List]<[Si_SUPER]>, [List]<[So_SUPER]>, [E_SUPER] >
  */
 inline fun <reified Si : Si_SUPER, So : So_SUPER, reified E : E_SUPER, reified Si2 : Si_SUPER, So2 : So_SUPER, reified E2 : E_SUPER, Si_SUPER, So_SUPER, E_SUPER> _View<List<Si>, List<So>, in E?>.combineL(
-    y: _View<in List<Si2>, out List<So2>, in E2?>
+    y: _View<List<Si2>, List<So2>, in E2?>
 ): _View<List<Si_SUPER>, List<So_SUPER>, E_SUPER> {
 
     val extractE1: (E_SUPER) -> E? = {

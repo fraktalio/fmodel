@@ -183,7 +183,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
  */
 inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<in C?, in Si, out So, in Ei?, out Eo>.combine(
     y: _Decider<in C2?, in Si2, out So2, in Ei2?, out Eo2>
-): _Decider<in C_SUPER, in Pair<Si, Si2>, out Pair<So, So2>, in Ei_SUPER, out Eo_SUPER> {
+): _Decider<C_SUPER, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER> {
 
     val extractS1: (Pair<Si, Si2>) -> Si = { pair -> pair.first }
     val extractS2: (Pair<Si, Si2>) -> Si2 = { pair -> pair.second }
@@ -263,9 +263,9 @@ inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, reified Eo : Eo_
  * @param y second Decider
  * @return [_Decider]<[C_SUPER], [List]<[Si_SUPER]>, [List]<[So_SUPER]>, [Ei_SUPER], [Eo_SUPER]>
  */
-inline fun <reified C : C_SUPER, reified Si : Si_SUPER, So : So_SUPER, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified C2 : C_SUPER, reified Si2 : Si_SUPER, So2 : So_SUPER, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, C_SUPER, Si_SUPER, So_SUPER, Ei_SUPER, Eo_SUPER> _Decider<in C?, in List<Si>, out List<So>, in Ei?, out Eo>.combineL(
-    y: _Decider<in C2?, in List<Si2>, out List<So2>, in Ei2?, out Eo2>
-): _Decider<in C_SUPER, in List<Si_SUPER>, out List<So_SUPER>, in Ei_SUPER, out Eo_SUPER> {
+inline fun <reified C : C_SUPER, reified Si : Si_SUPER, So : So_SUPER, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified C2 : C_SUPER, reified Si2 : Si_SUPER, So2 : So_SUPER, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, C_SUPER, Si_SUPER, So_SUPER, Ei_SUPER, Eo_SUPER> _Decider<in C?, List<Si>, List<So>, in Ei?, out Eo>.combineL(
+    y: _Decider<in C2?, List<Si2>, List<So2>, in Ei2?, out Eo2>
+): _Decider<C_SUPER, List<Si_SUPER>, List<So_SUPER>, Ei_SUPER, Eo_SUPER> {
 
     val extractS1: (List<Si_SUPER>) -> List<Si> = { list -> list.filterIsInstance(Si::class.java) }
     val extractS2: (List<Si_SUPER>) -> List<Si2> = { list -> list.filterIsInstance(Si2::class.java) }
