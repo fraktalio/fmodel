@@ -1,5 +1,9 @@
 # **f`(`model`)`** - Functional domain modeling
 
+[![Maven Central - domain](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/domain.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22domain%22)
+[![Maven Central - application](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/application.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22application%22)
+![workflow](https://github.com/fraktalio/fmodel/actions/workflows/maven-test-build-publish.yml/badge.svg)
+
 When you’re developing an information system to automate the activities of the business, you are modeling the business. The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect the business — together, they constitute the model of the domain.
 
 ## `IOR<Library, Inspiration>`
