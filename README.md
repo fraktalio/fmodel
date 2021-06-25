@@ -521,6 +521,12 @@ data class ProcessManager<AR, S, E, A>(
 the two. With first-class support for features such as higher-order functions, function types and lambdas, Kotlin is a
 great choice if you’re doing or exploring functional programming."*
 
+## Deploy to Maven Central
+
+### Manually
+```shell
+mvn clean deploy -Dgpg.passphrase="YOUR_PASSPHRASE" -Pci-cd
+```
 ## References and further reading
 
 - https://www.youtube.com/watch?v=kgYGMVDHQHs
