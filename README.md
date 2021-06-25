@@ -521,6 +521,24 @@ data class ProcessManager<AR, S, E, A>(
 the two. With first-class support for features such as higher-order functions, function types and lambdas, Kotlin is a
 great choice if you’re doing or exploring functional programming."*
 
+## Start using the libraries
+All `fmodel` components/libraries are released to [Maven Central](https://repo1.maven.org/maven2/com/fraktalio/fmodel/)
+
+### Maven coordinates
+```
+ <dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>domain</artifactId>
+    <version>1.0.0</version>
+</dependency>
+
+<dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>application</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
 ## Deploy to Maven Central
 
 ### Manually
