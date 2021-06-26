@@ -35,8 +35,7 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         run: |
-          mvn \
-            --no-transfer-progress \
+          ./mvnw \
             --batch-mode \
             -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} \
             clean deploy -Pci-cd
