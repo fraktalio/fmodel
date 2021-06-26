@@ -1,4 +1,4 @@
-name: CI with Maven - Test, Build and Publish to Maven Cenral
+name: CI with Maven - Test, Build and Publish to Maven Central
 # Trigger the workflow on push,
 # but only for the main branch
 on:
@@ -22,7 +22,6 @@ jobs:
         run: |
           cat <(echo -e "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}") | gpg --batch --import
           gpg --list-secret-keys --keyid-format LONG
-
 
       - name: Test, Build and Deploy with Maven to Maven Central
         env:

@@ -1,4 +1,4 @@
-name: CI with Maven - Test, Build and Publish
+name: CI with Maven - Test, Build and Publish to Github
 # Trigger the workflow on push,
 # but only for the main branch
 on:
