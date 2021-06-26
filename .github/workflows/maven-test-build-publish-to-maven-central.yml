@@ -17,8 +17,11 @@ jobs:
           server-id: ossrh
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
-          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Install gpg secret key
+        run: |
+          cat <(echo -e "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}") | gpg --batch --import
+          gpg --list-secret-keys --keyid-format LONG
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -32,5 +35,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-        run: ./mvnw --batch-mode clean deploy -Pci-cd -e
+        run: |
+          mvn \
+            --no-transfer-progress \
+            --batch-mode \
+            -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} \
+            clean deploy -Pci-cd
