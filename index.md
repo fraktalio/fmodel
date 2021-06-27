@@ -4,7 +4,14 @@ When you’re developing an information system to automate the activities of the
 
 ## `IOR<Library, Inspiration>`
 
-This project can be used as a library, or as an inspiration, or both.
+This project can be used as a library, or as an inspiration, or both. It provides just enough tactical Domain-Driven Design patterns, optimised for Event Sourcing and CQRS.
+
+![workflow](https://github.com/fraktalio/fmodel/actions/workflows/maven-test-build-publish-to-github.yml/badge.svg)
+![workflow](https://github.com/fraktalio/fmodel/actions/workflows/maven-test-build-publish-to-maven-central.yml/badge.svg)
+
+
+ - The `domain` model library is fully isolated from the application layer and API-related concerns. It represents a pure declaration (pure functions) of the program logic. It is written in [Kotlin](https://kotlinlang.org/) programming language, without additional dependencies. [![Maven Central - domain](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/domain.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22domain%22)
+ - The `application` library orchestrates the execution of the logic by loading state, executing `domain` components and storing new state. It is written in [Kotlin](https://kotlinlang.org/) programming language, with [Arrow](https://arrow-kt.io/) as additional dependency. [![Maven Central - application](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/application.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22application%22)
 
 ## Table of Contents
 
