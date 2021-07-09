@@ -24,11 +24,14 @@ import com.fraktalio.fmodel.application.examples.numbers.numberRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecider
+import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
+import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.spekframework.spek2.Spek
@@ -45,6 +48,8 @@ object AggregateTest : Spek({
             numberAggregate(
                 evenNumberDecider(),
                 oddNumberDecider(),
+                evenNumberSaga(),
+                oddNumberSaga(),
                 numberRepository()
             )
         }
@@ -110,45 +115,41 @@ object AggregateTest : Spek({
 
 
         Scenario("Success - All Numbers Aggregate -  Even") {
-            lateinit var result: Either<Error, Iterable<Success.EventStoredSuccessfully<Either<EvenNumberEvent?, OddNumberEvent?>>>>
+            lateinit var result: Either<Error, Iterable<Success.EventStoredSuccessfully<NumberEvent?>>>
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
                     result = allNumbersAggregate.handle(
-                        Either.Left(
-                            AddEvenNumber(
-                                Description("Add 2"),
-                                NumberValue(2)
-                            )
+                        AddEvenNumber(
+                            Description("Add 2"),
+                            NumberValue(2)
                         )
                     )
                 }
             }
             Then("expect success") {
                 assertTrue(result.isRight())
-                assert(result is Either.Right && (result as Either.Right<Iterable<Success.EventStoredSuccessfully<Either<EvenNumberEvent?, OddNumberEvent?>>>>).value.count() == 1)
+                assert(result is Either.Right && (result as Either.Right<Iterable<Success.EventStoredSuccessfully<NumberEvent?>>>).value.count() == 1)
 
             }
         }
 
         Scenario("Success - All Numbers Aggregate -  Odd") {
-            lateinit var result: Either<Error, Iterable<Success.EventStoredSuccessfully<Either<EvenNumberEvent?, OddNumberEvent?>>>>
+            lateinit var result: Either<Error, Iterable<Success.EventStoredSuccessfully<NumberEvent?>>>
 
             When("handling command of type AddOddNumber") {
                 runBlockingTest {
                     result = allNumbersAggregate.handle(
-                        Either.Right(
-                            OddNumberCommand.AddOddNumber(
-                                Description("Add 1"),
-                                NumberValue(1)
-                            )
+                        OddNumberCommand.AddOddNumber(
+                            Description("Add 1"),
+                            NumberValue(1)
                         )
                     )
                 }
             }
             Then("expect success") {
                 assertTrue(result.isRight())
-                assert(result is Either.Right && (result as Either.Right<Iterable<Success.EventStoredSuccessfully<Either<EvenNumberEvent?, OddNumberEvent?>>>>).value.count() == 1)
+                assert(result is Either.Right && (result as Either.Right<Iterable<Success.EventStoredSuccessfully<NumberEvent?>>>).value.count() == 2)
 
             }
         }

@@ -54,7 +54,7 @@ fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEven
                         c.value
                     )
                 )
-                else -> emptyList()
+                null -> emptyList()
             }
         },
         evolve = { s, e ->
@@ -67,7 +67,7 @@ fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEven
                     e.description,
                     NumberValue(s.value.get - e.value.get)
                 )
-                else -> s
+                null -> s
             }
         }
     )

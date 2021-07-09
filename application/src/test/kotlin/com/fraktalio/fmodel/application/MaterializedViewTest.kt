@@ -50,7 +50,7 @@ object MaterializedViewTest : Spek({
         Scenario("Success") {
             lateinit var result: Either<Error, Success.StateStoredSuccessfully<EvenNumberState?>>
 
-            When("handling command of type AddEvenNumber") {
+            When("handling event of type EvenNumberAdded") {
                 runBlockingTest {
                     result = evenView.handle(
                         EvenNumberAdded(
@@ -69,7 +69,7 @@ object MaterializedViewTest : Spek({
         Scenario("Success - handling null event") {
             lateinit var result: Either<Error, Success.StateStoredSuccessfully<EvenNumberState?>>
 
-            When("handling command of type AddEvenNumber") {
+            When("handling null") {
                 runBlockingTest {
                     result = evenView.handle(
                         null
@@ -84,14 +84,12 @@ object MaterializedViewTest : Spek({
         Scenario("Success - All numbers View") {
             lateinit var result: Either<Error, Success.StateStoredSuccessfully<Pair<EvenNumberState?, OddNumberState?>>>
 
-            When("handling command of type AddEvenNumber") {
+            When("handling event of type EvenNumberAdded") {
                 runBlockingTest {
                     result = allNumbersView.handle(
-                        Either.Left(
-                            EvenNumberAdded(
-                                Description("Add 2"),
-                                NumberValue(2)
-                            )
+                        EvenNumberAdded(
+                            Description("Add 2"),
+                            NumberValue(2)
                         )
                     )
                 }

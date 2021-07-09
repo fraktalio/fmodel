@@ -80,12 +80,6 @@ fun numberSaga() = Saga<NumberEvent, NumberCommand>(
 fun evenNumberSaga() = Saga<NumberEvent.EvenNumberEvent?, NumberCommand.OddNumberCommand>(
     react = { numberEvent ->
         when (numberEvent) {
-            is EvenNumberAdded -> listOf(
-                AddOddNumber(
-                    Description("${numberEvent.value.get - 1}"),
-                    NumberValue(numberEvent.value.get - 1)
-                )
-            )
             is EvenNumberSubtracted -> listOf(
                 SubtractOddNumber(
                     Description("${numberEvent.value.get - 1}"),
@@ -109,12 +103,6 @@ fun oddNumberSaga() = Saga<NumberEvent.OddNumberEvent?, NumberCommand.EvenNumber
         when (numberEvent) {
             is OddNumberAdded -> listOf(
                 AddEvenNumber(
-                    Description("${numberEvent.value.get + 1}"),
-                    NumberValue(numberEvent.value.get + 1)
-                )
-            )
-            is OddNumberSubtracted -> listOf(
-                SubtractEvenNumber(
                     Description("${numberEvent.value.get + 1}"),
                     NumberValue(numberEvent.value.get + 1)
                 )

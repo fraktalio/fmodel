@@ -20,6 +20,7 @@ import arrow.core.Either
 import com.fraktalio.fmodel.application.Error
 import com.fraktalio.fmodel.application.EventRepository
 import com.fraktalio.fmodel.application.Success
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
@@ -39,33 +40,28 @@ private val numberEventStorageMutex = Mutex()
  *
  * @constructor Creates Number repository
  */
-class NumberRepository :
-    EventRepository<Either<EvenNumberCommand?, OddNumberCommand?>, Either<EvenNumberEvent?, OddNumberEvent?>> {
+class NumberRepository : EventRepository<NumberCommand?, NumberEvent?> {
 
-    override suspend fun Either<EvenNumberCommand?, OddNumberCommand?>.fetchEvents(): Either<Error.FetchingEventsFailed, Iterable<Either<EvenNumberEvent?, OddNumberEvent?>>> =
+    override suspend fun NumberCommand?.fetchEvents(): Either<Error.FetchingEventsFailed, Iterable<NumberEvent?>> =
         Either.catch {
             numberEventStorage.map { numberEvent ->
                 when (numberEvent) {
-                    is EvenNumberEvent -> Either.Left(numberEvent)
-                    is OddNumberEvent -> Either.Right(numberEvent)
+                    is EvenNumberEvent -> numberEvent
+                    is OddNumberEvent -> numberEvent
                     else -> throw UnsupportedOperationException("fetched null event from the event store")
                 }
             }
         }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
 
 
-    override suspend fun Either<EvenNumberEvent?, OddNumberEvent?>.save(): Either<Error.StoringEventFailed<Either<EvenNumberEvent?, OddNumberEvent?>>, Success.EventStoredSuccessfully<Either<EvenNumberEvent?, OddNumberEvent?>>> =
+    override suspend fun NumberEvent?.save(): Either<Error.StoringEventFailed<NumberEvent?>, Success.EventStoredSuccessfully<NumberEvent?>> =
         Either.catch {
             numberEventStorageMutex.withLock {
-                numberEventStorage = numberEventStorage.plus(
-                    when (this) {
-                        is Either.Left -> this.value
-                        is Either.Right -> this.value
-                    }
-                )
+                numberEventStorage = numberEventStorage.plus(this)
             }
             Success.EventStoredSuccessfully(this)
         }.mapLeft { throwable -> Error.StoringEventFailed(this, throwable) }
+
 }
 
 /**
@@ -73,6 +69,6 @@ class NumberRepository :
  *
  * @return Number repository instance
  */
-fun numberRepository(): EventRepository<Either<EvenNumberCommand?, OddNumberCommand?>, Either<EvenNumberEvent?, OddNumberEvent?>> =
+fun numberRepository(): EventRepository<NumberCommand?, NumberEvent?> =
     NumberRepository()
 

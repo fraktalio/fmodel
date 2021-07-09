@@ -16,15 +16,15 @@
 
 package com.fraktalio.fmodel.application.examples.numbers
 
-import arrow.core.Either
 import com.fraktalio.fmodel.application.MaterializedView
 import com.fraktalio.fmodel.application.ViewStateRepository
 import com.fraktalio.fmodel.domain.View
+import com.fraktalio.fmodel.domain.combine
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
-import com.fraktalio.fmodel.domain.extension.combineViews
 
 
 /**
@@ -40,9 +40,9 @@ import com.fraktalio.fmodel.domain.extension.combineViews
 fun numberMaterializedView(
     oddView: View<OddNumberState?, OddNumberEvent?>,
     evenView: View<EvenNumberState?, EvenNumberEvent?>,
-    repository: ViewStateRepository<Either<EvenNumberEvent?, OddNumberEvent?>, Pair<EvenNumberState?, OddNumberState?>>
-): MaterializedView<Pair<EvenNumberState?, OddNumberState?>, Either<EvenNumberEvent?, OddNumberEvent?>> =
+    repository: ViewStateRepository<NumberEvent?, Pair<EvenNumberState?, OddNumberState?>>
+): MaterializedView<Pair<EvenNumberState?, OddNumberState?>, NumberEvent?> =
     MaterializedView(
-        view = evenView.combineViews(oddView),
+        view = evenView.combine(oddView),
         viewStateRepository = repository
     )

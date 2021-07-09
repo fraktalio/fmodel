@@ -16,17 +16,17 @@
 
 package com.fraktalio.fmodel.application.examples.numbers
 
-import arrow.core.Either
 import com.fraktalio.fmodel.application.EventRepository
 import com.fraktalio.fmodel.application.EventSourcingAggregate
 import com.fraktalio.fmodel.domain.Decider
+import com.fraktalio.fmodel.domain.Saga
+import com.fraktalio.fmodel.domain.combine
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.*
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.*
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
-import com.fraktalio.fmodel.domain.extension.combineDeciders
 
 
 /**
@@ -42,10 +42,13 @@ import com.fraktalio.fmodel.domain.extension.combineDeciders
 fun numberAggregate(
     evenNumberDecider: Decider<EvenNumberCommand?, EvenNumberState, EvenNumberEvent?>,
     oddNumberDecider: Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?>,
-    repository: EventRepository<Either<EvenNumberCommand?, OddNumberCommand?>, Either<EvenNumberEvent?, OddNumberEvent?>>
-): EventSourcingAggregate<Either<EvenNumberCommand?, OddNumberCommand?>, Pair<EvenNumberState, OddNumberState>, Either<EvenNumberEvent?, OddNumberEvent?>> =
+    evenNumberSaga: Saga<EvenNumberEvent?, OddNumberCommand>,
+    oddNumberSaga: Saga<OddNumberEvent?, EvenNumberCommand>,
+    repository: EventRepository<NumberCommand?, NumberEvent?>
+) =
 
     EventSourcingAggregate(
-        decider = evenNumberDecider.combineDeciders(oddNumberDecider),
-        eventRepository = repository
+        decider = evenNumberDecider.combine(oddNumberDecider),
+        eventRepository = repository,
+        saga = evenNumberSaga.combine(oddNumberSaga)
     )
