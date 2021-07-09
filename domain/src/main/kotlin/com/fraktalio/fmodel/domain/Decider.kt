@@ -20,8 +20,8 @@ package com.fraktalio.fmodel.domain
 /**
  * [_Decider] is a datatype that represents the main decision making algorithm.
  * It has five generic parameters [C], [Si], [So], [Ei], [Eo] , representing the type of the values that [_Decider] may contain or use.
- * [_Decider] can be specialized for any type [C] or [Si] or [So] or [Ei] or [Eo] because these types does not affect its behavior. [_Decider] behaves the same for [C]=[Int] or [C]=YourCustomType, for example.
- * To indicate that [_Decider] is a type constructor for all values of [C], [Si], [So], [Ei], [Eo], it implements [_DeciderOf]<[C], [Si], [So], [Ei], [Eo]>, which is a typealias of [Kind5]<[For_Decider], [C], [Si], [So], [Ei], [Eo]>
+ * [_Decider] can be specialized for any type [C] or [Si] or [So] or [Ei] or [Eo] because these types does not affect its behavior.
+ * [_Decider] behaves the same for [C]=[Int] or [C]=YourCustomType, for example.
  *
  * [_Decider] is a pure domain component.
  *
