@@ -33,7 +33,7 @@ object DeciderTest : Spek({
     Feature("Decider") {
         val evenDecider by memoized { evenNumberDecider() }
         val oddDecider by memoized { oddNumberDecider() }
-        val combinedDecider by memoized { evenDecider.combine(oddDecider) }
+        val combinedDecider by memoized { evenDecider.combine(oddDecider)}
         val combinedDeciderList by memoized {
             evenDecider.dimapOnState(
                 fr = { v -> listOfNotNull(v) },
