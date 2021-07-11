@@ -1,3 +1,3 @@
 theme: jekyll-theme-minimal
 logo: https://github.com/fraktalio/fmodel/raw/gh-pages/logo.jpg
-description: It provides just enough tactical Domain-Driven Design patterns, optimised for Event Sourcing and CQRS. Abstracts are generalized through parameterization to provide greater utility.
+description: It provides just enough tactical Domain-Driven Design patterns, optimised for Event Sourcing and CQRS. <p> Abstracts are generalized through parameterization to provide greater utility.</p>
