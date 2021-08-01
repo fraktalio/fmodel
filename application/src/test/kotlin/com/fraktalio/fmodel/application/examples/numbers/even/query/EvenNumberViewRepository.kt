@@ -16,9 +16,6 @@
 
 package com.fraktalio.fmodel.application.examples.numbers.even.query
 
-import arrow.core.Either
-import com.fraktalio.fmodel.application.Error
-import com.fraktalio.fmodel.application.Success
 import com.fraktalio.fmodel.application.ViewStateRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
@@ -38,25 +35,15 @@ private val evenNumberStateStorageMutex = Mutex()
  */
 class EvenNumberViewRepository : ViewStateRepository<EvenNumberEvent?, EvenNumberState?> {
 
-    override suspend fun EvenNumberEvent?.fetchState(): Either<Error.FetchingStateFailed, EvenNumberState?> =
+    override suspend fun EvenNumberEvent?.fetchState(): EvenNumberState? = evenNumberStateStorage
 
-        Either.catch {
-            evenNumberStateStorage
-        }.mapLeft { throwable ->
-            Error.FetchingStateFailed(throwable)
+    override suspend fun EvenNumberState?.save(): EvenNumberState? {
+        evenNumberStateStorageMutex.withLock {
+            evenNumberStateStorage = this
         }
+        return evenNumberStateStorage
+    }
 
-
-    override suspend fun EvenNumberState?.save(): Either<Error.StoringStateFailed<EvenNumberState?>, Success.StateStoredSuccessfully<EvenNumberState?>> =
-
-        Either.catch {
-            evenNumberStateStorageMutex.withLock {
-                evenNumberStateStorage = this
-            }
-            Success.StateStoredSuccessfully(this)
-        }.mapLeft { throwable ->
-            Error.StoringStateFailed(this, throwable)
-        }
 }
 
 /**

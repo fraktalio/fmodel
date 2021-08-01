@@ -23,9 +23,11 @@ import com.fraktalio.fmodel.domain.Saga
 import com.fraktalio.fmodel.domain.combine
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.*
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.*
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 
 

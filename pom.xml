@@ -22,7 +22,7 @@
 
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>fmodel</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>fmodel</name>
@@ -50,7 +50,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.5.20</kotlin.version>
         <kotlin-test.version>1.5.20</kotlin-test.version>
-        <kotlin.coroutines.version>1.5.0</kotlin.coroutines.version>
+        <kotlin.coroutines.version>1.5.1</kotlin.coroutines.version>
         <kotlin.code.style>official</kotlin.code.style>
         <java.version>11</java.version>
         <arrow.version>0.13.2</arrow.version>
@@ -136,6 +136,8 @@
                 <version>${kotlin.version}</version>
                 <configuration>
                     <jvmTarget>1.8</jvmTarget>
+                    <languageVersion>1.5</languageVersion>
+                    <experimentalCoroutines>enable</experimentalCoroutines>
                 </configuration>
                 <executions>
                     <execution>

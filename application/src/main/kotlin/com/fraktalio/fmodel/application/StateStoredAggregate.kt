@@ -17,10 +17,12 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.Either.*
+import arrow.core.Either.Left
+import arrow.core.Either.Right
 import arrow.core.computations.either
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.Saga
+import kotlinx.coroutines.flow.*
 
 /**
  * State stored aggregate is using/delegating a [StateStoredAggregate.decider] of type [Decider]<[C], [S], [E]> to handle commands and produce new state.
@@ -53,15 +55,29 @@ data class StateStoredAggregate<C, S, E>(
      * @param command Command message of type [C]
      * @return Either [Error] or [Success]
      */
-    suspend fun handle(command: C): Either<Error, Success.StateStoredSuccessfully<S>> =
-        // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
-        either {
-            (command.fetchState().bind() ?: decider.initialState)
-                .calculateNewState(command).bind()
-                .save().bind()
+    suspend fun handleEither(command: C): Either<Error, Success.StateStoredSuccessfully<S>> =
+        try {
+            // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
+            either {
+                (command.fetchStateEither().bind() ?: decider.initialState)
+                    .calculateNewState(command).bind()
+                    .saveEither().bind()
+            }
+        } catch (ex: Exception) {
+            Left(Error.CommandHandlingFailed(ex))
         }
 
-    private fun S.validateIfTerminal(): Either<Error, S> =
+    /**
+     * Handles the [Flow] of command messages of type [C]
+     *
+     * @param commands Command messages of type [Flow]<[C]>
+     * @return [Flow] of [Either] [Error] or [Success]
+     */
+    fun handleEither(commands: Flow<C>): Flow<Either<Error, Success.StateStoredSuccessfully<S>>> =
+        commands.map { handleEither(it) }
+
+
+    private suspend fun S.validateIfTerminal(): Either<Error, S> =
         if (decider.isTerminal(this@validateIfTerminal)) Left(Error.AggregateIsInTerminalState(this@validateIfTerminal))
         else Right(this@validateIfTerminal)
 
@@ -70,7 +86,9 @@ data class StateStoredAggregate<C, S, E>(
             val currentState = this@calculateNewState.validateIfTerminal().bind()
             val events = decider.decide(command, currentState)
             val newState = events.fold(this@calculateNewState, decider.evolve)
-            if (saga != null) events.flatMap { saga.react(it) }.forEach { newState.calculateNewState(it) }
+            when {
+                saga != null -> events.flatMapConcat { saga.react(it) }.collect { newState.calculateNewState(it) }
+            }
             newState
         }
 }

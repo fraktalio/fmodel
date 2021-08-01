@@ -17,8 +17,9 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.computations.either
 import com.fraktalio.fmodel.domain.Saga
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapConcat
 
 /**
  * Saga manager - Stateless process orchestrator
@@ -35,12 +36,37 @@ data class SagaManager<AR, A>(
      * Handles the action result of type [AR]
      *
      * @param actionResult Action Result represent the outcome of some action you want to handle in some way
-     * @return Either [Error] or [Success]
+     * @return [Flow] of [Either] [Error] or [Success]
      */
-    suspend fun handle(actionResult: AR): Either<Error, Iterable<Success.ActionPublishedSuccessfully<A>>> =
-        // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
-        either {
-            saga.react(actionResult).publish().bind()
-        }
+    suspend fun handleEither(actionResult: AR): Flow<Either<Error, Success.ActionPublishedSuccessfully<A>>> =
+        saga.react(actionResult).publishEither()
+
+    /**
+     * Handles the action result of type [AR]
+     *
+     * @param actionResult Action Result represent the outcome of some action you want to handle in some way
+     * @return [Flow] of published Actions/[A]
+     */
+    suspend fun handle(actionResult: AR): Flow<A> =
+        saga.react(actionResult).publish()
+
+    /**
+     * Handles the the [Flow] of action results of type [AR]
+     *
+     * @param actionResults Action Results represent the outcome of some action you want to handle in some way
+     * @return [Flow] of [Either] [Error] or [Success]
+     */
+    fun handleEither(actionResults: Flow<AR>): Flow<Either<Error, Success.ActionPublishedSuccessfully<A>>> =
+        actionResults.flatMapConcat { handleEither(it) }
+
+    /**
+     * Handles the the [Flow] of action results of type [AR]
+     *
+     * @param actionResults Action Results represent the outcome of some action you want to handle in some way
+     * @return [Flow] of published Actions/[A]
+     */
+    fun handle(actionResults: Flow<AR>): Flow<A> =
+        actionResults.flatMapConcat { handle(it) }
+
 }
 

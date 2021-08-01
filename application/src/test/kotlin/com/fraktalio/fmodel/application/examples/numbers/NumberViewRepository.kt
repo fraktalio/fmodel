@@ -16,9 +16,6 @@
 
 package com.fraktalio.fmodel.application.examples.numbers
 
-import arrow.core.Either
-import com.fraktalio.fmodel.application.Error
-import com.fraktalio.fmodel.application.Success
 import com.fraktalio.fmodel.application.ViewStateRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.*
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
@@ -42,32 +39,22 @@ private val numberStateStorageMutex = Mutex()
 class NumberViewRepository :
     ViewStateRepository<NumberEvent?, Pair<EvenNumberState?, OddNumberState?>> {
 
-    override suspend fun Pair<EvenNumberState?, OddNumberState?>.save(): Either<Error.StoringStateFailed<Pair<EvenNumberState?, OddNumberState?>>, Success.StateStoredSuccessfully<Pair<EvenNumberState?, OddNumberState?>>> =
-        Either.catch {
-            numberStateStorageMutex.withLock {
-                when {
-                    this.first != null -> numberStateStorage1 = this.first
-                    this.second != null -> numberStateStorage2 = this.second
-                }
-
+    override suspend fun Pair<EvenNumberState?, OddNumberState?>.save(): Pair<EvenNumberState?, OddNumberState?> {
+        numberStateStorageMutex.withLock {
+            when {
+                this.first != null -> numberStateStorage1 = this.first
+                this.second != null -> numberStateStorage2 = this.second
             }
-            Success.StateStoredSuccessfully(this)
-        }.mapLeft { throwable ->
-            Error.StoringStateFailed(this, throwable)
         }
+        return this
+    }
 
-    override suspend fun NumberEvent?.fetchState(): Either<Error.FetchingStateFailed, Pair<EvenNumberState?, OddNumberState?>?> =
-        Either.catch {
-            when (this) {
-                is EvenNumberEvent -> Pair(numberStateStorage1, null)
-                is OddNumberEvent -> Pair(null, numberStateStorage2)
-                else -> throw UnsupportedOperationException("fetching state failed")
-            }
-        }.mapLeft { throwable ->
-            Error.FetchingStateFailed(throwable)
+    override suspend fun NumberEvent?.fetchState(): Pair<EvenNumberState?, OddNumberState?> =
+        when (this) {
+            is EvenNumberEvent -> Pair(numberStateStorage1, null)
+            is OddNumberEvent -> Pair(null, numberStateStorage2)
+            else -> throw UnsupportedOperationException("fetching state failed")
         }
-
-
 }
 
 /**

@@ -16,21 +16,26 @@
 
 package com.fraktalio.fmodel.domain
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flattenConcat
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+
 /**
  * [_Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).
  * It is responsible for mapping different events from aggregates into action results ([AR]) that the [_Saga] then can use to calculate the next actions ([A]) to be mapped to commands of other aggregates.
  *
- * The biggest difference between `Saga` and `Process` is that `Saga` is stateless, it does not maintain the state.
+ * Saga does not maintain the state.
  *
  * @param AR Action Result type
  * @param A Action type
- * @property react A pure function/lambda that takes input state of type [AR], and returns the list of actions [Iterable]<[A]>.
+ * @property react A function/lambda that takes input state of type [AR], and returns the flow of actions [Flow]<[A]>.
  * @constructor Creates [_Saga]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class _Saga<AR, A>(
-    val react: (AR) -> Iterable<A>
+    val react: (AR) -> Flow<A>
 ) {
     /**
      * Left map on AR/ActionResult parameter - Contravariant
@@ -48,7 +53,7 @@ data class _Saga<AR, A>(
      * @param An
      * @param f
      */
-    inline fun <An> mapOnAction(crossinline f: (A) -> An): _Saga<AR, An> = _Saga(
+    inline fun <An> mapOnAction(crossinline f: suspend (A) -> An): _Saga<AR, An> = _Saga(
         react = { ar -> this.react(ar).map(f) }
     )
 
@@ -85,8 +90,8 @@ inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_S
             else -> null
         }
     }
-    val getABase: (A) -> A_SUPER = { it }
-    val getA2Base: (A2) -> A_SUPER = { it }
+    val getABase: suspend (A) -> A_SUPER = { it }
+    val getA2Base: suspend (A2) -> A_SUPER = { it }
 
     val sagaX = this
         .mapLeftOnActionResult(getAR)
@@ -97,7 +102,7 @@ inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_S
         .mapOnAction(getA2Base)
 
     return _Saga(
-        react = { eitherAr -> sagaX.react(eitherAr).plus(sagaY.react(eitherAr)) }
+        react = { eitherAr -> flowOf(sagaX.react(eitherAr), (sagaY.react(eitherAr))).flattenConcat() }
     )
 }
 

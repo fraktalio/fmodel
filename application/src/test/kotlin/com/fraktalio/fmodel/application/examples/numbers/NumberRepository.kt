@@ -16,16 +16,14 @@
 
 package com.fraktalio.fmodel.application.examples.numbers
 
-import arrow.core.Either
-import com.fraktalio.fmodel.application.Error
 import com.fraktalio.fmodel.application.EventRepository
-import com.fraktalio.fmodel.application.Success
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -42,25 +40,26 @@ private val numberEventStorageMutex = Mutex()
  */
 class NumberRepository : EventRepository<NumberCommand?, NumberEvent?> {
 
-    override suspend fun NumberCommand?.fetchEvents(): Either<Error.FetchingEventsFailed, Iterable<NumberEvent?>> =
-        Either.catch {
-            numberEventStorage.map { numberEvent ->
-                when (numberEvent) {
-                    is EvenNumberEvent -> numberEvent
-                    is OddNumberEvent -> numberEvent
-                    else -> throw UnsupportedOperationException("fetched null event from the event store")
-                }
+
+    override fun NumberCommand?.fetchEvents(): Flow<NumberEvent?> =
+
+        numberEventStorage.asFlow().map { numberEvent ->
+            when (numberEvent) {
+                is EvenNumberEvent -> numberEvent
+                is OddNumberEvent -> numberEvent
+                else -> throw UnsupportedOperationException("fetched null event from the event store")
             }
-        }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
+        }
 
 
-    override suspend fun NumberEvent?.save(): Either<Error.StoringEventFailed<NumberEvent?>, Success.EventStoredSuccessfully<NumberEvent?>> =
-        Either.catch {
-            numberEventStorageMutex.withLock {
-                numberEventStorage = numberEventStorage.plus(this)
-            }
-            Success.EventStoredSuccessfully(this)
-        }.mapLeft { throwable -> Error.StoringEventFailed(this, throwable) }
+    override suspend fun NumberEvent?.save(): NumberEvent? {
+
+        numberEventStorageMutex.withLock {
+            numberEventStorage = numberEventStorage.plus(this)
+        }
+        return this
+    }
+
 
 }
 
