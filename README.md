@@ -25,13 +25,9 @@ Design patterns, optimised for Event Sourcing and CQRS.
 
 * [<strong>f(model)</strong> - Functional domain modeling](#fmodel---functional-domain-modeling)
     * [Abstraction and generalization](#abstraction-and-generalization)
-    * [decide: (C, S) -&gt; Iterable&lt;E&gt;](#decide-c-s---iterablee)
+    * [decide: (C, S) -&gt; Flow&lt;E&gt;](#decide-c-s---flowe)
     * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
     * [Event-sourced or State-stored systems](#event-sourced-or-state-stored-systems)
-        * [A statement:](#a-statement)
-        * [A proof:](#a-proof)
-        * [Event-sourced system decide: (C, Iterable&lt;E&gt;) -&gt; Iterable&lt;E&gt;](#event-sourced-system-decide-c-iterablee---iterablee)
-        * [State-stored system decide: (C, S) -&gt; S](#state-stored-system-decide-c-s---s)
     * [Decider](#decider)
         * [Decider extensions and functions](#decider-extensions-and-functions)
         * [Event-sourcing aggregate](#event-sourcing-aggregate)
@@ -378,13 +374,13 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0-SNAPSHOT</version>
 </dependency>
 
 <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
