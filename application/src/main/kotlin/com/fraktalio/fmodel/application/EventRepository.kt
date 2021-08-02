@@ -42,13 +42,12 @@ interface EventRepository<C, E> {
 
     fun Flow<E>.save(): Flow<E> = map { it.save() }
 
-    suspend fun E.saveEither(): Either<Error.StoringEventFailed<E>, Success.EventStoredSuccessfully<E>> =
+    suspend fun E.saveEither(): Either<Error.StoringEventFailed<E>, E> =
         Either.catch {
-            val storedEvent = this.save()
-            Success.EventStoredSuccessfully<E>(storedEvent)
+            this.save()
         }.mapLeft { throwable -> Error.StoringEventFailed(this, throwable) }
 
-    fun Flow<E>.saveEither(): Flow<Either<Error.StoringEventFailed<E>, Success.EventStoredSuccessfully<E>>> =
+    fun Flow<E>.saveEither(): Flow<Either<Error.StoringEventFailed<E>, E>> =
         map { it.saveEither() }
 
 

@@ -54,11 +54,11 @@ object AggregateTest : Spek({
             )
         }
         Scenario("Success") {
-            lateinit var result: Flow<Either<Error, Success.EventStoredSuccessfully<EvenNumberEvent?>>>
+            lateinit var result: Flow<Either<Error, EvenNumberEvent?>>
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
-                    result = evenAggregate.handleEither(
+                    result = evenAggregate.handle(
                         AddEvenNumber(
                             Description("Add 2"),
                             NumberValue(2)
@@ -69,19 +69,18 @@ object AggregateTest : Spek({
             Then("expect success") {
                 runBlockingTest {
                     result.take(1).collect {
-                        assert(it is Either.Right && it.value.event is EvenNumberEvent.EvenNumberAdded)
-
+                        assert(it is Either.Right && it.value is EvenNumberEvent.EvenNumberAdded)
                     }
                 }
             }
         }
 
         Scenario("Error - AggregateIsInTerminalState") {
-            lateinit var result: Flow<Either<Error, Success.EventStoredSuccessfully<EvenNumberEvent?>>>
+            lateinit var result: Flow<Either<Error, EvenNumberEvent?>>
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
-                    result = evenAggregate.handleEither(
+                    result = evenAggregate.handle(
                         flowOf(
                             AddEvenNumber(
                                 Description("Add 200"),
@@ -106,11 +105,11 @@ object AggregateTest : Spek({
 
 
         Scenario("Success - All Numbers Aggregate -  Even") {
-            lateinit var result: Flow<Either<Error, Success.EventStoredSuccessfully<NumberEvent?>>>
+            lateinit var result: Flow<Either<Error, NumberEvent?>>
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
-                    result = allNumbersAggregate.handleEither(
+                    result = allNumbersAggregate.handle(
                         AddEvenNumber(
                             Description("Add 2"),
                             NumberValue(2)
@@ -122,19 +121,18 @@ object AggregateTest : Spek({
 
                 runBlockingTest {
                     result.take(1).collect {
-                        assert(it is Either.Right && it.value.event is EvenNumberEvent.EvenNumberAdded)
-
+                        assert(it is Either.Right && it.value is EvenNumberEvent.EvenNumberAdded)
                     }
                 }
             }
         }
 
         Scenario("Success - All Numbers Aggregate -  Odd") {
-            lateinit var result: Flow<Either<Error, Success.EventStoredSuccessfully<NumberEvent?>>>
+            lateinit var result: Flow<Either<Error, NumberEvent?>>
 
             When("handling command of type AddOddNumber") {
                 runBlockingTest {
-                    result = allNumbersAggregate.handleEither(
+                    result = allNumbersAggregate.handle(
                         NumberCommand.OddNumberCommand.AddOddNumber(
                             Description("Add 1"),
                             NumberValue(1)
@@ -145,7 +143,6 @@ object AggregateTest : Spek({
             Then("expect success") {
                 runBlockingTest {
                     assertTrue { result.toList().size == 2 }
-
                 }
             }
 

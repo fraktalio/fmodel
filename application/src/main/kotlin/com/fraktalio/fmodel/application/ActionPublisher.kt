@@ -32,13 +32,12 @@ import kotlinx.coroutines.flow.map
 interface ActionPublisher<A> {
     suspend fun A.publish(): A
 
-    suspend fun A.publishEither(): Either<Error.PublishingActionFailed<A>, Success.ActionPublishedSuccessfully<A>> =
+    suspend fun A.publishEither(): Either<Error.PublishingActionFailed<A>, A> =
         Either.catch() {
-            val action = this.publish()
-            Success.ActionPublishedSuccessfully(action)
+            this.publish()
         }.mapLeft { throwable -> Error.PublishingActionFailed(this, throwable) }
 
-    suspend fun Flow<A>.publishEither(): Flow<Either<Error.PublishingActionFailed<A>, Success.ActionPublishedSuccessfully<A>>> =
+    suspend fun Flow<A>.publishEither(): Flow<Either<Error.PublishingActionFailed<A>, A>> =
         map { it.publishEither() }
 
     suspend fun Flow<A>.publish(): Flow<A> =

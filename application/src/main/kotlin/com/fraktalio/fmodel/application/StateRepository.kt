@@ -38,10 +38,9 @@ interface StateRepository<C, S> {
         }.mapLeft { throwable -> Error.FetchingStateFailed(throwable) }
 
 
-    suspend fun S.saveEither(): Either<Error.StoringStateFailed<S>, Success.StateStoredSuccessfully<S>> =
+    suspend fun S.saveEither(): Either<Error.StoringStateFailed<S>, S> =
         Either.catch {
-            val state = this.save()
-            Success.StateStoredSuccessfully(state)
+            this.save()
         }.mapLeft { throwable -> Error.StoringStateFailed(this, throwable) }
 
 

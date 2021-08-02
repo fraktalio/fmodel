@@ -48,7 +48,7 @@ object MaterializedViewTest : Spek({
             )
         }
         Scenario("Success") {
-            lateinit var result: Either<Error, Success.StateStoredSuccessfully<EvenNumberState?>>
+            lateinit var result: Either<Error, EvenNumberState?>
 
             When("handling event of type EvenNumberAdded") {
                 runBlockingTest {
@@ -62,12 +62,12 @@ object MaterializedViewTest : Spek({
             }
             Then("expect success") {
                 assertTrue(result.isRight())
-                assert(result is Either.Right && (result as Either.Right<Success.StateStoredSuccessfully<EvenNumberState?>>).value.state?.value?.get == 2)
+                assert(result is Either.Right && (result as Either.Right<EvenNumberState?>).value?.value?.get == 2)
             }
         }
 
         Scenario("Success - handling null event") {
-            lateinit var result: Either<Error, Success.StateStoredSuccessfully<EvenNumberState?>>
+            lateinit var result: Either<Error, EvenNumberState?>
 
             When("handling null") {
                 runBlockingTest {
@@ -82,7 +82,7 @@ object MaterializedViewTest : Spek({
         }
 
         Scenario("Success - All numbers View") {
-            lateinit var result: Either<Error, Success.StateStoredSuccessfully<Pair<EvenNumberState?, OddNumberState?>>>
+            lateinit var result: Either<Error, Pair<EvenNumberState?, OddNumberState?>>
 
             When("handling event of type EvenNumberAdded") {
                 runBlockingTest {
