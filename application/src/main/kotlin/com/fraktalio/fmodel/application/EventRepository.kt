@@ -28,8 +28,19 @@ import arrow.core.computations.either
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface EventRepository<C, E> {
-    suspend fun C.fetchEvents(): Either<Error.FetchingEventsFailed, Iterable<E>>
-    suspend fun E.save(): Either<Error.StoringEventFailed<E>, Success.EventStoredSuccessfully<E>>
-    suspend fun Iterable<E>.save(): Either<Error.StoringEventFailed<E>, Iterable<Success.EventStoredSuccessfully<E>>> =
-        either { map { it.save().bind() } }
+    suspend fun C.fetchEvents(): Iterable<E>
+    suspend fun E.save(): E
+
+    suspend fun C.fetchEventsEither(): Either<Error.FetchingEventsFailed, Iterable<E>> =
+        Either.catch {
+            fetchEvents()
+        }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
+
+    suspend fun E.saveEither(): Either<Error.StoringEventFailed<E>, E> =
+        Either.catch {
+            this.save()
+        }.mapLeft { throwable -> Error.StoringEventFailed(this, throwable) }
+
+    suspend fun Iterable<E>.saveEither(): Either<Error.StoringEventFailed<E>, Iterable<E>> =
+        either { map { it.saveEither().bind() } }
 }

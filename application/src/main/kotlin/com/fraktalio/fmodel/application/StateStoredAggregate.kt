@@ -17,7 +17,6 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.Either.*
 import arrow.core.computations.either
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.Saga
@@ -51,27 +50,28 @@ data class StateStoredAggregate<C, S, E>(
      * Handles the command message of type [C]
      *
      * @param command Command message of type [C]
-     * @return Either [Error] or [Success]
+     * @return Either [Error] or [S]/State
      */
-    suspend fun handle(command: C): Either<Error, Success.StateStoredSuccessfully<S>> =
+    suspend fun handle(command: C): Either<Error, S> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            (command.fetchState().bind() ?: decider.initialState)
+            (command.fetchStateEither().bind() ?: decider.initialState)
                 .calculateNewState(command).bind()
-                .save().bind()
+                .saveEither().bind()
         }
 
-    private fun S.validateIfTerminal(): Either<Error, S> =
-        if (decider.isTerminal(this@validateIfTerminal)) Left(Error.AggregateIsInTerminalState(this@validateIfTerminal))
-        else Right(this@validateIfTerminal)
+    private fun S.validateIfTerminal(): S =
+        if (decider.isTerminal(this)) throw UnsupportedOperationException("Aggregate is in terminal state")
+        else this
 
-    private suspend fun S.calculateNewState(command: C): Either<Error, S> =
-        either {
-            val currentState = this@calculateNewState.validateIfTerminal().bind()
-            val events = decider.decide(command, currentState)
-            val newState = events.fold(this@calculateNewState, decider.evolve)
+    private fun S.calculateNewState(command: C): Either<Error, S> =
+        Either.catch {
+            val events = decider.decide(command, this.validateIfTerminal())
+            val newState = events.fold(this, decider.evolve)
             if (saga != null) events.flatMap { saga.react(it) }.forEach { newState.calculateNewState(it) }
             newState
+        }.mapLeft { throwable ->
+            Error.CalculatingNewStateFailed(this, throwable)
         }
 }
 

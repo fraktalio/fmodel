@@ -1,10 +1,10 @@
 name: CI with Maven - Test and Build
 
 # Trigger the workflow pull request,
-# but only for the main branch
+# but only for the v1 branch
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ v1 ]
 jobs:
   verify:
     runs-on: ubuntu-latest

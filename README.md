@@ -3,14 +3,23 @@
 ![workflow-github](https://github.com/fraktalio/fmodel/actions/workflows/maven-test-build-publish-to-github.yml/badge.svg)
 ![workflow-maven-central](https://github.com/fraktalio/fmodel/actions/workflows/maven-test-build-publish-to-maven-central.yml/badge.svg)
 
-When you’re developing an information system to automate the activities of the business, you are modeling the business. The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect the business — together, they constitute the model of the domain.
+When you’re developing an information system to automate the activities of the business, you are modeling the business.
+The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
+the business — together, they constitute the model of the domain.
 
 ## `IOR<Library, Inspiration>`
 
-This project can be used as a library, or as an inspiration, or both. It provides just enough tactical Domain-Driven Design patterns, optimised for Event Sourcing and CQRS.
+This project can be used as a library, or as an inspiration, or both. It provides just enough tactical Domain-Driven
+Design patterns, optimised for Event Sourcing and CQRS.
 
- - The `domain` model library is fully isolated from the application layer and API-related concerns. It represents a pure declaration (pure functions) of the program logic. It is written in [Kotlin](https://kotlinlang.org/) programming language, without additional dependencies. [![Maven Central - domain](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/domain.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22domain%22)
- - The `application` library orchestrates the execution of the logic by loading state, executing `domain` components and storing new state. It is written in [Kotlin](https://kotlinlang.org/) programming language, with [Arrow](https://arrow-kt.io/) as additional dependency. [![Maven Central - application](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/application.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22application%22)
+- The `domain` model library is fully isolated from the application layer and API-related concerns. It represents a pure
+  declaration (pure functions) of the program logic. It is written in [Kotlin](https://kotlinlang.org/) programming
+  language, without additional
+  dependencies. [![Maven Central - domain](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/domain.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22domain%22)
+- The `application` library orchestrates the execution of the logic by loading state, executing `domain` components and
+  storing new state. It is written in [Kotlin](https://kotlinlang.org/) programming language,
+  with [Arrow](https://arrow-kt.io/) as additional
+  dependency. [![Maven Central - application](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/application.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22application%22)
 
 ## Table of Contents
 
@@ -19,10 +28,6 @@ This project can be used as a library, or as an inspiration, or both. It provide
     * [decide: (C, S) -&gt; Iterable&lt;E&gt;](#decide-c-s---iterablee)
     * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
     * [Event-sourced or State-stored systems](#event-sourced-or-state-stored-systems)
-        * [A statement:](#a-statement)
-        * [A proof:](#a-proof)
-        * [Event-sourced system decide: (C, Iterable&lt;E&gt;) -&gt; Iterable&lt;E&gt;](#event-sourced-system-decide-c-iterablee---iterablee)
-        * [State-stored system decide: (C, S) -&gt; S](#state-stored-system-decide-c-s---s)
     * [Decider](#decider)
         * [Decider extensions and functions](#decider-extensions-and-functions)
         * [Event-sourcing aggregate](#event-sourcing-aggregate)
@@ -33,24 +38,24 @@ This project can be used as a library, or as an inspiration, or both. It provide
     * [Saga](#saga)
         * [Saga extensions and functions](#saga-extensions-and-functions)
         * [Saga Manager](#saga-manager)
-    * [Process](#process)
-        * [Process extensions and functions](#process-extensions-and-functions)
-        * [Process Manager](#process-manager)
     * [Kotlin](#kotlin)
     * [References and further reading](#references-and-further-reading)
-    
+
 ## Abstraction and generalization
 
-Abstractions can hide irrelevant details and use names to reference objects. It emphasizes what an object is or does rather than how it is represented or how it works.
+Abstractions can hide irrelevant details and use names to reference objects. It emphasizes what an object is or does
+rather than how it is represented or how it works.
 
-Generalization reduces complexity by replacing multiple entities which perform similar functions with a single construct.
+Generalization reduces complexity by replacing multiple entities which perform similar functions with a single
+construct.
 
-Abstraction and generalization are often used together. Abstracts are generalized through parameterization to provide more excellent utility.
+Abstraction and generalization are often used together. Abstracts are generalized through parameterization to provide
+more excellent utility.
 
 ## `decide: (C, S) -> Iterable<E>`
 
-On a higher level of abstraction, any information system is responsible for handling the intent (`Command`) and
-based on the current `State`, produce new facts (`Events`):
+On a higher level of abstraction, any information system is responsible for handling the intent (`Command`) and based on
+the current `State`, produce new facts (`Events`):
 
 - given the current `State/S` *on the input*,
 - when `Command/C` is handled *on the input*,
@@ -66,7 +71,8 @@ The new state is always evolved out of the current state `S` and the current eve
 
 ## Event-sourced or State-stored systems
 
-- State-stored systems are traditional systems that are only storing the current State by overwriting the previous State in the storage.
+- State-stored systems are traditional systems that are only storing the current State by overwriting the previous State
+  in the storage.
 - Event-sourced systems are storing the events in immutable storage by only appending.
 
 ### A statement:
@@ -76,7 +82,8 @@ Both types of systems can be designed by using only these two functions and thre
 - `decide: (C, S) -> Iterable<E>`
 - `evolve: (S, E) -> S`
 
-There is more to it! You can switch from one system type to another or have both flavors included within your systems landscape.
+There is more to it! You can switch from one system type to another or have both flavors included within your systems
+landscape.
 
 ### A proof:
 
@@ -85,17 +92,20 @@ initialState of type S as a starting point.
 
 - `Iterable<E>.fold(initialState: S, ((S, E) -> S)): S`
 
-Essentially, this `fold` is a function that is mapping a list of Events to the State: 
+Essentially, this `fold` is a function that is mapping a list of Events to the State:
 
 - `(Iterable<E>) -> S`
 
 We can now use this function `(Iterable<E>) -> S` to:
 
-- contra-map our `decide` function (`(C, S) -> Iterable<E>`) over `S` type to: `(C, Iterable<E>) -> Iterable<E>`  - **this is an event-sourced system**
-- or to map our `decide` function (`(C, S) -> Iterable<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored system**
+- contra-map our `decide` function (`(C, S) -> Iterable<E>`) over `S` type to: `(C, Iterable<E>) -> Iterable<E>`  - **
+  this is an event-sourced system**
+- or to map our `decide` function (`(C, S) -> Iterable<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored
+  system**
 
-
-We can verify that we can design any information system (event-sourced or/and state-stored) in this way by using these two functions wrapped in a datatype class (algebraic data structure), which is generalized with three generic parameters:
+We can verify that we can design any information system (event-sourced or/and state-stored) in this way by using these
+two functions wrapped in a datatype class (algebraic data structure), which is generalized with three generic
+parameters:
 
 ```kotlin
 data class Decider<C, S, E>(
@@ -106,7 +116,7 @@ data class Decider<C, S, E>(
 
 `Decider` is the most important datatype, but it is not the only one. There are others:
 
-![onion architecture image](.assets/onion.png)
+![onion architecture image](.assets/onion.svg)
 
 ## Decider
 
@@ -145,8 +155,8 @@ initial and final state of the Decider.
 ### Decider extensions and functions
 
 `Decider` defines a `monoid` in respect to the composition
-operation: `(Decider<Cx?,Sx,Ex?>, Decider<Cy?,Sy,Ey?>) -> Decider<Either<Cx,Cy>, Pair(Sx,Sy), Either<Ex,Ey>>`, and this is
-an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Decider<Nothing, Unit, Nothing>`
+operation: `(Decider<Cx?,Sx,Ex?>, Decider<Cy?,Sy,Ey?>) -> Decider<Either<Cx,Cy>, Pair(Sx,Sy), Either<Ex,Ey>>`, and this
+is an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Decider<Nothing, Unit, Nothing>`
 
 > A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
 > Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
@@ -190,17 +200,16 @@ We can now construct event-sourcing or/and state-storing aggregate by using the 
 
 Event sourcing aggregate is using/delegating a `Decider` to handle commands and produce events. It belongs to the
 Application layer. In order to handle the command, aggregate needs to fetch the current state (represented as a list of
-events) via `EventRepository.fetchEvents` function, and then delegate the command to the decider which can
-produce new events as a result. Produced events are then stored via `EventRepository.save` suspending
-function.
+events) via `EventRepository.fetchEvents` function, and then delegate the command to the decider which can produce new
+events as a result. Produced events are then stored via `EventRepository.save` suspending function.
 
 `EventSourcingAggregate` implements an interface `EventRepository` by delegating all of its public members to a
 specified object. The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin
 supports it natively requiring zero boilerplate code.
 
 The `by` -clause in the supertype list for `EventSourcingAggregate` indicates that `eventRepository` will be stored
-internally in objects of `EventSourcingAggregate` and the compiler will generate all the methods
-of `EventRepository` that forward to `eventRepository`
+internally in objects of `EventSourcingAggregate` and the compiler will generate all the methods of `EventRepository`
+that forward to `eventRepository`
 
 > Flagging a computation as suspend enforces a calling context, meaning the compiler can ensure that we can’t call the effect from anywhere other than an environment prepared to run suspended effects. That will be another suspended function or a Coroutine.
 > This effectively means we’re decoupling the pure declaration of our program logic (frequently called algebras in the functional world) from the runtime. And therefore, the runtime has the chance to see the big picture of our program and decide how to run and optimize it.
@@ -230,12 +239,12 @@ data class EventSourcingAggregate<C, S, E>(
 
 State stored aggregate is using/delegating a `Decider` to handle commands and produce new state. It belongs to the
 Application layer. In order to handle the command, aggregate needs to fetch the current state
-via `StateRepository.fetchState` function first, and then delegate the command to the decider which can produce
-new state as a result. New state is then stored via `StateRepository.save` suspending function.
+via `StateRepository.fetchState` function first, and then delegate the command to the decider which can produce new
+state as a result. New state is then stored via `StateRepository.save` suspending function.
 
-`StateStoredAggregate` implements an interface `StateRepository` by delegating all of its public members to a
-specified object. The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin
-supports it natively requiring zero boilerplate code.
+`StateStoredAggregate` implements an interface `StateRepository` by delegating all of its public members to a specified
+object. The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it
+natively requiring zero boilerplate code.
 
 The `by` -clause in the supertype list for `StateStoredAggregate` indicates that `aggregateStateRepository` will be
 stored internally in objects of `StateStoredAggregate` and the compiler will generate all the methods
@@ -330,8 +339,8 @@ projection(s) as a result. Essentially, it represents the query/view side of the
 Application layer.
 
 In order to handle the event, materialized view needs to fetch the current state via `ViewStateRepository.fetchState`
-suspending function first, and then delegate the event to the view, which can produce new state as a result. New state is
-then stored via `ViewStateRepository.save` suspending function.
+suspending function first, and then delegate the event to the view, which can produce new state as a result. New state
+is then stored via `ViewStateRepository.save` suspending function.
 
 ```kotlin
 data class MaterializedView<S, E>(
@@ -351,8 +360,9 @@ data class MaterializedView<S, E>(
 
 ## Saga
 
-`_Saga` is a datatype that represents the central point of control, deciding what to execute next (`A`).
-It is responsible for mapping different events from many aggregates into action results `AR` that the `_Saga` then can use to calculate the next actions `A` to be mapped to commands of other aggregates.
+`_Saga` is a datatype that represents the central point of control, deciding what to execute next (`A`). It is
+responsible for mapping different events from many aggregates into action results `AR` that the `_Saga` then can use to
+calculate the next actions `A` to be mapped to commands of other aggregates.
 
 `_Saga` is stateless, it does not maintain the state.
 
@@ -378,8 +388,8 @@ typealias Saga<AR, A> = _Saga<AR, A>
 ### Saga extensions and functions
 
 `Saga` defines a `monoid` in respect to the composition
-operation: `(Saga<ARx?, Ax>, Saga<ARy?, Ay>) -> Saga<Either<ARx, ARy>, Either<Ax, Ay>>`, and this is an associative binary
-operation `a+(b+c)=(a+b)+c`, with identity element `Saga<Nothing, Nothing>`
+operation: `(Saga<ARx?, Ax>, Saga<ARy?, Ay>) -> Saga<Either<ARx, ARy>, Either<Ax, Ay>>`, and this is an associative
+binary operation `a+(b+c)=(a+b)+c`, with identity element `Saga<Nothing, Nothing>`
 
 #### Contravariant
 
@@ -397,13 +407,13 @@ operation `a+(b+c)=(a+b)+c`, with identity element `Saga<Nothing, Nothing>`
 
 We can now construct `Saga Manager` by using this `saga`.
 
-
 ### Saga Manager
 
-Saga manager is a stateless process orchestrator.
-It is reacting on Action Results of type `AR` and produces new actions `A` based on them.
+Saga manager is a stateless process orchestrator. It is reacting on Action Results of type `AR` and produces new
+actions `A` based on them.
 
-Saga manager is using/delegating a `Saga` to react on Action Results of type `AR` and produce new actions `A` which are going to be published via `ActionPublisher.publish` suspending function.
+Saga manager is using/delegating a `Saga` to react on Action Results of type `AR` and produce new actions `A` which are
+going to be published via `ActionPublisher.publish` suspending function.
 
 It belongs to the Application layer.
 
@@ -421,106 +431,6 @@ data class SagaManager<AR, A>(
 }
 ```
 
-## Process
-
-`_Process` is a datatype that represents the central point of control, deciding what to execute next (`A`).
-It is responsible for mapping different events from many aggregates into action results `AR` that the `_Process` then can use to calculate the next actions `A` to be mapped to commands of other aggregates.
-
-`_Process` is stateful, it maintains the state (via event-sourcing, if you like). It is more general than Saga.
-
-It has six generic parameters `AR`, `A`, `Si`, `So`, `Ei`, `Eo` representing the type of the values that `_Process` may contain or use.
-`_Process` can be specialized for any type of `AR`, `A`, `Si`, `So`, `Ei`, `Eo` because these types do not affect its behavior.
-`_Process` behaves the same for `AR`=`Int` or `AR`=`YourCustomType`, for example.
-
-`_Process` is a pure domain component.
-
-- `AR` - Action Result
-- `A`  - Action
-- `Si` - Input_State type
-- `So` - Output_State type
-- `Ei` - Input_Event type
-- `Eo` - Output_Event type
-
-```kotlin
-data class _Process<AR, Si, So, Ei, Eo, A>(
-    val ingest: (AR, Si) -> Iterable<Eo>,
-    val evolve: (Si, Ei) -> So,
-    val react: (Si, Ei) -> Iterable<A>,
-    val pending: (Si) -> Iterable<A>,
-    val initialState: So,
-    val isTerminal: (Si) -> Boolean
-)
-
-typealias Process<AR, S, E, A> = _Process<AR, S, S, E, E, A>
-```
-
-![process image](.assets/process.jpg)
-
-### Process extensions and functions
-
-#### Contravariant
-
-- `Process<AR, Si, So, Ei, Eo, A>.mapLeftOnActionResult(f: (ARn) -> AR): Process<ARn, Si, So, Ei, Eo, A>`
-
-#### Covariant
-
-- `Process<AR, Si, So, Ei, Eo, A>.mapOnAction(f: (A) -> An): Process<AR, Si, So, Ei, Eo, An>`
-
-#### Profunctor
-
-- `Process<AR, Si, So, Ei, Eo, A>.dimapOnEvent(
-  fl: (Ein) -> Ei,
-  fr: (Eo) -> Eon
-  ): Process<AR, Si, So, Ein, Eon, A>`
-
-- `Process<AR, Si, So, Ei, Eo, A>.dimapOnState(
-  fl: (Sin) -> Si,
-  fr: (So) -> Son
-  ): _Process<AR, Sin, Son, Ei, Eo, A>`
-
-#### Applicative
-
-- `Process<AR, Si, So, Ei, Eo, A>.applyOnState(ff: Process<AR, Si, (So) -> Son, Ei, Eo, A>): Process<AR, Si, Son, Ei, Eo, A>`
-- `Process<AR, Si, So, Ei, Eo, A>.productOnState(fb: Process<AR, Si, Son, Ei, Eo, A>): Process<AR, Si, Pair<So, Son>, Ei, Eo, A>`
-
-
-We can now construct `Process Manager` by using this `process`.
-
-
-### Process Manager
-
-Process manager is a stateful process orchestrator.
-It is reacting on Action Results of type `AR` and produces new actions `A` based on them.
-
-Process manager is using/delegating a `Process` to react on Action Results of type `AR` and produce new actions `A` which are going to be published via `ActionPublisher.publish` suspending function.
-It is using/delegating a StateRepository to manage its own state. 
-
-It belongs to the Application layer.
-
-```kotlin
-data class ProcessManager<AR, S, E, A>(
-    private val process: Process<AR, S, E, A>,
-    private val actionPublisher: ActionPublisher<A>,
-    private val stateRepository: StateRepository<AR, S>
-) : ActionPublisher<A> by actionPublisher, StateRepository<AR, S> by stateRepository {
-    
-    suspend fun handle(actionResult: AR): Either<Error, Iterable<Success.ActionPublishedSuccessfully<A>>> =
-        // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
-        either {
-            val state = (actionResult.fetchState().bind() ?: process.initialState).validate().bind()
-            val events = process.ingest(actionResult, state)
-            events.fold(state, process.evolve).save().bind()
-            events.map { process.react(state, it) }.flatten().publish().bind()
-        }
-
-    private fun S.validate(): Either<Error, S> {
-        return if (process.isTerminal(this)) Either.Left(Error.ProcessManagerIsInTerminalState(this))
-        else Either.Right(this)
-    }
-
-}
-```
-
 ## Kotlin
 
 *"Kotlin has both object-oriented and functional constructs. You can use it in both OO and FP styles, or mix elements of
@@ -528,9 +438,11 @@ the two. With first-class support for features such as higher-order functions, f
 great choice if you’re doing or exploring functional programming."*
 
 ## Start using the libraries
+
 All `fmodel` components/libraries are released to [Maven Central](https://repo1.maven.org/maven2/com/fraktalio/fmodel/)
 
 ### Maven coordinates
+
 ```
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
@@ -548,16 +460,18 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 ## Deploy to Maven Central
 
 ### Manually
+
 ```shell
 mvn clean deploy -Dgpg.passphrase="YOUR_PASSPHRASE" -Pci-cd
 ```
+
 ## References and further reading
 
 - https://www.youtube.com/watch?v=kgYGMVDHQHs
 - https://www.manning.com/books/functional-and-reactive-domain-modeling
 - https://www.manning.com/books/functional-programming-in-kotlin
 - https://www.47deg.com/blog/functional-domain-modeling/
-- https://www.47deg.com/blog/functional-domain-modeling-part-2/  
+- https://www.47deg.com/blog/functional-domain-modeling-part-2/
 - https://www.youtube.com/watch?v=I8LbkfSSR58&list=PLbgaMIhjbmEnaH_LTkxLI7FMa2HsnawM_
 
 ---

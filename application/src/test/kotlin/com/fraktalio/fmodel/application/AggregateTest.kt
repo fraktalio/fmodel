@@ -26,7 +26,6 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
@@ -54,7 +53,7 @@ object AggregateTest : Spek({
             )
         }
         Scenario("Success") {
-            lateinit var result: Either<Error, Iterable<Success.EventStoredSuccessfully<EvenNumberEvent?>>>
+            lateinit var result: Either<Error, Iterable<EvenNumberEvent?>>
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
@@ -68,11 +67,11 @@ object AggregateTest : Spek({
             }
             Then("expect success") {
                 assertTrue(result.isRight())
-                assert(result is Either.Right && (result as Either.Right<Iterable<Success.EventStoredSuccessfully<EvenNumberEvent?>>>).value.count() == 1)
+                assert(result is Either.Right && (result as Either.Right<Iterable<EvenNumberEvent?>>).value.count() == 1)
             }
         }
         Scenario("Success - handling null command") {
-            lateinit var result: Either<Error, Iterable<Success.EventStoredSuccessfully<EvenNumberEvent?>>>
+            lateinit var result: Either<Error, Iterable<EvenNumberEvent?>>
 
             When("handling command of type null") {
                 runBlockingTest {
@@ -80,12 +79,12 @@ object AggregateTest : Spek({
                 }
             }
             Then("expect success") {
-                assert(result is Either.Right && (result as Either.Right<Iterable<Success.EventStoredSuccessfully<EvenNumberEvent?>>>).value.count() == 0)
+                assert(result is Either.Right && (result as Either.Right<Iterable<EvenNumberEvent?>>).value.count() == 0)
             }
         }
 
         Scenario("Error - AggregateIsInTerminalState") {
-            lateinit var result: Either<Error, Iterable<Success.EventStoredSuccessfully<EvenNumberEvent?>>>
+            lateinit var result: Either<Error, Iterable<EvenNumberEvent?>>
 
             Given("events") {
                 runBlockingTest {
@@ -108,14 +107,14 @@ object AggregateTest : Spek({
                 }
             }
             Then("expect error") {
-                assertTrue(result is Either.Left && (result as Either.Left<Error>).value is Error.AggregateIsInTerminalState<*>)
+                assertTrue(result is Either.Left && (result as Either.Left<Error>).value is Error.CalculatingNewEventsFailed<*>)
             }
         }
 
 
 
         Scenario("Success - All Numbers Aggregate -  Even") {
-            lateinit var result: Either<Error, Iterable<Success.EventStoredSuccessfully<NumberEvent?>>>
+            lateinit var result: Either<Error, Iterable<NumberEvent?>>
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
@@ -129,13 +128,11 @@ object AggregateTest : Spek({
             }
             Then("expect success") {
                 assertTrue(result.isRight())
-                assert(result is Either.Right && (result as Either.Right<Iterable<Success.EventStoredSuccessfully<NumberEvent?>>>).value.count() == 1)
-
             }
         }
 
         Scenario("Success - All Numbers Aggregate -  Odd") {
-            lateinit var result: Either<Error, Iterable<Success.EventStoredSuccessfully<NumberEvent?>>>
+            lateinit var result: Either<Error, Iterable<NumberEvent?>>
 
             When("handling command of type AddOddNumber") {
                 runBlockingTest {
@@ -149,12 +146,10 @@ object AggregateTest : Spek({
             }
             Then("expect success") {
                 assertTrue(result.isRight())
-                assert(result is Either.Right && (result as Either.Right<Iterable<Success.EventStoredSuccessfully<NumberEvent?>>>).value.count() == 2)
+                assert(result is Either.Right && (result as Either.Right<Iterable<NumberEvent?>>).value.count() == 2)
 
             }
         }
-
     }
-
 })
 

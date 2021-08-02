@@ -29,9 +29,13 @@ import arrow.core.computations.either
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface ActionPublisher<A> {
-    suspend fun A.publish(): Either<Error.PublishingActionFailed<A>, Success.ActionPublishedSuccessfully<A>>
+    suspend fun A.publish(): A
 
-    suspend fun Iterable<A>.publish(): Either<Error.PublishingActionFailed<A>, Iterable<Success.ActionPublishedSuccessfully<A>>> =
-        either { map { it.publish().bind() } }
+    suspend fun A.publishEither(): Either<Error.PublishingActionFailed<A>, A> =
+        Either.catch {
+            this.publish()
+        }.mapLeft { throwable -> Error.PublishingActionFailed(this, throwable) }
 
+    suspend fun Iterable<A>.publishEither(): Either<Error.PublishingActionFailed<A>, Iterable<A>> =
+        either { map { it.publishEither().bind() } }
 }

@@ -39,23 +39,11 @@ sealed class Error : Result() {
     data class FetchingEventsFailed(override val throwable: Throwable? = null) : Error()
     data class StoringEventFailed<E>(val event: E, override val throwable: Throwable? = null) : Error()
     data class StoringStateFailed<S>(val state: S, override val throwable: Throwable? = null) : Error()
-    data class AggregateIsInTerminalState<S>(val state: S, override val throwable: Throwable? = null) : Error()
-    data class ProcessManagerIsInTerminalState<S>(val state: S, override val throwable: Throwable? = null) : Error()
     data class PublishingActionFailed<A>(val action: A, override val throwable: Throwable? = null) : Error()
-}
+    data class CalculatingNewStateFailed<S>(val state: S, override val throwable: Throwable? = null) : Error()
+    data class CalculatingNewEventsFailed<E>(val events: Iterable<E>, override val throwable: Throwable? = null) :
+        Error()
 
-/**
- * The result of type [Success]
- *
- * @constructor Creates [Success]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-sealed class Success : Result() {
-    data class EventStoredSuccessfully<E>(val event: E) : Success()
-    data class StateStoredSuccessfully<S>(val state: S) : Success()
-    data class StateStoredAndEventsPublishedSuccessfully<S, E>(val state: S, val event: Iterable<E> = emptyList()) :
-        Success()
+    data class CalculatingNewActionsFailed<AR>(val ar: AR, override val throwable: Throwable? = null) : Error()
 
-    data class ActionPublishedSuccessfully<A>(val action: A) : Success()
 }

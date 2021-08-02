@@ -41,14 +41,21 @@ data class MaterializedView<S, E>(
      * Handles the event of type [E]
      *
      * @param event Event of type [E] to be handled
-     * @return Either [Error] or [Success]
+     * @return Either [Error] or [S]/State
      */
-    suspend fun handle(event: E): Either<Error, Success.StateStoredSuccessfully<S>> =
+    suspend fun handle(event: E): Either<Error, S> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            val oldState = event.fetchState().bind() ?: view.initialState
-            val newState = view.evolve(oldState, event)
-            newState.save().bind()
+            (event.fetchStateEither().bind() ?: view.initialState)
+                .calculateNewState(event).bind()
+                .saveEither().bind()
+        }
+
+    private fun S.calculateNewState(event: E): Either<Error, S> =
+        Either.catch {
+            view.evolve(this, event)
+        }.mapLeft { throwable ->
+            Error.CalculatingNewStateFailed(this, throwable)
         }
 }
 

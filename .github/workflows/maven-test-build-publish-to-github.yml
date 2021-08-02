@@ -1,9 +1,9 @@
 name: CI with Maven - Test, Build and Publish to Github
 # Trigger the workflow on push,
-# but only for the main branch
+# but only for the v1 branch
 on:
   push:
-    branches: [ main ]
+    branches: [ v1 ]
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
