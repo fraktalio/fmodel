@@ -17,10 +17,10 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.Either.*
 import arrow.core.computations.either
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.Saga
+import kotlinx.coroutines.flow.*
 
 /**
  * State stored aggregate is using/delegating a [StateStoredAggregate.decider] of type [Decider]<[C], [S], [E]> to handle commands and produce new state.
@@ -51,27 +51,36 @@ data class StateStoredAggregate<C, S, E>(
      * Handles the command message of type [C]
      *
      * @param command Command message of type [C]
-     * @return Either [Error] or [Success]
+     * @return Either [Error] or [S]/State
      */
-    suspend fun handle(command: C): Either<Error, Success.StateStoredSuccessfully<S>> =
+    suspend fun handle(command: C): Either<Error, S> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            (command.fetchState().bind() ?: decider.initialState)
+            (command.fetchStateEither().bind() ?: decider.initialState)
                 .calculateNewState(command).bind()
-                .save().bind()
+                .saveEither().bind()
         }
 
-    private fun S.validateIfTerminal(): Either<Error, S> =
-        if (decider.isTerminal(this@validateIfTerminal)) Left(Error.AggregateIsInTerminalState(this@validateIfTerminal))
-        else Right(this@validateIfTerminal)
+
+    /**
+     * Handles the [Flow] of command messages of type [C]
+     *
+     * @param commands Command messages of type [Flow]<[C]>
+     * @return [Flow] of [Either] [Error] or [S]/State
+     */
+    fun handle(commands: Flow<C>): Flow<Either<Error, S>> =
+        commands.map { handle(it) }
+
 
     private suspend fun S.calculateNewState(command: C): Either<Error, S> =
-        either {
-            val currentState = this@calculateNewState.validateIfTerminal().bind()
-            val events = decider.decide(command, currentState)
+        Either.catch {
+            if (decider.isTerminal(this)) throw UnsupportedOperationException("Aggregate is in terminal state!")
+            val events = decider.decide(command, this)
             val newState = events.fold(this@calculateNewState, decider.evolve)
-            if (saga != null) events.flatMap { saga.react(it) }.forEach { newState.calculateNewState(it) }
+            if (saga != null) events.flatMapConcat { saga.react(it) }.collect { newState.calculateNewState(it) }
             newState
+        }.mapLeft { throwable ->
+            Error.CalculatingNewStateFailed(this, throwable)
         }
 }
 

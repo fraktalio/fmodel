@@ -17,7 +17,8 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.computations.either
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * Action publisher interface
@@ -29,9 +30,16 @@ import arrow.core.computations.either
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface ActionPublisher<A> {
-    suspend fun A.publish(): Either<Error.PublishingActionFailed<A>, Success.ActionPublishedSuccessfully<A>>
+    suspend fun A.publish(): A
 
-    suspend fun Iterable<A>.publish(): Either<Error.PublishingActionFailed<A>, Iterable<Success.ActionPublishedSuccessfully<A>>> =
-        either { map { it.publish().bind() } }
+    suspend fun A.publishEither(): Either<Error.PublishingActionFailed<A>, A> =
+        Either.catch() {
+            this.publish()
+        }.mapLeft { throwable -> Error.PublishingActionFailed(this, throwable) }
 
+    suspend fun Flow<A>.publishEither(): Flow<Either<Error.PublishingActionFailed<A>, A>> =
+        map { it.publishEither() }
+
+    suspend fun Flow<A>.publish(): Flow<A> =
+        map { it.publish() }
 }

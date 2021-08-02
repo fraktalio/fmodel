@@ -16,12 +16,11 @@
 
 package com.fraktalio.fmodel.application.examples.numbers.even.command
 
-import arrow.core.Either
-import com.fraktalio.fmodel.application.Error
 import com.fraktalio.fmodel.application.EventRepository
-import com.fraktalio.fmodel.application.Success
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -38,19 +37,19 @@ private val evenNumberEventStorageMutex = Mutex()
  */
 class EvenNumberRepository : EventRepository<EvenNumberCommand?, EvenNumberEvent?> {
 
-    override suspend fun EvenNumberCommand?.fetchEvents(): Either<Error.FetchingEventsFailed, Iterable<EvenNumberEvent?>> =
-        Either.catch {
-            evenNumberEventStorage
-        }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
+    override fun EvenNumberCommand?.fetchEvents(): Flow<EvenNumberEvent?> =
+
+        evenNumberEventStorage.asFlow()
 
 
-    override suspend fun EvenNumberEvent?.save(): Either<Error.StoringEventFailed<EvenNumberEvent?>, Success.EventStoredSuccessfully<EvenNumberEvent?>> =
-        Either.catch {
-            evenNumberEventStorageMutex.withLock {
-                evenNumberEventStorage = evenNumberEventStorage.plus(this)
-            }
-            Success.EventStoredSuccessfully(this)
-        }.mapLeft { throwable -> Error.StoringEventFailed(this, throwable) }
+    override suspend fun EvenNumberEvent?.save(): EvenNumberEvent? {
+
+        evenNumberEventStorageMutex.withLock {
+            evenNumberEventStorage = evenNumberEventStorage.plus(this)
+        }
+        return this
+    }
+
 }
 
 /**

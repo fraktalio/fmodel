@@ -37,7 +37,7 @@ package com.fraktalio.fmodel.domain
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class _View<Si, So, E>(
-    val evolve: (Si, E) -> So,
+    val evolve: suspend (Si, E) -> So,
     val initialState: So,
 ) {
     /**
@@ -159,61 +159,6 @@ inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER
         .mapLeftOnState(extractS2)
 
     val viewZ = viewX.productOnState(viewY)
-
-    return _View(
-        evolve = { si, e -> viewZ.evolve(si, e) },
-        initialState = viewZ.initialState
-    )
-}
-
-/**
- * Combines [_View]s into one bigger [_View]
- *
- * Possible to use when:
- * - [E] and [E2] have common superclass [E_SUPER]
- * - [Si] and [Si2] have common superclass [Si_SUPER]
- * - [So] and [So2] have common superclass [So_SUPER]
- *
- * @param Si State input of the first View
- * @param So State output of the first View
- * @param E Event of the first View
- * @param Si2 State input of the second View
- * @param So2 State output of the second View
- * @param E2 Event of the second View
- * @param Si_SUPER super type for [Si] and [Si2]
- * @param So_SUPER super type for [So] and [So2]
- * @param E_SUPER super type for [E] and [E2]
- * @param y second View
- * @return new View of type [_View]< [List]<[Si_SUPER]>, [List]<[So_SUPER]>, [E_SUPER] >
- */
-inline fun <reified Si : Si_SUPER, So : So_SUPER, reified E : E_SUPER, reified Si2 : Si_SUPER, So2 : So_SUPER, reified E2 : E_SUPER, Si_SUPER, So_SUPER, E_SUPER> _View<List<Si>, List<So>, in E?>.combineL(
-    y: _View<List<Si2>, List<So2>, in E2?>
-): _View<List<Si_SUPER>, List<So_SUPER>, E_SUPER> {
-
-    val extractE1: (E_SUPER) -> E? = {
-        when (it) {
-            is E -> it
-            else -> null
-        }
-    }
-    val extractE2: (E_SUPER) -> E2? = {
-        when (it) {
-            is E2 -> it
-            else -> null
-        }
-    }
-    val extractS1: (List<Si_SUPER>) -> List<Si> = { list -> list.filterIsInstance(Si::class.java) }
-    val extractS2: (List<Si_SUPER>) -> List<Si2> = { list -> list.filterIsInstance(Si2::class.java) }
-
-    val viewX = this
-        .mapLeftOnEvent(extractE1)
-        .mapLeftOnState(extractS1)
-
-    val viewY = y
-        .mapLeftOnEvent(extractE2)
-        .mapLeftOnState(extractS2)
-
-    val viewZ = viewX.productOnState(viewY).mapOnState { pair: Pair<List<So>, List<So2>> -> pair.toList().flatten() }
 
     return _View(
         evolve = { si, e -> viewZ.evolve(si, e) },

@@ -24,6 +24,11 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.numberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
 import kotlin.test.assertTrue
@@ -37,152 +42,137 @@ object SagaTest : Spek({
         val oddSaga by memoized { oddNumberSaga() }
 
         Scenario("React") {
-            var result: Iterable<NumberCommand> = emptyList()
+            var result: Flow<NumberCommand> = emptyFlow()
 
-            When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type NumberCommand") {
+            When("when react on ActionResult/Event of type NumberEvent, emmit flow of Actions/Commands of type NumberCommand") {
                 result = saga.react(EvenNumberAdded(Description("2"), NumberValue(2)))
             }
 
-            Then("non empty list of Actions/Commands of type NumberCommand should be published") {
-                assertTrue(result.any())
+            Then("non empty flow of Actions/Commands of type NumberCommand should be published/emmited") {
+                runBlocking {
+                    assertTrue(result.count() == 1)
+                }
             }
 
             Then("AddOddNumber should be published") {
-                assertTrue(result.first() is AddOddNumber && result.first().value.get == 1)
-                assertTrue(result.count() == 1)
+                runBlocking {
+                    assertTrue(result.first() is AddOddNumber && result.first().value.get == 1)
+                    assertTrue(result.count() == 1)
+                }
             }
 
         }
 
         Scenario("React - Combined Saga") {
-            var result: Iterable<NumberCommand> = emptyList()
+            var result: Flow<NumberCommand> = emptyFlow()
 
-            When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type NumberCommand") {
+            When("when react on ActionResult/Event of type NumberEvent, emit/publish flow of Actions/Commands of type NumberCommand") {
                 result = evenSaga.combine(oddSaga).react(EvenNumberAdded(Description("2"), NumberValue(2)))
             }
 
-            Then("non empty list of Actions/Commands of type NumberCommand should be published") {
-                assertTrue(result.any())
+            Then("non empty flow of Actions/Commands of type NumberCommand should be published") {
+                runBlocking {
+                    assertTrue(result.count() == 1)
+                }
             }
 
             Then("AddOddNumber should be published") {
-                assertTrue(result.first() is AddOddNumber && result.first().value.get == 1)
-                assertTrue(result.count() == 1)
+                runBlocking {
+                    assertTrue(result.first() is AddOddNumber && result.first().value.get == 1)
+                    assertTrue(result.count() == 1)
+                }
             }
 
         }
-
-        Scenario("React - Combined Saga 2") {
-            var result: Iterable<NumberCommand> = emptyList()
-
-            When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type NumberCommand") {
-                result = evenSaga.combine(oddSaga).combine(evenSaga)
-                    .react(EvenNumberAdded(Description("2"), NumberValue(2)))
-            }
-
-            Then("non empty list of Actions/Commands of type NumberCommand should be published") {
-                assertTrue(result.any())
-            }
-
-            Then("AddOddNumber should be published twice!") {
-                assertTrue(result.first() is AddOddNumber && result.first().value.get == 1)
-                assertTrue(result.count() == 2)
-            }
-
-        }
-
-//        Scenario("React - Combined Saga 2 - does not compile") {
-//            var result: Iterable<NumberCommand> = emptyList()
-//
-//            When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type NumberCommand") {
-//                result = evenSaga.combine(oddSaga).combine(nonNullableEvenSaga)
-//                    .react(EvenNumberAdded(Description("2"), NumberValue(2)))
-//            }
-//
-//            Then("non empty list of Actions/Commands of type NumberCommand should be published") {
-//                assertTrue(result.any())
-//            }
-//
-//            Then("AddOddNumber should be published twice!") {
-//                assertTrue(result.first() is AddOddNumber && result.first().value.get == 1)
-//                assertTrue(result.count() == 2)
-//            }
-//
-//        }
 
         Scenario("React - lef map over ActionResult/Event parameter in this case - functor (contravariant)") {
-            var result: Iterable<NumberCommand> = emptyList()
+            var result: Flow<NumberCommand> = emptyFlow()
 
-            When("when react on ActionResult/Event of type Int, publish list of Actions/Commands of type NumberCommand") {
+            When("when react on ActionResult/Event of type Int, publish flow of Actions/Commands of type NumberCommand") {
                 result = saga
                     .mapLeftOnActionResult { aRn: Int -> EvenNumberAdded(Description("$aRn"), NumberValue(aRn)) }
                     .react(2)
             }
 
-            Then("non empty list of Actions/Commands of type NumberCommand should be published") {
-                assertTrue(result.any())
+            Then("non empty flow of Actions/Commands of type NumberCommand should be published") {
+                runBlocking {
+                    assertTrue(result.count() == 1)
+                }
             }
 
             Then("AddOddNumber should be published") {
-                assertTrue(result.first() is AddOddNumber && result.first().value.get == 1)
+                runBlocking {
+                    assertTrue(result.first() is AddOddNumber && result.first().value.get == 1)
+                }
             }
 
         }
 
         Scenario("React - Combined Saga - lef map over ActionResult/Event parameter in this case - functor (contravariant)") {
-            var result: Iterable<NumberCommand> = emptyList()
+            var result: Flow<NumberCommand> = emptyFlow()
 
-            When("when react on ActionResult/Event of type Int, publish list of Actions/Commands of type NumberCommand") {
+            When("when react on ActionResult/Event of type Int, publish flow of Actions/Commands of type NumberCommand") {
                 result = evenSaga.combine(oddSaga)
                     .mapLeftOnActionResult { aRn: Int -> EvenNumberAdded(Description("$aRn"), NumberValue(aRn)) }
                     .react(2)
             }
 
-            Then("non empty list of Actions/Commands of type NumberCommand should be published") {
-                assertTrue(result.any())
+            Then("non empty flow of Actions/Commands of type NumberCommand should be published") {
+                runBlocking {
+                    assertTrue(result.count() == 1)
+                }
             }
 
             Then("AddOddNumber should be published") {
-                assertTrue(result.first() is AddOddNumber && result.first().value.get == 1)
+                runBlocking {
+                    assertTrue(result.first() is AddOddNumber && result.first().value.get == 1)
+                }
             }
 
         }
 
         Scenario("React - right map over Action/Command parameter in this case - functor (covariant)") {
-            var result: Iterable<Int> = emptyList()
+            var result: Flow<Int> = emptyFlow()
 
-            When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type Int") {
+            When("when react on ActionResult/Event of type NumberEvent, publish flow of Actions/Commands of type Int") {
                 result = saga
                     .mapOnAction { numberCommand -> numberCommand.value.get }
                     .react(EvenNumberAdded(Description("2"), NumberValue(2)))
             }
 
-            Then("non empty list of Actions/Commands of type Int should be published") {
-                assertTrue(result.any())
+            Then("non empty flow of Actions/Commands of type Int should be published") {
+                runBlocking {
+                    assertTrue(result.count() == 1)
+                }
             }
 
             Then("Int should be published") {
-                assertTrue(result.first() == 1)
+                runBlocking {
+                    assertTrue(result.first() == 1)
+                }
             }
 
         }
 
-
         Scenario("React - Combined Saga -  right map over Action/Command parameter in this case - functor (covariant)") {
-            var result: Iterable<Int> = emptyList()
+            var result: Flow<Int> = emptyFlow()
 
-            When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type Int") {
+            When("when react on ActionResult/Event of type NumberEvent, publish flow of Actions/Commands of type Int") {
                 result = evenSaga.combine(oddSaga)
                     .mapOnAction { numberCommand -> numberCommand.value.get }
                     .react(EvenNumberAdded(Description("2"), NumberValue(2)))
             }
 
-            Then("non empty list of Actions/Commands of type Int should be published") {
-                assertTrue(result.any())
+            Then("non empty flow of Actions/Commands of type Int should be published") {
+                runBlocking {
+                    assertTrue(result.count() == 1)
+                }
             }
 
             Then("Int should be published") {
-                assertTrue(result.first() == 1)
+                runBlocking {
+                    assertTrue(result.first() == 1)
+                }
             }
 
         }

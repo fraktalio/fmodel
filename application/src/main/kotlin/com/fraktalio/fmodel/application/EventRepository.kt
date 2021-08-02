@@ -17,7 +17,9 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.computations.either
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 
 /**
  * Event repository/store interface
@@ -28,8 +30,25 @@ import arrow.core.computations.either
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface EventRepository<C, E> {
-    suspend fun C.fetchEvents(): Either<Error.FetchingEventsFailed, Iterable<E>>
-    suspend fun E.save(): Either<Error.StoringEventFailed<E>, Success.EventStoredSuccessfully<E>>
-    suspend fun Iterable<E>.save(): Either<Error.StoringEventFailed<E>, Iterable<Success.EventStoredSuccessfully<E>>> =
-        either { map { it.save().bind() } }
+    fun C.fetchEvents(): Flow<E>
+    suspend fun E.save(): E
+
+    fun C.fetchEventsEither(): Flow<Either<Error.FetchingEventsFailed, E>> =
+        fetchEvents()
+            .map { Either.Right(it) }
+            .catch<Either<Error.FetchingEventsFailed, E>> {
+                emit(Either.Left(Error.FetchingEventsFailed(it)))
+            }
+
+    fun Flow<E>.save(): Flow<E> = map { it.save() }
+
+    suspend fun E.saveEither(): Either<Error.StoringEventFailed<E>, E> =
+        Either.catch {
+            this.save()
+        }.mapLeft { throwable -> Error.StoringEventFailed(this, throwable) }
+
+    fun Flow<E>.saveEither(): Flow<Either<Error.StoringEventFailed<E>, E>> =
+        map { it.saveEither() }
+
+
 }

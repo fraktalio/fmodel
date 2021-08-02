@@ -16,12 +16,11 @@
 
 package com.fraktalio.fmodel.application.examples.numbers.odd.command
 
-import arrow.core.Either
-import com.fraktalio.fmodel.application.Error
 import com.fraktalio.fmodel.application.EventRepository
-import com.fraktalio.fmodel.application.Success
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -38,19 +37,17 @@ private val oddNumberEventStorageMutex = Mutex()
  */
 class OddNumberRepository : EventRepository<OddNumberCommand?, OddNumberEvent?> {
 
-    override suspend fun OddNumberCommand?.fetchEvents(): Either<Error.FetchingEventsFailed, Iterable<OddNumberEvent?>> =
-        Either.catch {
-            oddNumberEventStorage
-        }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
+    override fun OddNumberCommand?.fetchEvents(): Flow<OddNumberEvent?> =
+        oddNumberEventStorage.asFlow()
 
 
-    override suspend fun OddNumberEvent?.save(): Either<Error.StoringEventFailed<OddNumberEvent?>, Success.EventStoredSuccessfully<OddNumberEvent?>> =
-        Either.catch {
-            oddNumberEventStorageMutex.withLock {
-                oddNumberEventStorage = oddNumberEventStorage.plus(this)
-            }
-            Success.EventStoredSuccessfully(this)
-        }.mapLeft { throwable -> Error.StoringEventFailed(this, throwable) }
+    override suspend fun OddNumberEvent?.save(): OddNumberEvent? {
+        oddNumberEventStorageMutex.withLock {
+            oddNumberEventStorage = oddNumberEventStorage.plus(this)
+        }
+        return this
+    }
+
 }
 
 /**

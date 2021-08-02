@@ -16,9 +16,6 @@
 
 package com.fraktalio.fmodel.application.examples.numbers.odd.query
 
-import arrow.core.Either
-import com.fraktalio.fmodel.application.Error
-import com.fraktalio.fmodel.application.Success
 import com.fraktalio.fmodel.application.ViewStateRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
@@ -38,27 +35,14 @@ private val oddNumberStateStorageMutex = Mutex()
  */
 class OddNumberViewRepository : ViewStateRepository<OddNumberEvent?, OddNumberState?> {
 
-    override suspend fun OddNumberEvent?.fetchState(): Either<Error.FetchingStateFailed, OddNumberState?> =
+    override suspend fun OddNumberEvent?.fetchState(): OddNumberState? = oddNumberStateStorage
 
-        Either.catch {
-            oddNumberStateStorage
-        }.mapLeft { throwable ->
-            Error.FetchingStateFailed(throwable)
+    override suspend fun OddNumberState?.save(): OddNumberState? {
+        oddNumberStateStorageMutex.withLock {
+            oddNumberStateStorage = this
         }
-
-
-    override suspend fun OddNumberState?.save(): Either<Error.StoringStateFailed<OddNumberState?>, Success.StateStoredSuccessfully<OddNumberState?>> =
-
-        Either.catch {
-            oddNumberStateStorageMutex.withLock {
-                oddNumberStateStorage = this
-            }
-            Success.StateStoredSuccessfully(this)
-        }.mapLeft { throwable ->
-            Error.StoringStateFailed(this, throwable)
-        }
-
-
+        return oddNumberStateStorage
+    }
 }
 
 /**

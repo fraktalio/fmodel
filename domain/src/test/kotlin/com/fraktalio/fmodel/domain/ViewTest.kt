@@ -16,10 +16,14 @@
 
 package com.fraktalio.fmodel.domain
 
-import com.fraktalio.fmodel.domain.examples.numbers.api.*
+import com.fraktalio.fmodel.domain.examples.numbers.api.Description
+import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
+import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.even.query.evenNumberView
 import com.fraktalio.fmodel.domain.examples.numbers.odd.query.oddNumberView
+import kotlinx.coroutines.runBlocking
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
 import kotlin.test.assertEquals
@@ -32,37 +36,14 @@ object ViewTest : Spek({
         val evenView by memoized { evenNumberView() }
         val oddView by memoized { oddNumberView() }
         val combinedView by memoized { evenView.combine(oddView) }
-        val combinedViewList by memoized {
-            evenView.dimapOnState(
-                fr = { v -> listOfNotNull(v) },
-                fl = { sin: List<EvenNumberState> -> sin.first() })
-                .combineL(
-                    oddView.dimapOnState(
-                        fr = { v -> listOfNotNull(v) },
-                        fl = { sin: List<OddNumberState> -> sin.first() })
-                )
-        }
-        val combinedViewList2 by memoized {
-            evenView.dimapOnState(
-                fr = { v -> listOfNotNull(v) },
-                fl = { sin: List<EvenNumberState> -> sin.first() })
-                .combineL(
-                    oddView.dimapOnState(
-                        fr = { v -> listOfNotNull(v) },
-                        fl = { sin: List<OddNumberState> -> sin.first() })
-                )
-                .combineL(
-                    evenView.dimapOnState(
-                        fr = { v -> listOfNotNull(v) },
-                        fl = { sin: List<EvenNumberState> -> sin.first() })
-                )
-        }
 
         Scenario("Evolve") {
             var result: EvenNumberState? = null
 
             When("being in current/initial state of type EvenNumberState and handling event of type EvenNumberEvent") {
-                result = evenView.evolve(evenView.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
+                runBlocking {
+                    result = evenView.evolve(evenView.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
+                }
             }
 
             Then("new state of type EvenNumberState should be constructed/evolved") {
@@ -75,14 +56,16 @@ object ViewTest : Spek({
             var result: EvenNumberState? = null
 
             When("being in current/initial state of type EvenNumberState and handling event of type Int") {
-                result = evenView
-                    .mapLeftOnEvent { number: Int ->
-                        EvenNumberAdded(
-                            Description(number.toString()),
-                            NumberValue(number)
-                        )
-                    }
-                    .evolve(evenView.initialState, 2)
+                runBlocking {
+                    result = evenView
+                        .mapLeftOnEvent { number: Int ->
+                            EvenNumberAdded(
+                                Description(number.toString()),
+                                NumberValue(number)
+                            )
+                        }
+                        .evolve(evenView.initialState, 2)
+                }
             }
 
             Then("new state of type EvenNumberState should be constructed/evolved") {
@@ -95,13 +78,20 @@ object ViewTest : Spek({
             var result: Int? = 0
 
             When("being in current/initial state of type Int and handling event of type EvenNumberEvent") {
-                result = evenView.initialState?.value?.let {
-                    evenView
-                        .dimapOnState(
-                            fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
-                            fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
-                        )
-                        .evolve(it.get, EvenNumberAdded(Description("2"), NumberValue(2)))
+                runBlocking {
+                    result = evenView.initialState?.value?.let {
+                        evenView
+                            .dimapOnState(
+                                fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
+                                fl = { number: Int ->
+                                    EvenNumberState(
+                                        Description(number.toString()),
+                                        NumberValue(number)
+                                    )
+                                }
+                            )
+                            .evolve(it.get, EvenNumberAdded(Description("2"), NumberValue(2)))
+                    }
                 }
             }
 
@@ -115,11 +105,12 @@ object ViewTest : Spek({
             lateinit var result: Pair<EvenNumberState?, Int?>
 
             When("being in current/initial state, and handling event of type EvenNumberEvent by the product of 2 views") {
-                val view2 = evenView.mapOnState { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
-                result = evenView
-                    .productOnState(view2)
-                    .evolve(evenView.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
-
+                runBlocking {
+                    val view2 = evenView.mapOnState { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
+                    result = evenView
+                        .productOnState(view2)
+                        .evolve(evenView.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
+                }
             }
 
             Then("new state of type Pair<EvenNumberState?, Int?> should be constructed/evolved") {
@@ -182,8 +173,13 @@ object ViewTest : Spek({
             var result: Pair<EvenNumberState?, OddNumberState?> = Pair(null, null)
 
             When("being in current/initial state of type Pair(EvenNumberState, OddNumberState) and handling event of super type NumberEvent") {
-                result =
-                    combinedView.evolve(combinedView.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
+                runBlocking {
+                    result =
+                        combinedView.evolve(
+                            combinedView.initialState,
+                            EvenNumberAdded(Description("2"), NumberValue(2))
+                        )
+                }
             }
 
             Then("new state of type Pair(EvenNumberState, OddNumberState) should be constructed/evolved") {
@@ -197,45 +193,6 @@ object ViewTest : Spek({
 
         }
 
-        Scenario("Evolve - combine - list") {
-            var result: List<NumberState> = emptyList()
-
-            When("being in current/initial state of type List<NumberState>, and handling event of type NumberEvent") {
-                result = combinedViewList.evolve(
-                    combinedViewList.initialState,
-                    EvenNumberAdded(Description("2"), NumberValue(2))
-                )
-            }
-
-            Then("new state of type List<NumberState> should be constructed/evolved") {
-                assertEquals(
-                    listOf(EvenNumberState(Description("Initial state, 2"), NumberValue(2))).plus(
-                        OddNumberState(Description("Initial state"), NumberValue(0))
-                    ), result
-                )
-            }
-
-        }
-
-        Scenario("Evolve - combine - list2") {
-            var result: List<NumberState> = emptyList()
-
-            When("being in current/initial state of type List<NumberState> and handling event of type NumberEvent") {
-                result = combinedViewList2.evolve(
-                    combinedViewList2.initialState,
-                    EvenNumberAdded(Description("2"), NumberValue(2))
-                )
-            }
-
-            Then("new state of type List<NumberState> should be constructed/evolved") {
-                assertEquals(
-                    listOf(EvenNumberState(Description("Initial state, 2"), NumberValue(2)))
-                        .plus(OddNumberState(Description("Initial state"), NumberValue(0)))
-                        .plus(EvenNumberState(Description("Initial state, 2"), NumberValue(2))),
-                    result
-                )
-            }
-        }
     }
 })
 
