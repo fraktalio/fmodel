@@ -3,9 +3,16 @@
 ![workflow-github](https://github.com/fraktalio/fmodel/actions/workflows/maven-test-build-publish-to-github.yml/badge.svg)
 ![workflow-maven-central](https://github.com/fraktalio/fmodel/actions/workflows/maven-test-build-publish-to-maven-central.yml/badge.svg)
 
+
 When you’re developing an information system to automate the activities of the business, you are modeling the business.
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
 the business — together, they constitute the model of the domain.
+
+## Going with the `Flow`, `Iterable` is no more
+>This is `main` branch, a home of version 2. It is a `reactive` version of libraries, optimized for streaming.
+
+>The [v1](https://github.com/fraktalio/fmodel/tree/v1) branch does not depend on Kotlin coroutines or Flow within the domain model. 
+
 
 ## `IOR<Library, Inspiration>`
 
