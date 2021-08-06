@@ -74,7 +74,6 @@ data class StateStoredAggregate<C, S, E>(
 
     private suspend fun S.calculateNewState(command: C): Either<Error, S> =
         Either.catch {
-            if (decider.isTerminal(this)) throw UnsupportedOperationException("Aggregate is in terminal state!")
             val events = decider.decide(command, this)
             val newState = events.fold(this@calculateNewState, decider.evolve)
             if (saga != null) events.flatMapConcat { saga.react(it) }.collect { newState.calculateNewState(it) }

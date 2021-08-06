@@ -30,7 +30,6 @@ import kotlinx.coroutines.runBlocking
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 
 object DeciderTest : Spek({
@@ -341,99 +340,6 @@ object DeciderTest : Spek({
 
             Then("new state of type Pair<EvenNumberState, Int> should be constructed/evolved") {
                 assertEquals(Pair(EvenNumberState(Description("2"), NumberValue(2)), 2), result)
-            }
-        }
-
-        Scenario("is terminal state") {
-            var isTerminalResult: Boolean = false
-
-            When("being in current/initial state of type EvenNumberState and handling new state of type EvenNumberState > 100") {
-                runBlocking {
-                    isTerminalResult = evenDecider
-                        .isTerminal(EvenNumberState(Description("101"), NumberValue(101)))
-                }
-            }
-
-            Then("it should enter in terminal/final state") {
-                assertTrue(isTerminalResult)
-            }
-        }
-
-        Scenario("is terminal state - left map over Command parameter - functor") {
-            var isTerminalResult: Boolean = false
-
-            When("being in current/initial state of type EvenNumberState and handling new state of type EvenNumberState > 100") {
-                runBlocking {
-                    isTerminalResult = evenDecider
-                        .mapLeftOnCommand { cn: Int ->
-                            AddEvenNumber(
-                                Description(cn.toString()),
-                                NumberValue(cn)
-                            )
-                        }
-                        .isTerminal(EvenNumberState(Description("101"), NumberValue(101)))
-                }
-            }
-
-            Then("it should enter in terminal/final state") {
-                assertTrue(isTerminalResult)
-            }
-        }
-
-        Scenario("is terminal state - dimap over Event parameter - profunctor") {
-            var isTerminalResult: Boolean = false
-
-            When("being in current/initial state of type EvenNumberState and handling new state of type EvenNumberState > 100") {
-                runBlocking {
-                    isTerminalResult = evenDecider
-                        .dimapOnEvent(
-                            fr = { evenNumberEvent: EvenNumberEvent? -> evenNumberEvent?.value?.get },
-                            fl = { number: Int -> EvenNumberAdded(Description(number.toString()), NumberValue(number)) }
-                        )
-                        .isTerminal(EvenNumberState(Description("101"), NumberValue(101)))
-                }
-            }
-
-            Then("it should enter in terminal/final state") {
-                assertTrue(isTerminalResult)
-            }
-        }
-
-        Scenario("is terminal state - dimap over State parameter - profunctor") {
-            var isTerminalResult: Boolean = false
-
-            When("being in current/initial state of type Int and handling new state of type Int > 100") {
-                runBlocking {
-                    isTerminalResult = evenDecider
-                        .dimapOnState(
-                            fr = { evenNumberState: EvenNumberState -> evenNumberState.value.get },
-                            fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
-                        )
-                        .isTerminal(101)
-                }
-            }
-
-            Then("it should enter in terminal/final state") {
-                assertTrue(isTerminalResult)
-            }
-        }
-
-        Scenario("is terminal state - product over State parameter - applicative") {
-            var isTerminalResult: Boolean = false
-
-            When("being in current/initial state of type Int and handling event of type EvenNumberEvent by the product of 2 deciders") {
-                runBlocking {
-                    val decider2 =
-                        evenDecider.mapOnState { evenNumberState: EvenNumberState -> evenNumberState.value.get }
-                    isTerminalResult = evenDecider
-                        .productOnState(decider2)
-                        .isTerminal(EvenNumberState(Description("101"), NumberValue(101)))
-                }
-
-            }
-
-            Then("new state of type Pair<EvenNumberState, Int> should be constructed/evolved") {
-                assertTrue(isTerminalResult)
             }
         }
 

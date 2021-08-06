@@ -96,7 +96,6 @@ data class EventSourcingAggregate<C, S, E>(
 
     private suspend fun Flow<E>.calculateNewEvents(command: C): Flow<E> {
         val currentState = fold(decider.initialState, decider.evolve)
-        if (decider.isTerminal(currentState)) return flow { throw UnsupportedOperationException("Aggregate is in terminal state!") }
         var resultingEvents = decider.decide(command, currentState)
 
         if (saga != null)

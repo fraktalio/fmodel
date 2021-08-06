@@ -32,7 +32,10 @@ import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runBlockingTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
@@ -74,35 +77,6 @@ object AggregateTest : Spek({
                 }
             }
         }
-
-        Scenario("Error - AggregateIsInTerminalState") {
-            lateinit var result: Flow<Either<Error, EvenNumberEvent?>>
-
-            When("handling command of type AddEvenNumber") {
-                runBlockingTest {
-                    result = evenAggregate.handleEither(
-                        flowOf(
-                            AddEvenNumber(
-                                Description("Add 200"),
-                                NumberValue(200)
-                            ),
-                            AddEvenNumber(
-                                Description("Add 2"),
-                                NumberValue(2)
-                            )
-                        )
-                    )
-                }
-            }
-            Then("expect error") {
-                runBlockingTest {
-                    val last = result.last()
-                    assert(last is Either.Left && last.value is Error.CommandHandlingFailed<*>)
-                }
-            }
-        }
-
-
 
         Scenario("Success - All Numbers Aggregate -  Even") {
             lateinit var result: Flow<Either<Error, NumberEvent?>>

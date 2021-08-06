@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.flowOf
  */
 fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumberEvent?> =
     Decider(
-        isTerminal = { s -> s.value.get > 100 },
         initialState = EvenNumberState(
             Description(
                 "Initial state"

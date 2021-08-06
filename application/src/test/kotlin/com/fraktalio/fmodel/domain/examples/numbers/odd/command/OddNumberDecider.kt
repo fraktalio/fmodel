@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.flowOf
  */
 fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?> =
     Decider(
-        isTerminal = { s -> s.value.get > 100 },
         initialState = OddNumberState(
             Description(
                 "Initial state"

@@ -38,7 +38,6 @@ import kotlinx.coroutines.flow.map
  * @property decide A function/lambda that takes command of type [C] and input state of type [Si] as parameters, and returns/emits the flow of output events [Flow]<[Eo]>
  * @property evolve A function/lambda that takes input state of type [Si] and input event of type [Ei] as parameters, and returns the output/new state [So]
  * @property initialState A starting point / An initial state of type [So]
- * @property isTerminal A function/lambda that takes input state of type [Si], and returns [Boolean] showing if the current input state is terminal/final
  * @constructor Creates [_Decider]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
@@ -46,8 +45,7 @@ import kotlinx.coroutines.flow.map
 data class _Decider<C, Si, So, Ei, Eo>(
     val decide: (C, Si) -> Flow<Eo>,
     val evolve: suspend (Si, Ei) -> So,
-    val initialState: So,
-    val isTerminal: suspend (Si) -> Boolean
+    val initialState: So
 ) {
     /**
      * Left map on C/Command parameter - Contravariant
@@ -58,8 +56,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
     inline fun <Cn> mapLeftOnCommand(crossinline f: (Cn) -> C): _Decider<Cn, Si, So, Ei, Eo> = _Decider(
         decide = { cn, s -> this.decide(f(cn), s) },
         evolve = { si, ei -> this.evolve(si, ei) },
-        initialState = this.initialState,
-        isTerminal = { si -> this.isTerminal(si) }
+        initialState = this.initialState
     )
 
     /**
@@ -78,8 +75,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
     ): _Decider<C, Si, So, Ein, Eon> = _Decider(
         decide = { c, si -> this.decide(c, si).map(fr) },
         evolve = { si, ein -> this.evolve(si, fl(ein)) },
-        initialState = this.initialState,
-        isTerminal = { si -> this.isTerminal(si) }
+        initialState = this.initialState
     )
 
     /**
@@ -114,8 +110,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
     ): _Decider<C, Sin, Son, Ei, Eo> = _Decider(
         decide = { c, sin -> this.decide(c, fl(sin)) },
         evolve = { sin, ei -> fr(this.evolve(fl(sin), ei)) },
-        initialState = fr(this.initialState),
-        isTerminal = { si -> this.isTerminal(fl(si)) }
+        initialState = fr(this.initialState)
     )
 
     /**
@@ -146,8 +141,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
     fun <Son> applyOnState(ff: _Decider<C, Si, (So) -> Son, Ei, Eo>): _Decider<C, Si, Son, Ei, Eo> = _Decider(
         decide = { c, si -> flowOf(ff.decide(c, si), this.decide(c, si)).flattenConcat() },
         evolve = { si, ei -> ff.evolve(si, ei).invoke(this.evolve(si, ei)) },
-        initialState = ff.initialState.invoke(this.initialState),
-        isTerminal = { si -> this.isTerminal(si) && ff.isTerminal(si) }
+        initialState = ff.initialState.invoke(this.initialState)
     )
 
     /**
@@ -234,8 +228,7 @@ inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, reified Eo : Eo_
     return _Decider(
         decide = { c, si -> deciderZ.decide(c, si) },
         evolve = { pair, ei -> deciderZ.evolve(pair, ei) },
-        initialState = deciderZ.initialState,
-        isTerminal = { pair -> deciderZ.isTerminal(pair) }
+        initialState = deciderZ.initialState
     )
 }
 

@@ -146,15 +146,14 @@ to the 3 generic parameters: `typealias Decider<C, S, E> = _Decider<C, S, S, E, 
 data class _Decider<C, Si, So, Ei, Eo>(
     val decide: (C, Si) -> Flow<Eo>,
     val evolve: suspend (Si, Ei) -> So,
-    val initialState: So,
-    val isTerminal: suspend (Si) -> Boolean
+    val initialState: So
 )
 
 typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
 ```
 
-Additionally, `initialState` of the Decider and `isTerminal` function are introduced to gain more control over the
-initial and final state of the Decider.
+Additionally, `initialState` of the Decider is introduced to gain more control over the
+initial state of the Decider.
 
 ![decider image](.assets/decider.jpg)
 
