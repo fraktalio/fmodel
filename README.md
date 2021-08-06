@@ -45,6 +45,7 @@ Design patterns, optimised for Event Sourcing and CQRS.
         * [Saga extensions and functions](#saga-extensions-and-functions)
         * [Saga Manager](#saga-manager)
     * [Kotlin](#kotlin)
+    * [Examples](#start-using-the-libraries)  
     * [References and further reading](#references-and-further-reading)
 
 ## Abstraction and generalization
@@ -388,6 +389,10 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
     <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
+
+### Examples
+
+ - [https://github.com/fraktalio/fmodel-demos](https://github.com/fraktalio/fmodel-demos)
 
 ## Deploy to Maven Central
 
