@@ -32,10 +32,10 @@ interface StateRepository<C, S> {
     suspend fun C.fetchState(): S?
     suspend fun S.save(): S
 
-    suspend fun C.fetchStateEither(): Either<Error.FetchingStateFailed, S?> =
+    suspend fun C.fetchStateEither(): Either<Error.FetchingStateFailed<C>, S?> =
         Either.catch {
             fetchState()
-        }.mapLeft { throwable -> Error.FetchingStateFailed(throwable) }
+        }.mapLeft { throwable -> Error.FetchingStateFailed(this, throwable) }
 
 
     suspend fun S.saveEither(): Either<Error.StoringStateFailed<S>, S> =

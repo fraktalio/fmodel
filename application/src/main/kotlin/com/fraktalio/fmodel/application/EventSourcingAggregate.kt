@@ -17,7 +17,6 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.nonFatalOrThrow
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.Saga
 import kotlinx.coroutines.flow.*
@@ -54,14 +53,27 @@ data class EventSourcingAggregate<C, S, E>(
      * @param command Command message of type [C]
      * @return [Flow] of [Either] [Error] or [E]/Event
      */
-    suspend fun handle(command: C): Flow<Either<Error, E>> =
+    suspend fun handleEither(command: C): Flow<Either<Error, E>> =
         command
             .fetchEvents()
             .calculateNewEvents(command)
-            .saveEither()
+            .save()
+            .map { Either.Right(it) }
             .catch<Either<Error, E>> {
-                emit(Either.Left(Error.CommandHandlingFailed(it)))
+                emit(Either.Left(Error.CommandHandlingFailed(command)))
             }
+
+    /**
+     * Handles the command message of type [C]
+     *
+     * @param command Command message of type [C]
+     * @return [Flow] of [E]/Event
+     */
+    suspend fun handle(command: C): Flow<E> =
+        command
+            .fetchEvents()
+            .calculateNewEvents(command)
+            .save()
 
     /**
      * Handles the flow of command messages of type [C]
@@ -69,27 +81,30 @@ data class EventSourcingAggregate<C, S, E>(
      * @param commands [Flow] of Command messages of type [C]
      * @return [Flow] of [Either] [Error] or [E]/Event
      */
-    fun handle(commands: Flow<C>): Flow<Either<Error, E>> =
+    fun handleEither(commands: Flow<C>): Flow<Either<Error, E>> =
+        commands.flatMapConcat { handleEither(it) }
+
+    /**
+     * Handles the flow of command messages of type [C]
+     *
+     * @param commands [Flow] of Command messages of type [C]
+     * @return [Flow] of [E]/Event
+     */
+    fun handle(commands: Flow<C>): Flow<E> =
         commands.flatMapConcat { handle(it) }
 
 
     private suspend fun Flow<E>.calculateNewEvents(command: C): Flow<E> {
-        try {
-            val currentEvents = this
-            val currentState = this.fold(decider.initialState, decider.evolve)
-            if (decider.isTerminal(currentState)) throw UnsupportedOperationException("Aggregate is in terminal state!")
-            var resultingEvents = decider.decide(command, currentState)
+        val currentState = fold(decider.initialState, decider.evolve)
+        if (decider.isTerminal(currentState)) return flow { throw UnsupportedOperationException("Aggregate is in terminal state!") }
+        var resultingEvents = decider.decide(command, currentState)
 
-            if (saga != null)
-                resultingEvents.flatMapConcat { saga.react(it) }.collect {
-                    val newEvents = flowOf(currentEvents, resultingEvents).flattenConcat().calculateNewEvents(it)
-                    resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
-                }
+        if (saga != null)
+            resultingEvents.flatMapConcat { saga.react(it) }.collect {
+                val newEvents = flowOf(this, resultingEvents).flattenConcat().calculateNewEvents(it)
+                resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
+            }
 
-            return resultingEvents
-        } catch (e: Throwable) {
-            val nonFatalException = e.nonFatalOrThrow()
-            return flow { throw nonFatalException }
-        }
+        return resultingEvents
     }
 }

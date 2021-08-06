@@ -35,14 +35,23 @@ sealed class Result
 sealed class Error : Result() {
     abstract val throwable: Throwable?
 
-    data class FetchingStateFailed(override val throwable: Throwable? = null) : Error()
-    data class FetchingEventsFailed(override val throwable: Throwable? = null) : Error()
-    data class CommandHandlingFailed(override val throwable: Throwable? = null) : Error()
-    data class ActionResultHandlingFailed(override val throwable: Throwable? = null) : Error()
-    data class StoringEventFailed<E>(val event: E, override val throwable: Throwable? = null) : Error()
+    data class CommandHandlingFailed<C>(val command: C, override val throwable: Throwable? = null) : Error()
+    data class ActionResultHandlingFailed<AR>(val actionResult: AR, override val throwable: Throwable? = null) : Error()
+    data class FetchingStateFailed<C>(val command: C, override val throwable: Throwable? = null) : Error()
+    data class FetchingViewStateFailed<E>(val event: E, override val throwable: Throwable? = null) : Error()
+    data class CalculatingNewStateFailed<S, C>(
+        val state: S,
+        val command: C,
+        override val throwable: Throwable? = null
+    ) : Error()
+
+    data class CalculatingNewViewStateFailed<S, E>(
+        val state: S,
+        val event: E,
+        override val throwable: Throwable? = null
+    ) : Error()
+
     data class StoringStateFailed<S>(val state: S, override val throwable: Throwable? = null) : Error()
-    data class CalculatingNewStateFailed<S>(val state: S, override val throwable: Throwable? = null) : Error()
-    data class PublishingActionFailed<A>(val action: A, override val throwable: Throwable? = null) : Error()
 }
 
 

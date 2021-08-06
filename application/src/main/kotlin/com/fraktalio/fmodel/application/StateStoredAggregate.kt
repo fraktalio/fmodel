@@ -80,7 +80,7 @@ data class StateStoredAggregate<C, S, E>(
             if (saga != null) events.flatMapConcat { saga.react(it) }.collect { newState.calculateNewState(it) }
             newState
         }.mapLeft { throwable ->
-            Error.CalculatingNewStateFailed(this, throwable)
+            Error.CalculatingNewStateFailed(this, command, throwable)
         }
 }
 

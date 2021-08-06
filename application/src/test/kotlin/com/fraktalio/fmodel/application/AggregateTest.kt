@@ -58,7 +58,7 @@ object AggregateTest : Spek({
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
-                    result = evenAggregate.handle(
+                    result = evenAggregate.handleEither(
                         AddEvenNumber(
                             Description("Add 2"),
                             NumberValue(2)
@@ -80,7 +80,7 @@ object AggregateTest : Spek({
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
-                    result = evenAggregate.handle(
+                    result = evenAggregate.handleEither(
                         flowOf(
                             AddEvenNumber(
                                 Description("Add 200"),
@@ -97,7 +97,7 @@ object AggregateTest : Spek({
             Then("expect error") {
                 runBlockingTest {
                     val last = result.last()
-                    assert(last is Either.Left && last.value is Error.CommandHandlingFailed)
+                    assert(last is Either.Left && last.value is Error.CommandHandlingFailed<*>)
                 }
             }
         }
@@ -109,7 +109,7 @@ object AggregateTest : Spek({
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
-                    result = allNumbersAggregate.handle(
+                    result = allNumbersAggregate.handleEither(
                         AddEvenNumber(
                             Description("Add 2"),
                             NumberValue(2)
@@ -132,7 +132,7 @@ object AggregateTest : Spek({
 
             When("handling command of type AddOddNumber") {
                 runBlockingTest {
-                    result = allNumbersAggregate.handle(
+                    result = allNumbersAggregate.handleEither(
                         NumberCommand.OddNumberCommand.AddOddNumber(
                             Description("Add 1"),
                             NumberValue(1)

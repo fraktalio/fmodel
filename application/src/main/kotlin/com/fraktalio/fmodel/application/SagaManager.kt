@@ -17,12 +17,11 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.nonFatalOrThrow
 import com.fraktalio.fmodel.domain.Saga
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 
 /**
  * Saga manager - Stateless process orchestrator
@@ -41,10 +40,23 @@ data class SagaManager<AR, A>(
      * @param actionResult Action Result represent the outcome of some action you want to handle in some way
      * @return [Flow] of [Either] [Error] or [A]/Action
      */
-    suspend fun handle(actionResult: AR): Flow<Either<Error, A>> =
-        actionResult.calculateNewActions()
-            .publishEither()
-            .catch<Either<Error, A>> { emit(Either.Left(Error.ActionResultHandlingFailed(it))) }
+    fun handleEither(actionResult: AR): Flow<Either<Error, A>> =
+        actionResult
+            .calculateNewActions()
+            .publish()
+            .map { Either.Right(it) }
+            .catch<Either<Error, A>> { emit(Either.Left(Error.ActionResultHandlingFailed(actionResult))) }
+
+    /**
+     * Handles the action result of type [AR]
+     *
+     * @param actionResult Action Result represent the outcome of some action you want to handle in some way
+     * @return [Flow] of [A]/Action
+     */
+    fun handle(actionResult: AR): Flow<A> =
+        actionResult
+            .calculateNewActions()
+            .publish()
 
     /**
      * Handles the the [Flow] of action results of type [AR]
@@ -52,17 +64,20 @@ data class SagaManager<AR, A>(
      * @param actionResults Action Results represent the outcome of some action you want to handle in some way
      * @return [Flow] of [Either] [Error] or [A]/Action
      */
-    fun handle(actionResults: Flow<AR>): Flow<Either<Error, A>> =
+    fun handleEither(actionResults: Flow<AR>): Flow<Either<Error, A>> =
+        actionResults.flatMapConcat { handleEither(it) }
+
+    /**
+     * Handles the the [Flow] of action results of type [AR]
+     *
+     * @param actionResults Action Results represent the outcome of some action you want to handle in some way
+     * @return [Flow] of [A]/Action
+     */
+    fun handle(actionResults: Flow<AR>): Flow<A> =
         actionResults.flatMapConcat { handle(it) }
 
-    private fun AR.calculateNewActions(): Flow<A> =
-        try {
-            saga.react(this)
-        } catch (e: Throwable) {
-            val nonFatalException = e.nonFatalOrThrow()
-            flow { throw nonFatalException }
-        }
 
+    private fun AR.calculateNewActions(): Flow<A> = saga.react(this)
 
 }
 

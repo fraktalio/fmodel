@@ -16,7 +16,6 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -32,14 +31,6 @@ import kotlinx.coroutines.flow.map
 interface ActionPublisher<A> {
     suspend fun A.publish(): A
 
-    suspend fun A.publishEither(): Either<Error.PublishingActionFailed<A>, A> =
-        Either.catch() {
-            this.publish()
-        }.mapLeft { throwable -> Error.PublishingActionFailed(this, throwable) }
-
-    suspend fun Flow<A>.publishEither(): Flow<Either<Error.PublishingActionFailed<A>, A>> =
-        map { it.publishEither() }
-
-    suspend fun Flow<A>.publish(): Flow<A> =
+    fun Flow<A>.publish(): Flow<A> =
         map { it.publish() }
 }

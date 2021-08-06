@@ -65,6 +65,6 @@ data class MaterializedView<S, E>(
     private suspend fun S.calculateNewState(event: E): Either<Error, S> =
         Either.catch {
             view.evolve(this, event)
-        }.mapLeft { throwable -> Error.CalculatingNewStateFailed(this, throwable) }
+        }.mapLeft { throwable -> Error.CalculatingNewViewStateFailed(this, event, throwable) }
 }
 

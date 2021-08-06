@@ -28,10 +28,10 @@ import arrow.core.Either
  */
 interface ViewStateRepository<E, S> {
     suspend fun E.fetchState(): S?
-    suspend fun E.fetchStateEither(): Either<Error.FetchingStateFailed, S?> =
+    suspend fun E.fetchStateEither(): Either<Error.FetchingViewStateFailed<E>, S?> =
         Either.catch {
             fetchState()
-        }.mapLeft { throwable -> Error.FetchingStateFailed(throwable) }
+        }.mapLeft { throwable -> Error.FetchingViewStateFailed(this, throwable) }
 
     suspend fun S.save(): S
     suspend fun S.saveEither(): Either<Error.StoringStateFailed<S>, S> =
