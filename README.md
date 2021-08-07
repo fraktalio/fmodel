@@ -45,7 +45,7 @@ Design patterns, optimised for Event Sourcing and CQRS.
         * [Saga extensions and functions](#saga-extensions-and-functions)
         * [Saga Manager](#saga-manager)
     * [Kotlin](#kotlin)
-    * [Examples](#start-using-the-libraries)  
+    * [Examples](#start-using-the-libraries)
     * [References and further reading](#references-and-further-reading)
 
 ## Abstraction and generalization
@@ -153,8 +153,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
 typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
 ```
 
-Additionally, `initialState` of the Decider is introduced to gain more control over the
-initial state of the Decider.
+Additionally, `initialState` of the Decider is introduced to gain more control over the initial state of the Decider.
 
 ![decider image](.assets/decider.jpg)
 
@@ -392,7 +391,7 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 
 ### Examples
 
- - [https://github.com/fraktalio/fmodel-demos](https://github.com/fraktalio/fmodel-demos)
+- [https://github.com/fraktalio/fmodel-demos](https://github.com/fraktalio/fmodel-demos)
 
 ## Deploy to Maven Central
 

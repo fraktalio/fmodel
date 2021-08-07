@@ -52,7 +52,7 @@ object MaterializedViewTest : Spek({
 
             When("handling event of type EvenNumberAdded") {
                 runBlockingTest {
-                    result = evenView.handle(
+                    result = evenView.handleEither(
                         EvenNumberAdded(
                             Description("Add 2"),
                             NumberValue(2)
@@ -71,7 +71,7 @@ object MaterializedViewTest : Spek({
 
             When("handling null") {
                 runBlockingTest {
-                    result = evenView.handle(
+                    result = evenView.handleEither(
                         null
                     )
                 }
@@ -86,7 +86,7 @@ object MaterializedViewTest : Spek({
 
             When("handling event of type EvenNumberAdded") {
                 runBlockingTest {
-                    result = allNumbersView.handle(
+                    result = allNumbersView.handleEither(
                         EvenNumberAdded(
                             Description("Add 2"),
                             NumberValue(2)

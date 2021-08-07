@@ -43,13 +43,13 @@ data class MaterializedView<S, E>(
      * Handles the event of type [E]
      *
      * @param event Event of type [E] to be handled
-     * @return Either [Error] or [S]/State
+     * @return [Either] [Error] or [S]/State
      */
-    suspend fun handle(event: E): Either<Error, S> =
+    suspend fun handleEither(event: E): Either<Error, S> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
             (event.fetchStateEither().bind() ?: view.initialState)
-                .calculateNewState(event).bind()
+                .calculateNewStateEither(event).bind()
                 .saveEither().bind()
         }
 
@@ -57,14 +57,38 @@ data class MaterializedView<S, E>(
      * Handles the flow of events of type [E]
      *
      * @param events Flow of Events of type [E] to be handled
-     * @return Either [Error] or [S]/State
+     * @return [Flow] of [Either] [Error] or [S]/State
      */
-    fun handle(events: Flow<E>): Flow<Either<Error, S>> =
+    fun handleEither(events: Flow<E>): Flow<Either<Error, S>> =
+        events.map { handleEither(it) }
+
+    /**
+     * Handles the event of type [E]
+     *
+     * @param event Event of type [E] to be handled
+     * @return [S]/State
+     */
+    suspend fun handle(event: E): S =
+        (event.fetchState() ?: view.initialState)
+            .calculateNewState(event)
+            .save()
+
+    /**
+     * Handles the flow of events of type [E]
+     *
+     * @param events Flow of Events of type [E] to be handled
+     * @return [Flow] of [S]/State
+     */
+    fun handle(events: Flow<E>): Flow<S> =
         events.map { handle(it) }
 
-    private suspend fun S.calculateNewState(event: E): Either<Error, S> =
+
+    private suspend fun S.calculateNewStateEither(event: E): Either<Error, S> =
         Either.catch {
-            view.evolve(this, event)
+            calculateNewState(event)
         }.mapLeft { throwable -> Error.CalculatingNewViewStateFailed(this, event, throwable) }
+
+
+    private suspend fun S.calculateNewState(event: E): S = view.evolve(this, event)
 }
 

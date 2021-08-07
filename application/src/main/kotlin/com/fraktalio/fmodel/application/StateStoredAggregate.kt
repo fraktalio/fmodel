@@ -53,14 +53,13 @@ data class StateStoredAggregate<C, S, E>(
      * @param command Command message of type [C]
      * @return Either [Error] or [S]/State
      */
-    suspend fun handle(command: C): Either<Error, S> =
+    suspend fun handleEither(command: C): Either<Error, S> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
             (command.fetchStateEither().bind() ?: decider.initialState)
-                .calculateNewState(command).bind()
+                .calculateNewStateEither(command).bind()
                 .saveEither().bind()
         }
-
 
     /**
      * Handles the [Flow] of command messages of type [C]
@@ -68,18 +67,43 @@ data class StateStoredAggregate<C, S, E>(
      * @param commands Command messages of type [Flow]<[C]>
      * @return [Flow] of [Either] [Error] or [S]/State
      */
-    fun handle(commands: Flow<C>): Flow<Either<Error, S>> =
+    fun handleEither(commands: Flow<C>): Flow<Either<Error, S>> =
+        commands.map { handleEither(it) }
+
+    /**
+     * Handles the command message of type [C]
+     *
+     * @param command Command message of type [C]
+     * @return [S]/State
+     */
+    suspend fun handle(command: C): S =
+        (command.fetchState() ?: decider.initialState)
+            .calculateNewState(command)
+            .save()
+
+    /**
+     * Handles the [Flow] of command messages of type [C]
+     *
+     * @param commands Command messages of type [Flow]<[C]>
+     * @return [Flow] of [S]/State
+     */
+    fun handle(commands: Flow<C>): Flow<S> =
         commands.map { handle(it) }
 
 
-    private suspend fun S.calculateNewState(command: C): Either<Error, S> =
+    private suspend fun S.calculateNewStateEither(command: C): Either<Error, S> =
         Either.catch {
-            val events = decider.decide(command, this)
-            val newState = events.fold(this@calculateNewState, decider.evolve)
-            if (saga != null) events.flatMapConcat { saga.react(it) }.collect { newState.calculateNewState(it) }
-            newState
+            calculateNewState(command)
         }.mapLeft { throwable ->
             Error.CalculatingNewStateFailed(this, command, throwable)
         }
+
+    private suspend fun S.calculateNewState(command: C): S {
+        val events = decider.decide(command, this)
+        val newState = events.fold(this@calculateNewState, decider.evolve)
+        if (saga != null) events.flatMapConcat { saga.react(it) }.collect { newState.calculateNewState(it) }
+        return newState
+    }
+
 }
 
