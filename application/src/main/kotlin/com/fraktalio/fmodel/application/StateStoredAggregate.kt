@@ -107,3 +107,36 @@ data class StateStoredAggregate<C, S, E>(
 
 }
 
+/**
+ * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [StateStoredAggregate]<[C], [S], *>
+ * @receiver command of type [C]
+ * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
+ * @return the stored state/[S]
+ */
+suspend fun <C, S> C.publishTo(aggregate: StateStoredAggregate<C, S, *>): S = aggregate.handle(this)
+
+/**
+ * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [StateStoredAggregate]<[C], [S], *>
+ * @receiver [Flow] of commands of type [C]
+ * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
+ * @return the [Flow] of stored state/[S]
+ */
+fun <C, S> Flow<C>.publishTo(aggregate: StateStoredAggregate<C, S, *>): Flow<S> = aggregate.handle(this)
+
+/**
+ * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [StateStoredAggregate]<[C], [S], *>
+ * @receiver command of type [C]
+ * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
+ * @return [Either] [Error] or successfully stored state/[S]
+ */
+suspend fun <C, S> C.publishEitherTo(aggregate: StateStoredAggregate<C, S, *>): Either<Error, S> =
+    aggregate.handleEither(this)
+
+/**
+ * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [StateStoredAggregate]<[C], [S], *>
+ * @receiver [Flow] of commands of type [C]
+ * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
+ * @return the [Flow] of [Either] [Error] or successfully  stored state/[S]
+ */
+fun <C, S> Flow<C>.publishToEither(aggregate: StateStoredAggregate<C, S, *>): Flow<Either<Error, S>> =
+    aggregate.handleEither(this)

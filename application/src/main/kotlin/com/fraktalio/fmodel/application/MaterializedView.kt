@@ -92,3 +92,36 @@ data class MaterializedView<S, E>(
     private suspend fun S.calculateNewState(event: E): S = view.evolve(this, event)
 }
 
+/**
+ * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
+ * @receiver event of type [E]
+ * @param materializedView of type  [MaterializedView]<[S], [E]>
+ * @return the stored state/[S]
+ */
+suspend fun <S, E> E.publishTo(materializedView: MaterializedView<S, E>): S = materializedView.handle(this)
+
+/**
+ * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
+ * @receiver [Flow] of events of type [E]
+ * @param materializedView of type  [MaterializedView]<[S], [E]>
+ * @return the stored state/[S]
+ */
+fun <S, E> Flow<E>.publishTo(materializedView: MaterializedView<S, E>): Flow<S> = materializedView.handle(this)
+
+/**
+ * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
+ * @receiver event of type [E]
+ * @param materializedView of type  [MaterializedView]<[S], [E]>
+ * @return [Either] [Error] or the successfully stored state/[S]
+ */
+suspend fun <S, E> E.publishEitherTo(materializedView: MaterializedView<S, E>): Either<Error, S> =
+    materializedView.handleEither(this)
+
+/**
+ * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
+ * @receiver [Flow] of events of type [E]
+ * @param materializedView of type  [MaterializedView]<[S], [E]>
+ * @return [Flow] of [Either] [Error] or the successfully stored state/[S]
+ */
+fun <S, E> Flow<E>.publishEitherTo(materializedView: MaterializedView<S, E>): Flow<Either<Error, S>> =
+    materializedView.handleEither(this)

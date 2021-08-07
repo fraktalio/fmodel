@@ -67,7 +67,7 @@ data class EventSourcingAggregate<C, S, E>(
      * Handles the command message of type [C]
      *
      * @param command Command message of type [C]
-     * @return [Flow] of [E]/Event
+     * @return [Flow] of stored [E]/Events
      */
     suspend fun handle(command: C): Flow<E> =
         command
@@ -88,7 +88,7 @@ data class EventSourcingAggregate<C, S, E>(
      * Handles the flow of command messages of type [C]
      *
      * @param commands [Flow] of Command messages of type [C]
-     * @return [Flow] of [E]/Event
+     * @return [Flow] of stored [E]/Events
      */
     fun handle(commands: Flow<C>): Flow<E> =
         commands.flatMapConcat { handle(it) }
@@ -107,3 +107,37 @@ data class EventSourcingAggregate<C, S, E>(
         return resultingEvents
     }
 }
+
+/**
+ * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
+ * @receiver command of type [C]
+ * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
+ * @return the [Flow] of stored [E]/Events
+ */
+suspend fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)
+
+/**
+ * Extension function - Publishes [Flow] of commands of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
+ * @receiver [Flow] of commands of type [C]
+ * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
+ * @return the [Flow] of stored [E]/Events
+ */
+fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)
+
+/**
+ * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
+ * @receiver command of type [C]
+ * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
+ * @return the [Flow] of [Either] [Error] or successfully stored [E]/Events
+ */
+suspend fun <C, E> C.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Either<Error, E>> =
+    aggregate.handleEither(this)
+
+/**
+ * Extension function - Publishes [Flow] of commands of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
+ * @receiver [Flow] of commands of type [C]
+ * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
+ * @return the [Flow] of [Either] [Error] or successfully stored [E]/Events
+ */
+fun <C, E> Flow<C>.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Either<Error, E>> =
+    aggregate.handleEither(this)

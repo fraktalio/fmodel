@@ -81,3 +81,36 @@ data class SagaManager<AR, A>(
 
 }
 
+/**
+ * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
+ * @receiver action result of type [AR]
+ * @param sagaManager of type [SagaManager]<[AR], [A]>
+ * @return the [Flow] of published [A]/Actions
+ */
+fun <AR, A> AR.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager.handle(this)
+
+/**
+ * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
+ * @receiver [Flow] of action results of type [AR]
+ * @param sagaManager of type [SagaManager]<[AR], [A]>
+ * @return the [Flow] of published [A]/Actions
+ */
+fun <AR, A> Flow<AR>.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager.handle(this)
+
+/**
+ * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
+ * @receiver action result of type [AR]
+ * @param sagaManager of type [SagaManager]<[AR], [A]>
+ * @return the [Flow] of [Either] [Error] or successfully published [A]/Actions
+ */
+fun <AR, A> AR.publishEitherTo(sagaManager: SagaManager<AR, A>): Flow<Either<Error, A>> = sagaManager.handleEither(this)
+
+/**
+ * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
+ * @receiver [Flow] of action results of type [AR]
+ * @param sagaManager of type [SagaManager]<[AR], [A]>
+ * @return the [Flow] of [Either] [Error] or successfully published [A]/Actions
+ */
+fun <AR, A> Flow<AR>.publishEitherTo(sagaManager: SagaManager<AR, A>): Flow<Either<Error, A>> =
+    sagaManager.handleEither(this)
+
