@@ -89,6 +89,8 @@ Both types of systems can be designed by using only these two functions and thre
 - `decide: (C, S) -> Flow<E>`
 - `evolve: (S, E) -> S`
 
+![general model image](.assets/flow-model.jpg)
+
 There is more to it! You can switch from one system type to another or have both flavors included within your systems
 landscape.
 
