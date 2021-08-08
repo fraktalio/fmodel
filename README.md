@@ -211,6 +211,8 @@ handle the command, aggregate needs to fetch the current state (represented as a
 via `EventRepository.fetchEvents` function, and then delegate the command to the decider which can produce new events as
 a result. Produced events are then stored via `EventRepository.save` suspending function.
 
+![event sourced aggregate](.assets/es-aggregate.jpg)
+
 `EventSourcingAggregate` implements an interface `EventRepository` by delegating all of its public members to a
 specified object. The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin
 supports it natively requiring zero boilerplate code.
@@ -226,6 +228,8 @@ using/delegating a `Decider` to handle commands and produce new state. It belong
 handle the command, aggregate needs to fetch the current state via `StateRepository.fetchState` function first, and then
 delegate the command to the decider which can produce new state as a result. New state is then stored
 via `StateRepository.save` suspending function.
+
+![state storedaggregate](.assets/ss-aggregate.jpg)
 
 `StateStoredAggregate` implements an interface `StateRepository` by delegating all of its public members to a specified
 object. The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it
@@ -364,6 +368,8 @@ Saga manager is using/delegating a `Saga` to react on Action Results of type `AR
 going to be published via `ActionPublisher.publish` suspending function.
 
 It belongs to the Application layer.
+
+![information flow](.assets/information-flow.jpg)
 
 ## Kotlin
 
