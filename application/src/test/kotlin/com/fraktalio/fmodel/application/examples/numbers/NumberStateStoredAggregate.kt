@@ -16,8 +16,8 @@
 
 package com.fraktalio.fmodel.application.examples.numbers
 
-import com.fraktalio.fmodel.application.EventRepository
-import com.fraktalio.fmodel.application.EventSourcingAggregate
+import com.fraktalio.fmodel.application.StateRepository
+import com.fraktalio.fmodel.application.StateStoredAggregate
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.Saga
 import com.fraktalio.fmodel.domain.combine
@@ -31,25 +31,24 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 
 
 /**
- * Number aggregate
+ * Number state stored aggregate
  *
  * It combines two already existing deciders into one that can handle ALL numbers (Even and Odd)
  *
  * @param evenNumberDecider the core domain logic algorithm for even numbers - pure declaration of our program logic
  * @param oddNumberDecider the core domain logic algorithm for odd numbers   - pure declaration of our program logic
- * @param repository the event-sourcing repository for all (even and odd) numbers
- * @return the event-sourcing aggregate instance for all (even and odd) numbers
+ * @param repository the state-stored repository for all (even and odd) numbers
+ * @return the state-stored aggregate instance for all (even and odd) numbers
  */
-fun numberAggregate(
+fun numberStateStoredAggregate(
     evenNumberDecider: Decider<EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?>,
     oddNumberDecider: Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?>,
     evenNumberSaga: Saga<NumberEvent.EvenNumberEvent?, OddNumberCommand>,
     oddNumberSaga: Saga<OddNumberEvent?, EvenNumberCommand>,
-    repository: EventRepository<NumberCommand?, NumberEvent?>
+    repository: StateRepository<NumberCommand?, Pair<EvenNumberState, OddNumberState>>
 ) =
-
-    EventSourcingAggregate(
+    StateStoredAggregate(
         decider = evenNumberDecider.combine(oddNumberDecider),
-        eventRepository = repository,
+        stateRepository = repository,
         saga = evenNumberSaga.combine(oddNumberSaga)
     )

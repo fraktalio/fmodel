@@ -18,7 +18,7 @@ package com.fraktalio.fmodel.application.examples.numbers.even.command
 
 import com.fraktalio.fmodel.application.EventRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.sync.Mutex
@@ -27,7 +27,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * A very simple event store ;)  It is initially empty.
  */
-private var evenNumberEventStorage: List<EvenNumberEvent?> = emptyList()
+private var evenNumberEventStorage: List<NumberEvent.EvenNumberEvent?> = emptyList()
 private val evenNumberEventStorageMutex = Mutex()
 
 /**
@@ -35,14 +35,14 @@ private val evenNumberEventStorageMutex = Mutex()
  *
  * @constructor Creates Even number repository
  */
-class EvenNumberRepository : EventRepository<EvenNumberCommand?, EvenNumberEvent?> {
+class EvenNumberRepository : EventRepository<EvenNumberCommand?, NumberEvent.EvenNumberEvent?> {
 
-    override fun EvenNumberCommand?.fetchEvents(): Flow<EvenNumberEvent?> =
+    override fun EvenNumberCommand?.fetchEvents(): Flow<NumberEvent.EvenNumberEvent?> =
 
         evenNumberEventStorage.asFlow()
 
 
-    override suspend fun EvenNumberEvent?.save(): EvenNumberEvent? {
+    override suspend fun NumberEvent.EvenNumberEvent?.save(): NumberEvent.EvenNumberEvent? {
 
         evenNumberEventStorageMutex.withLock {
             evenNumberEventStorage = evenNumberEventStorage.plus(this)
@@ -57,6 +57,6 @@ class EvenNumberRepository : EventRepository<EvenNumberCommand?, EvenNumberEvent
  *
  * @return event repository instance for Even numbers
  */
-fun evenNumberRepository(): EventRepository<EvenNumberCommand?, EvenNumberEvent?> =
+fun evenNumberRepository(): EventRepository<EvenNumberCommand?, NumberEvent.EvenNumberEvent?> =
     EvenNumberRepository()
 

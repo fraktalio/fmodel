@@ -22,11 +22,12 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.SubtractEvenNumber
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberSubtracted
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 
 /**
@@ -34,7 +35,7 @@ import kotlinx.coroutines.flow.flowOf
  *
  * @return Even number decider instance
  */
-fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumberEvent?> =
+fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?> =
     Decider(
         initialState = EvenNumberState(
             Description(
@@ -42,21 +43,26 @@ fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumber
             ), NumberValue(0)
         ),
         decide = { c, _ ->
-            when (c) {
-                is AddEvenNumber -> flowOf(
-                    EvenNumberAdded(
-                        c.description,
-                        c.value
-                    )
+            if (c != null && c.value.get > 1000) flow<NumberEvent.EvenNumberEvent> {
+                throw UnsupportedOperationException(
+                    "Sorry"
                 )
-                is SubtractEvenNumber -> flowOf(
-                    EvenNumberSubtracted(
-                        c.description,
-                        c.value
+            } else
+                when (c) {
+                    is AddEvenNumber -> flowOf(
+                        EvenNumberAdded(
+                            c.description,
+                            c.value
+                        )
                     )
-                )
-                null -> emptyFlow()
-            }
+                    is SubtractEvenNumber -> flowOf(
+                        EvenNumberSubtracted(
+                            c.description,
+                            c.value
+                        )
+                    )
+                    null -> emptyFlow()
+                }
         },
         evolve = { s, e ->
             when (e) {

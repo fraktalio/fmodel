@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.fraktalio.fmodel.application.examples.numbers.even.query
+package com.fraktalio.fmodel.application.examples.numbers.even.command
 
-import com.fraktalio.fmodel.application.ViewStateRepository
+import com.fraktalio.fmodel.application.StateRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -27,7 +27,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * A very simple state store ;)  It is initially empty.
  */
-private var evenNumberStateStorage: EvenNumberState? = null
+private var evenNumberStateStorage: EvenNumberState = EvenNumberState(Description("0"), NumberValue(0))
 private val evenNumberStateStorageMutex = Mutex()
 
 /**
@@ -35,11 +35,11 @@ private val evenNumberStateStorageMutex = Mutex()
  *
  * @constructor Creates Even number repository
  */
-class EvenNumberViewRepository : ViewStateRepository<EvenNumberEvent?, EvenNumberState?> {
+class EvenNumberStateRepository : StateRepository<EvenNumberCommand?, EvenNumberState> {
 
-    override suspend fun EvenNumberEvent?.fetchState(): EvenNumberState? = evenNumberStateStorage
+    override suspend fun EvenNumberCommand?.fetchState(): EvenNumberState = evenNumberStateStorage
 
-    override suspend fun EvenNumberState?.save(): EvenNumberState? {
+    override suspend fun EvenNumberState.save(): EvenNumberState {
         evenNumberStateStorageMutex.withLock {
             evenNumberStateStorage = this
         }
@@ -47,7 +47,7 @@ class EvenNumberViewRepository : ViewStateRepository<EvenNumberEvent?, EvenNumbe
     }
 
     fun deleteAll() {
-        evenNumberStateStorage = null
+        evenNumberStateStorage = EvenNumberState(Description("0"), NumberValue(0))
     }
 
 }
@@ -57,6 +57,6 @@ class EvenNumberViewRepository : ViewStateRepository<EvenNumberEvent?, EvenNumbe
  *
  * @return state repository instance for Even numbers
  */
-fun evenNumberViewRepository(): ViewStateRepository<EvenNumberEvent?, EvenNumberState?> =
-    EvenNumberViewRepository()
+fun evenNumberStateRepository(): StateRepository<EvenNumberCommand?, EvenNumberState> =
+    EvenNumberStateRepository()
 

@@ -17,6 +17,7 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
+import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberMaterializedView
 import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.numberMaterializedView
@@ -52,6 +53,7 @@ object MaterializedViewTest : Spek({
 
             When("handling event of type EvenNumberAdded") {
                 runBlockingTest {
+                    (evenNumberViewRepository() as EvenNumberViewRepository).deleteAll()
                     result = evenView.handleEither(
                         EvenNumberAdded(
                             Description("Add 2"),
@@ -71,6 +73,7 @@ object MaterializedViewTest : Spek({
 
             When("handling null") {
                 runBlockingTest {
+                    (evenNumberViewRepository() as EvenNumberViewRepository).deleteAll()
                     result = evenView.handleEither(
                         null
                     )
@@ -86,6 +89,7 @@ object MaterializedViewTest : Spek({
 
             When("handling event of type EvenNumberAdded") {
                 runBlockingTest {
+                    (evenNumberViewRepository() as EvenNumberViewRepository).deleteAll()
                     result = allNumbersView.handleEither(
                         EvenNumberAdded(
                             Description("Add 2"),

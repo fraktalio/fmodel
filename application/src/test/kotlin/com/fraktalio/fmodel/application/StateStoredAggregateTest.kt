@@ -17,51 +17,53 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberAggregate
-import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberRepository
-import com.fraktalio.fmodel.application.examples.numbers.numberAggregate
-import com.fraktalio.fmodel.application.examples.numbers.numberRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberStateRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberStateRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberStateStoredAggregate
+import com.fraktalio.fmodel.application.examples.numbers.numberStateRepository
+import com.fraktalio.fmodel.application.examples.numbers.numberStateStoredAggregate
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand
+import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runBlockingTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
-import kotlin.test.assertFails
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 
 @ExperimentalCoroutinesApi
-object AggregateTest : Spek({
+object StateStoredAggregateTest : Spek({
 
     Feature("Aggregate") {
-        val evenAggregate by memoized { evenNumberAggregate(evenNumberDecider(), evenNumberRepository()) }
+        val evenAggregate by memoized {
+            evenNumberStateStoredAggregate(
+                evenNumberDecider(),
+                evenNumberStateRepository()
+            )
+        }
         val allNumbersAggregate by memoized {
-            numberAggregate(
+            numberStateStoredAggregate(
                 evenNumberDecider(),
                 oddNumberDecider(),
                 evenNumberSaga(),
                 oddNumberSaga(),
-                numberRepository()
+                numberStateRepository()
             )
         }
-        Scenario("Success") {
-            lateinit var result: Flow<Either<Error, EvenNumberEvent?>>
+
+        Scenario("Success - Either") {
+            lateinit var result: Either<Error, EvenNumberState>
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
+
                     result = evenAggregate.handleEither(
                         AddEvenNumber(
                             Description("Add 2"),
@@ -72,82 +74,41 @@ object AggregateTest : Spek({
             }
             Then("expect success") {
                 runBlockingTest {
-                    result.take(1).collect {
-                        assert(it is Either.Right && it.value is EvenNumberEvent.EvenNumberAdded)
-                    }
+                    assert(result is Either.Right)
                 }
             }
         }
 
-        Scenario("Success - All Numbers Aggregate -  Even") {
-            lateinit var result: Flow<Either<Error, NumberEvent?>>
+        Scenario("Success") {
+            lateinit var result: EvenNumberState
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
-                    result = allNumbersAggregate.handleEither(
-                        AddEvenNumber(
-                            Description("Add 2"),
-                            NumberValue(2)
-                        )
-                    )
-                }
-            }
-            Then("expect success") {
-
-                runBlockingTest {
-                    result.take(1).collect {
-                        assert(it is Either.Right && it.value is EvenNumberEvent.EvenNumberAdded)
-                    }
-                }
-            }
-        }
-
-        Scenario("Success - All Numbers Aggregate -  Odd") {
-            lateinit var result: Flow<Either<Error, NumberEvent?>>
-
-            When("handling command of type AddOddNumber") {
-                runBlockingTest {
-                    result = allNumbersAggregate.handleEither(
-                        NumberCommand.OddNumberCommand.AddOddNumber(
-                            Description("Add 1"),
-                            NumberValue(1)
-                        )
-                    )
-                }
-            }
-            Then("expect success") {
-                runBlockingTest {
-                    assertTrue { result.toList().size == 2 }
-                }
-            }
-
-        }
-
-        Scenario("handled with exception") {
-            lateinit var result: Flow<EvenNumberEvent?>
-
-            When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                    (evenNumberStateRepository() as EvenNumberStateRepository).deleteAll()
                     result = evenAggregate.handle(
                         AddEvenNumber(
-                            Description("Add 2000"),
-                            NumberValue(2000)
+                            Description("Add 2"),
+                            NumberValue(2)
                         )
                     )
                 }
             }
-            Then("expect exception") {
+            Then("expect success") {
                 runBlockingTest {
-                    assertFails { result.collect() }
+                    assertEquals(
+                        EvenNumberState(Description("Add 2"), NumberValue(2)),
+                        result
+                    )
                 }
             }
         }
 
-        Scenario("handled with Either Left / Error") {
-            lateinit var result: Flow<Either<Error, EvenNumberEvent?>>
+        Scenario("Error - either Left") {
+            lateinit var result: Either<Error, EvenNumberState>
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
+                    (evenNumberStateRepository() as EvenNumberStateRepository).deleteAll()
                     result = evenAggregate.handleEither(
                         AddEvenNumber(
                             Description("Add 2000"),
@@ -156,14 +117,40 @@ object AggregateTest : Spek({
                     )
                 }
             }
-            Then("expect left Error") {
+            Then("expect error - either Left") {
                 runBlockingTest {
-                    result.take(1).collect {
-                        assert(it is Either.Left && it.value is Error.CommandHandlingFailed<*>)
+                    assert(result is Either.Left)
+                }
+            }
+        }
+
+        Scenario("Success - either") {
+            lateinit var result: Either<Error, EvenNumberState>
+
+            When("handling command of type AddEvenNumber") {
+                runBlockingTest {
+                    (evenNumberStateRepository() as EvenNumberStateRepository).deleteAll()
+                    result = evenAggregate.handleEither(
+                        AddEvenNumber(
+                            Description("Add 2"),
+                            NumberValue(2)
+                        )
+                    )
+                }
+            }
+            Then("expect success") {
+                runBlockingTest {
+                    assertTrue { result.isRight() }
+                    assertTrue {
+                        result is Either.Right && (result as Either.Right<EvenNumberState>).value == EvenNumberState(
+                            Description("Add 2"),
+                            NumberValue(2)
+                        )
                     }
                 }
             }
         }
+
 
     }
 

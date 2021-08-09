@@ -30,6 +30,7 @@ import kotlinx.coroutines.runBlocking
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 
 
 object DeciderTest : Spek({
@@ -402,6 +403,27 @@ object DeciderTest : Spek({
 
                 assertEquals(result, evenDecider.productOnState(decider2).initialState)
             }
+        }
+
+        Scenario("Decide - Combine - exception expected") {
+            lateinit var result: Flow<NumberEvent?>
+
+            When("being in current/initial state of type Pair<EvenNumberState, OddNumberState> and handling command of super type NumberCommand") {
+                result = combinedDecider
+                    .decide(
+                        AddEvenNumber(
+                            Description("2000"),
+                            NumberValue(2000)
+                        ), combinedDecider.initialState
+                    )
+            }
+
+            Then("event of super type NumberEvent should be published") {
+                runBlocking {
+                    assertFails { result.collect() }
+                }
+            }
+
         }
 
     }

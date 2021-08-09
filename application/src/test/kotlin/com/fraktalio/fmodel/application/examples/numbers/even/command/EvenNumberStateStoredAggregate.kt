@@ -16,8 +16,8 @@
 
 package com.fraktalio.fmodel.application.examples.numbers.even.command
 
-import com.fraktalio.fmodel.application.EventRepository
-import com.fraktalio.fmodel.application.EventSourcingAggregate
+import com.fraktalio.fmodel.application.StateRepository
+import com.fraktalio.fmodel.application.StateStoredAggregate
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
@@ -25,18 +25,18 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 
 
 /**
- * Even number aggregate
+ * Even number state stored aggregate
  *
  * @param decider the core domain logic algorithm - pure declaration of our program logic
- * @param repository the event-sourcing repository for Even numbers
- * @return the event-sourcing aggregate instance for Even numbers
+ * @param repository the state repository for Even numbers
+ * @return the state stored aggregate instance for Even numbers
  */
-fun evenNumberAggregate(
+fun evenNumberStateStoredAggregate(
     decider: Decider<EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?>,
-    repository: EventRepository<EvenNumberCommand?, NumberEvent.EvenNumberEvent?>
-): EventSourcingAggregate<EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?> =
+    repository: StateRepository<EvenNumberCommand?, EvenNumberState>
+): StateStoredAggregate<EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?> =
 
-    EventSourcingAggregate(
+    StateStoredAggregate(
         decider = decider,
-        eventRepository = repository
+        stateRepository = repository
     )
