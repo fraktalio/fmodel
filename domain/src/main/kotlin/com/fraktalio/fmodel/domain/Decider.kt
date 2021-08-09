@@ -85,7 +85,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
      * @param f
      */
     inline fun <Ein> mapLeftOnEvent(crossinline f: (Ein) -> Ei): _Decider<C, Si, So, Ein, Eo> =
-        dimapOnEvent(f, ::identity)
+        dimapOnEvent(f) { it }
 
     /**
      * Right map on E/Event parameter - Covariant
@@ -94,7 +94,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
      * @param f
      */
     inline fun <Eon> mapOnEvent(crossinline f: suspend (Eo) -> Eon): _Decider<C, Si, So, Ei, Eon> =
-        dimapOnEvent(::identity, f)
+        dimapOnEvent({ it }, f)
 
     /**
      * Dimap on S/State parameter - Contravariant on input state (Si) and Covariant on output state (So) = Profunctor
@@ -120,7 +120,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
      * @param f
      */
     inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _Decider<C, Sin, So, Ei, Eo> =
-        dimapOnState(f, ::identity)
+        dimapOnState(f) { it }
 
     /**
      * Right map on S/State parameter - Covariant
@@ -129,7 +129,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
      * @param f
      */
     inline fun <Son> mapOnState(crossinline f: (So) -> Son): _Decider<C, Si, Son, Ei, Eo> =
-        dimapOnState(::identity, f)
+        dimapOnState({ it }, f)
 
 
     /**
@@ -180,48 +180,19 @@ data class _Decider<C, Si, So, Ei, Eo>(
  * @param y second Decider
  * @return [_Decider]<[C_SUPER], [Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [Ei_SUPER], [Eo_SUPER]>
  */
-inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<in C?, in Si, out So, in Ei?, out Eo>.combine(
+inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<in C?, in Si, out So, in Ei?, out Eo>.combine(
     y: _Decider<in C2?, in Si2, out So2, in Ei2?, out Eo2>
 ): _Decider<C_SUPER, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER> {
 
-    val extractS1: (Pair<Si, Si2>) -> Si = { pair -> pair.first }
-    val extractS2: (Pair<Si, Si2>) -> Si2 = { pair -> pair.second }
-    val extractE1: (Ei_SUPER) -> Ei? = {
-        when (it) {
-            is Ei -> it
-            else -> null
-        }
-    }
-    val extractE2: (Ei_SUPER) -> Ei2? = {
-        when (it) {
-            is Ei2 -> it
-            else -> null
-        }
-    }
-    val extractC1: (C_SUPER) -> C? = {
-        when (it) {
-            is C -> it
-            else -> null
-        }
-    }
-    val extractC2: (C_SUPER) -> C2? = {
-        when (it) {
-            is C2 -> it
-            else -> null
-        }
-    }
-    val extractEoSUPER: suspend (Eo) -> Eo_SUPER = { it }
-    val extractEo2SUPER: suspend (Eo2) -> Eo_SUPER = { it }
-
     val deciderX = this
-        .mapLeftOnCommand(extractC1)
-        .mapLeftOnState(extractS1)
-        .dimapOnEvent(extractE1, extractEoSUPER)
+        .mapLeftOnCommand<C_SUPER> { it as? C }
+        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.first }
+        .dimapOnEvent<Ei_SUPER, Eo_SUPER>({ it as? Ei }, { it })
 
     val deciderY = y
-        .mapLeftOnCommand(extractC2)
-        .mapLeftOnState(extractS2)
-        .dimapOnEvent(extractE2, extractEo2SUPER)
+        .mapLeftOnCommand<C_SUPER> { it as? C2 }
+        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.second }
+        .dimapOnEvent<Ei_SUPER, Eo_SUPER>({ it as? Ei2 }, { it })
 
     val deciderZ = deciderX.productOnState(deciderY)
 

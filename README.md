@@ -161,13 +161,6 @@ Additionally, `initialState` of the Decider is introduced to gain more control o
 
 ### Decider extensions and functions
 
-`Decider` defines a `monoid` in respect to the composition
-operation: `(Decider<Cx?,Sx,Ex?>, Decider<Cy?,Sy,Ey?>) -> Decider<Either<Cx,Cy>, Pair(Sx,Sy), Either<Ex,Ey>>`, and this
-is an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Decider<Nothing, Unit, Nothing>`
-
-> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
-> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
-
 #### Contravariant
 
 - `Decider<C, Si, So, Ei, Eo>.mapLeftOnCommand(f: (Cn) -> C): Decider<Cn, Si, So, Ei, Eo>`
@@ -193,13 +186,15 @@ is an associative binary operation `a+(b+c)=(a+b)+c`, with identity element `Dec
 
 #### Monoid
 
-- `Decider<in C?, Si, So, in Ei?, out Eo>.combine(
-  y: Decider<in Cn?, Sin, Son, in Ein?, out Eon>
+- `Decider<in C?, in Si, out So, in Ei?, out Eo>.combine(
+  y: Decider<in Cn?, in Sin, out Son, in Ein?, out Eon>
   ): Decider<C_SUPER, Pair<Si, Sin>, Pair<So, Son>, Ei_SUPER, Eo_SUPER>`
-- `Decider<C?, Si, So, Ei?, Eo>.combineDeciders(
-  y: Decider<Cn?, Sin, Son, Ein?, Eon>
-  ): Decider<Either<C, Cn>, Pair<Si, Sin>, Pair<So, Son>, Either<Ei, Ein>, Either<Eo, Eon>>`
-- with identity element `Decider<Nothing, Unit, Nothing>`
+
+- with identity element `Decider<Nothing?, Unit, Nothing?>`
+
+> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
+> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
+
 
 We can now construct event-sourcing or/and state-storing aggregate by using the same `decider`.
 
@@ -271,10 +266,6 @@ typealias View<S, E> = _View<S, S, E>
 
 ### View extensions and functions
 
-`View` defines a `monoid` in respect to the composition
-operation: `(View<Sx,Ex?>, View<Sy,Ey?>) -> View<Pair(Sx,Sy), Either<Ex,Ey>>`, and this is an associative binary
-operation `a+(b+c)=(a+b)+c`, with identity element `View<Unit, Nothing>`
-
 #### Contravariant
 
 - `View<Si, So, E>.mapLeftOnEvent(f: (En) -> E): View<Si, So, En>`
@@ -294,9 +285,11 @@ operation `a+(b+c)=(a+b)+c`, with identity element `View<Unit, Nothing>`
 
 #### Monoid
 
-- `View<Si, So, in E?>.combine(y: View<Si2, So2, in E2?>): View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER>`
-- `View<Si1, So1, E1?>.combineViews(y: View<Si2, So2, E2?>): View<Pair<Si1, Si2>, Pair<So1, So2>, Either<E1, E2>>`
-- with identity element `View<Unit, Nothing>`
+- `View<in Si, out So, in E?>.combine(y: View<in Si2, out So2, in E2?>): View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER>`
+- with identity element `View<Unit, Nothing?>`
+
+> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
+> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
 
 We can now construct `materialized` view by using this `view`.
 
@@ -339,10 +332,6 @@ typealias Saga<AR, A> = _Saga<AR, A>
 
 ### Saga extensions and functions
 
-`Saga` defines a `monoid` in respect to the composition
-operation: `(Saga<ARx?, Ax>, Saga<ARy?, Ay>) -> Saga<Either<ARx, ARy>, Either<Ax, Ay>>`, and this is an associative
-binary operation `a+(b+c)=(a+b)+c`, with identity element `Saga<Nothing, Nothing>`
-
 #### Contravariant
 
 - `Saga<AR, A>.mapLeftOnActionResult(f: (ARn) -> AR): Saga<ARn, A>`
@@ -354,8 +343,7 @@ binary operation `a+(b+c)=(a+b)+c`, with identity element `Saga<Nothing, Nothing
 #### Monoid
 
 - `Saga<in AR?, out A>.combine(y: _Saga<in ARn?, out An>): Saga<AR_SUPER, A_SUPER>`
-- `Saga<AR?, A>.combineSagas(y: Saga<ARn?, An>): Saga<Either<AR, ARn>, Either<A, An>>`
-- with identity element `Saga<Nothing, Nothing>`
+- with identity element `Saga<Nothing?, Nothing?>`
 
 We can now construct `Saga Manager` by using this `saga`.
 

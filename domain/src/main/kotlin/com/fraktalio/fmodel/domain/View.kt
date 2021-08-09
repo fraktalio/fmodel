@@ -74,7 +74,7 @@ data class _View<Si, So, E>(
      * @param f
      */
     inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _View<Sin, So, E> =
-        dimapOnState(f, ::identity)
+        dimapOnState(f) { it }
 
     /**
      * Right map on S/State parameter - Covariant
@@ -83,7 +83,7 @@ data class _View<Si, So, E>(
      * @param f
      */
     inline fun <Son> mapOnState(crossinline f: (So) -> Son): _View<Si, Son, E> =
-        dimapOnState(::identity, f)
+        dimapOnState({ it }, f)
 
     /**
      * Right apply on S/State parameter - Applicative
@@ -135,28 +135,14 @@ data class _View<Si, So, E>(
 inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<in Si, out So, in E?>.combine(
     y: _View<in Si2, out So2, in E2?>
 ): _View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER> {
-    val extractE1: (E_SUPER) -> E? = {
-        when (it) {
-            is E -> it
-            else -> null
-        }
-    }
-    val extractE2: (E_SUPER) -> E2? = {
-        when (it) {
-            is E2 -> it
-            else -> null
-        }
-    }
-    val extractS1: (Pair<Si, Si2>) -> Si = { pair -> pair.first }
-    val extractS2: (Pair<Si, Si2>) -> Si2 = { pair -> pair.second }
 
     val viewX = this
-        .mapLeftOnEvent(extractE1)
-        .mapLeftOnState(extractS1)
+        .mapLeftOnEvent<E_SUPER> { it as? E }
+        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.first }
 
     val viewY = y
-        .mapLeftOnEvent(extractE2)
-        .mapLeftOnState(extractS2)
+        .mapLeftOnEvent<E_SUPER> { it as? E2 }
+        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.second }
 
     val viewZ = viewX.productOnState(viewY)
 

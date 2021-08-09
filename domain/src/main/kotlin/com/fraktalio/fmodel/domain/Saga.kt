@@ -78,28 +78,14 @@ data class _Saga<AR, A>(
 inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> _Saga<in AR?, out A>.combine(
     y: _Saga<in AR2?, out A2>
 ): _Saga<AR_SUPER, A_SUPER> {
-    val getAR: (AR_SUPER) -> AR? = {
-        when (it) {
-            is AR -> it
-            else -> null
-        }
-    }
-    val getAR2: (AR_SUPER) -> AR2? = {
-        when (it) {
-            is AR2 -> it
-            else -> null
-        }
-    }
-    val getABase: suspend (A) -> A_SUPER = { it }
-    val getA2Base: suspend (A2) -> A_SUPER = { it }
 
     val sagaX = this
-        .mapLeftOnActionResult(getAR)
-        .mapOnAction(getABase)
+        .mapLeftOnActionResult<AR_SUPER> { it as? AR }
+        .mapOnAction<A_SUPER> { it } // As OR/SUM relationship is modeled with inheritance/polymorphism, the 'mapOnAction' function is not needed. It is mapping over the identity function. Used here for the sake of future implementations of `decide` functions, and learning purposes.
 
     val sagaY = y
-        .mapLeftOnActionResult(getAR2)
-        .mapOnAction(getA2Base)
+        .mapLeftOnActionResult<AR_SUPER> { it as? AR2 }
+        .mapOnAction<A_SUPER> { it } // As OR/SUM relationship is modeled with inheritance/polymorphism, the 'mapOnAction' function is not needed. It is mapping over the identity function. Used here for the sake of future implementations of `decide` functions, and learning purposes.
 
     return _Saga(
         react = { eitherAr -> flowOf(sagaX.react(eitherAr), (sagaY.react(eitherAr))).flattenConcat() }
