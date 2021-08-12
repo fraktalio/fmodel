@@ -157,7 +157,7 @@ typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
 
 Additionally, `initialState` of the Decider is introduced to gain more control over the initial state of the Decider.
 
-![decider image](.assets/decider.jpg)
+![decider image](.assets/decider.png)
 
 ### Decider extensions and functions
 
@@ -206,7 +206,7 @@ handle the command, aggregate needs to fetch the current state (represented as a
 via `EventRepository.fetchEvents` function, and then delegate the command to the decider which can produce new events as
 a result. Produced events are then stored via `EventRepository.save` suspending function.
 
-![event sourced aggregate](.assets/es-aggregate.jpg)
+![event sourced aggregate](.assets/es-aggregate.png)
 
 `EventSourcingAggregate` implements an interface `EventRepository` by delegating all of its public members to a
 specified object. The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin
@@ -224,7 +224,7 @@ handle the command, aggregate needs to fetch the current state via `StateReposit
 delegate the command to the decider which can produce new state as a result. New state is then stored
 via `StateRepository.save` suspending function.
 
-![state storedaggregate](.assets/ss-aggregate.jpg)
+![state storedaggregate](.assets/ss-aggregate.png)
 
 `StateStoredAggregate` implements an interface `StateRepository` by delegating all of its public members to a specified
 object. The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it
@@ -262,7 +262,7 @@ data class _View<Si, So, E>(
 typealias View<S, E> = _View<S, S, E>
 ```
 
-![view image](.assets/view.jpg)
+![view image](.assets/view.png)
 
 ### View extensions and functions
 
@@ -328,7 +328,7 @@ data class _Saga<AR, A>(
 typealias Saga<AR, A> = _Saga<AR, A>
 ```
 
-![saga image](.assets/saga.jpg)
+![saga image](.assets/saga.png)
 
 ### Saga extensions and functions
 
@@ -356,8 +356,6 @@ Saga manager is using/delegating a `Saga` to react on Action Results of type `AR
 going to be published via `ActionPublisher.publish` suspending function.
 
 It belongs to the Application layer.
-
-![information flow](.assets/information-flow.jpg)
 
 ## Kotlin
 
