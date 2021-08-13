@@ -17,10 +17,8 @@
 package com.fraktalio.fmodel.application.examples.numbers.even.query
 
 import com.fraktalio.fmodel.application.ViewStateRepository
-import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
