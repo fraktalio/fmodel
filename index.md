@@ -382,6 +382,8 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 
 - [https://github.com/fraktalio/fmodel-demos](https://github.com/fraktalio/fmodel-demos)
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/U8NzcWV8b4Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 
 ---
 Created with love by [Fraktalio](https://fraktalio.com/)
