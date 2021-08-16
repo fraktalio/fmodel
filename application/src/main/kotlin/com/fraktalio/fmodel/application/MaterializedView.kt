@@ -43,7 +43,7 @@ data class MaterializedView<S, E>(
      * Handles the event of type [E]
      *
      * @param event Event of type [E] to be handled
-     * @return [Either] [Error] or [S]/State
+     * @return [Either] [Error] or State of type [S]
      */
     suspend fun handleEither(event: E): Either<Error, S> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
@@ -57,7 +57,7 @@ data class MaterializedView<S, E>(
      * Handles the flow of events of type [E]
      *
      * @param events Flow of Events of type [E] to be handled
-     * @return [Flow] of [Either] [Error] or [S]/State
+     * @return [Flow] of [Either] [Error] or State of type [S]
      */
     fun handleEither(events: Flow<E>): Flow<Either<Error, S>> =
         events.map { handleEither(it) }
@@ -66,7 +66,7 @@ data class MaterializedView<S, E>(
      * Handles the event of type [E]
      *
      * @param event Event of type [E] to be handled
-     * @return [S]/State
+     * @return State of type [S]
      */
     suspend fun handle(event: E): S =
         (event.fetchState() ?: view.initialState)
@@ -77,7 +77,7 @@ data class MaterializedView<S, E>(
      * Handles the flow of events of type [E]
      *
      * @param events Flow of Events of type [E] to be handled
-     * @return [Flow] of [S]/State
+     * @return [Flow] of State of type [S]
      */
     fun handle(events: Flow<E>): Flow<S> =
         events.map { handle(it) }
@@ -96,7 +96,7 @@ data class MaterializedView<S, E>(
  * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
  * @receiver event of type [E]
  * @param materializedView of type  [MaterializedView]<[S], [E]>
- * @return the stored state/[S]
+ * @return the stored State of type [S]
  */
 suspend fun <S, E> E.publishTo(materializedView: MaterializedView<S, E>): S = materializedView.handle(this)
 
@@ -104,7 +104,7 @@ suspend fun <S, E> E.publishTo(materializedView: MaterializedView<S, E>): S = ma
  * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
  * @receiver [Flow] of events of type [E]
  * @param materializedView of type  [MaterializedView]<[S], [E]>
- * @return the stored state/[S]
+ * @return the stored State of type [S]
  */
 fun <S, E> Flow<E>.publishTo(materializedView: MaterializedView<S, E>): Flow<S> = materializedView.handle(this)
 
@@ -112,7 +112,7 @@ fun <S, E> Flow<E>.publishTo(materializedView: MaterializedView<S, E>): Flow<S> 
  * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
  * @receiver event of type [E]
  * @param materializedView of type  [MaterializedView]<[S], [E]>
- * @return [Either] [Error] or the successfully stored state/[S]
+ * @return [Either] [Error] or the successfully stored State of type [S]
  */
 suspend fun <S, E> E.publishEitherTo(materializedView: MaterializedView<S, E>): Either<Error, S> =
     materializedView.handleEither(this)
@@ -121,7 +121,7 @@ suspend fun <S, E> E.publishEitherTo(materializedView: MaterializedView<S, E>): 
  * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
  * @receiver [Flow] of events of type [E]
  * @param materializedView of type  [MaterializedView]<[S], [E]>
- * @return [Flow] of [Either] [Error] or the successfully stored state/[S]
+ * @return [Flow] of [Either] [Error] or the successfully stored State of type [S]
  */
 fun <S, E> Flow<E>.publishEitherTo(materializedView: MaterializedView<S, E>): Flow<Either<Error, S>> =
     materializedView.handleEither(this)

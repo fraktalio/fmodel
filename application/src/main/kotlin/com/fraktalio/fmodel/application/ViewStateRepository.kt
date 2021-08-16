@@ -21,19 +21,47 @@ import arrow.core.Either
 /**
  * View state repository interface
  *
+ * Used by [MaterializedView]
+ *
  * @param E Event
  * @param S State
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface ViewStateRepository<E, S> {
+    /**
+     * Fetch state
+     *
+     * @receiver Event of type [E]
+     * @return the State of type [S] or null
+     */
     suspend fun E.fetchState(): S?
+
+    /**
+     * Fetch state - either version
+     *
+     * @receiver Event of type [E]
+     * @return [Either] [Error] or the State of type [S]?
+     */
     suspend fun E.fetchStateEither(): Either<Error.FetchingViewStateFailed<E>, S?> =
         Either.catch {
             fetchState()
         }.mapLeft { throwable -> Error.FetchingViewStateFailed(this, throwable) }
 
+    /**
+     * Save state
+     *
+     * @receiver State of type [S]
+     * @return newly saved State of type [S]
+     */
     suspend fun S.save(): S
+
+    /**
+     * Save state - either version
+     *
+     * @receiver State of type [S]
+     * @return [Either] [Error] or the newly saved State of type [S]
+     */
     suspend fun S.saveEither(): Either<Error.StoringStateFailed<S>, S> =
         Either.catch {
             this.save()

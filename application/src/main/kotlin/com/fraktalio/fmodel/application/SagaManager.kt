@@ -38,7 +38,7 @@ data class SagaManager<AR, A>(
      * Handles the action result of type [AR]
      *
      * @param actionResult Action Result represent the outcome of some action you want to handle in some way
-     * @return [Flow] of [Either] [Error] or [A]/Action
+     * @return [Flow] of [Either] [Error] or Actions of type [A]
      */
     fun handleEither(actionResult: AR): Flow<Either<Error, A>> =
         actionResult
@@ -51,7 +51,7 @@ data class SagaManager<AR, A>(
      * Handles the action result of type [AR]
      *
      * @param actionResult Action Result represent the outcome of some action you want to handle in some way
-     * @return [Flow] of [A]/Action
+     * @return [Flow] of Actions of type [A]
      */
     fun handle(actionResult: AR): Flow<A> =
         actionResult
@@ -62,7 +62,7 @@ data class SagaManager<AR, A>(
      * Handles the the [Flow] of action results of type [AR]
      *
      * @param actionResults Action Results represent the outcome of some action you want to handle in some way
-     * @return [Flow] of [Either] [Error] or [A]/Action
+     * @return [Flow] of [Either] [Error] or Actions of type [A]
      */
     fun handleEither(actionResults: Flow<AR>): Flow<Either<Error, A>> =
         actionResults.flatMapConcat { handleEither(it) }
@@ -71,7 +71,7 @@ data class SagaManager<AR, A>(
      * Handles the the [Flow] of action results of type [AR]
      *
      * @param actionResults Action Results represent the outcome of some action you want to handle in some way
-     * @return [Flow] of [A]/Action
+     * @return [Flow] of Actions of type [A]
      */
     fun handle(actionResults: Flow<AR>): Flow<A> =
         actionResults.flatMapConcat { handle(it) }
@@ -85,7 +85,7 @@ data class SagaManager<AR, A>(
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
  * @receiver action result of type [AR]
  * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @return the [Flow] of published [A]/Actions
+ * @return the [Flow] of published Actions of type [A]
  */
 fun <AR, A> AR.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager.handle(this)
 
@@ -93,7 +93,7 @@ fun <AR, A> AR.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
  * @receiver [Flow] of action results of type [AR]
  * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @return the [Flow] of published [A]/Actions
+ * @return the [Flow] of published Actions of type [A]
  */
 fun <AR, A> Flow<AR>.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager.handle(this)
 
@@ -101,7 +101,7 @@ fun <AR, A> Flow<AR>.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaM
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
  * @receiver action result of type [AR]
  * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @return the [Flow] of [Either] [Error] or successfully published [A]/Actions
+ * @return the [Flow] of [Either] [Error] or successfully published Actions of type [A]
  */
 fun <AR, A> AR.publishEitherTo(sagaManager: SagaManager<AR, A>): Flow<Either<Error, A>> = sagaManager.handleEither(this)
 
@@ -109,7 +109,7 @@ fun <AR, A> AR.publishEitherTo(sagaManager: SagaManager<AR, A>): Flow<Either<Err
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
  * @receiver [Flow] of action results of type [AR]
  * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @return the [Flow] of [Either] [Error] or successfully published [A]/Actions
+ * @return the [Flow] of [Either] [Error] or successfully published Actions of type [A]
  */
 fun <AR, A> Flow<AR>.publishEitherTo(sagaManager: SagaManager<AR, A>): Flow<Either<Error, A>> =
     sagaManager.handleEither(this)

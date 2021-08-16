@@ -51,7 +51,7 @@ data class EventSourcingAggregate<C, S, E>(
      * Handles the command message of type [C]
      *
      * @param command Command message of type [C]
-     * @return [Flow] of [Either] [Error] or [E]/Event
+     * @return [Flow] of [Either] [Error] or Events of type [E]
      */
     suspend fun handleEither(command: C): Flow<Either<Error, E>> =
         command
@@ -67,7 +67,7 @@ data class EventSourcingAggregate<C, S, E>(
      * Handles the command message of type [C]
      *
      * @param command Command message of type [C]
-     * @return [Flow] of stored [E]/Events
+     * @return [Flow] of stored Events of type [E]
      */
     suspend fun handle(command: C): Flow<E> =
         command
@@ -79,7 +79,7 @@ data class EventSourcingAggregate<C, S, E>(
      * Handles the flow of command messages of type [C]
      *
      * @param commands [Flow] of Command messages of type [C]
-     * @return [Flow] of [Either] [Error] or [E]/Event
+     * @return [Flow] of [Either] [Error] or Events of type [E]
      */
     fun handleEither(commands: Flow<C>): Flow<Either<Error, E>> =
         commands.flatMapConcat { handleEither(it) }
@@ -88,7 +88,7 @@ data class EventSourcingAggregate<C, S, E>(
      * Handles the flow of command messages of type [C]
      *
      * @param commands [Flow] of Command messages of type [C]
-     * @return [Flow] of stored [E]/Events
+     * @return [Flow] of stored Events of type [E]
      */
     fun handle(commands: Flow<C>): Flow<E> =
         commands.flatMapConcat { handle(it) }
@@ -112,7 +112,7 @@ data class EventSourcingAggregate<C, S, E>(
  * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
  * @receiver command of type [C]
  * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
- * @return the [Flow] of stored [E]/Events
+ * @return the [Flow] of stored Events of type [E]
  */
 suspend fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)
 
@@ -120,7 +120,7 @@ suspend fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow
  * Extension function - Publishes [Flow] of commands of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
  * @receiver [Flow] of commands of type [C]
  * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
- * @return the [Flow] of stored [E]/Events
+ * @return the [Flow] of stored Events of type [E]
  */
 fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)
 
@@ -128,7 +128,7 @@ fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E
  * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
  * @receiver command of type [C]
  * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
- * @return the [Flow] of [Either] [Error] or successfully stored [E]/Events
+ * @return the [Flow] of [Either] [Error] or successfully stored Events of type [E]
  */
 suspend fun <C, E> C.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Either<Error, E>> =
     aggregate.handleEither(this)
@@ -137,7 +137,7 @@ suspend fun <C, E> C.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>)
  * Extension function - Publishes [Flow] of commands of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
  * @receiver [Flow] of commands of type [C]
  * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
- * @return the [Flow] of [Either] [Error] or successfully stored [E]/Events
+ * @return the [Flow] of [Either] [Error] or successfully stored Events of type [E]
  */
 fun <C, E> Flow<C>.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Either<Error, E>> =
     aggregate.handleEither(this)

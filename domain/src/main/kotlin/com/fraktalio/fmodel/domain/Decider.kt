@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.map
 
 
 /**
- * [_Decider] is a datatype that represents the main decision making algorithm.
+ * [_Decider] is a datatype that represents the main decision-making algorithm.
  * It has five generic parameters [C], [Si], [So], [Ei], [Eo] , representing the type of the values that [_Decider] may contain or use.
  * [_Decider] can be specialized for any type [C] or [Si] or [So] or [Ei] or [Eo] because these types does not affect its behavior.
  * [_Decider] behaves the same for [C]=[Int] or [C]=YourCustomType, for example.

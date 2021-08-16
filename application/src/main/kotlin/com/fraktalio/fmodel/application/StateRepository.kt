@@ -21,7 +21,7 @@ import arrow.core.Either
 /**
  * State repository interface.
  *
- * Used by StateStoredAggregate and ProcessManager
+ * Used by [StateStoredAggregate]
  *
  * @param C Command / ActionResult
  * @param S State
@@ -29,15 +29,39 @@ import arrow.core.Either
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface StateRepository<C, S> {
+    /**
+     * Fetch state
+     *
+     * @receiver Command of type [C]
+     * @return the State of type [S] or null
+     */
     suspend fun C.fetchState(): S?
+
+    /**
+     * Save state
+     *
+     * @receiver State of type [S]
+     * @return newly saved State of type [S]
+     */
     suspend fun S.save(): S
 
+    /**
+     * Fetch state - either version
+     *
+     * @receiver Command of type [C]
+     * @return [Either] [Error] or the State of type [S]?
+     */
     suspend fun C.fetchStateEither(): Either<Error.FetchingStateFailed<C>, S?> =
         Either.catch {
             fetchState()
         }.mapLeft { throwable -> Error.FetchingStateFailed(this, throwable) }
 
-
+    /**
+     * Save state - either version
+     *
+     * @receiver State of type [S]
+     * @return [Either] [Error] or the newly saved State of type [S]
+     */
     suspend fun S.saveEither(): Either<Error.StoringStateFailed<S>, S> =
         Either.catch {
             this.save()

@@ -22,15 +22,27 @@ import kotlinx.coroutines.flow.map
 /**
  * Action publisher interface
  *
- * Used by Process Manager and Saga Manager
+ * Used by [SagaManager]
  *
  * @param A Action
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface ActionPublisher<A> {
+    /**
+     * Publish action
+     *
+     * @receiver Action of type [A]
+     * @return newly published Action of type [A]
+     */
     suspend fun A.publish(): A
 
+    /**
+     * Publish actions
+     *
+     * @receiver [Flow] of Actions of type [A]
+     * @return [Flow] of newly published Actions of type [A]
+     */
     fun Flow<A>.publish(): Flow<A> =
         map { it.publish() }
 }

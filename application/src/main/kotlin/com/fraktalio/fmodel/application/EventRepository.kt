@@ -20,7 +20,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
- * Event repository/store interface
+ * Event repository interface
+ *
+ * Used by [EventSourcingAggregate]
  *
  * @param C Command
  * @param E Event
@@ -28,7 +30,28 @@ import kotlinx.coroutines.flow.map
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface EventRepository<C, E> {
+    /**
+     * Fetch events
+     *
+     * @receiver Command of type [C]
+     *
+     * @return [Flow] of Events of type [E]
+     */
     fun C.fetchEvents(): Flow<E>
+
+    /**
+     * Save event
+     *
+     * @receiver Event of type [E]
+     * @return newly saved Event of type [E]
+     */
     suspend fun E.save(): E
+
+    /**
+     * Save events
+     *
+     * @receiver [Flow] of Events of type [E]
+     * @return newly saved [Flow] of Events of type [E]
+     */
     fun Flow<E>.save(): Flow<E> = map { it.save() }
 }
