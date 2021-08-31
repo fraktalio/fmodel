@@ -180,8 +180,8 @@ data class _Decider<C, Si, So, Ei, Eo>(
  * @param y second Decider
  * @return [_Decider]<[C_SUPER], [Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [Ei_SUPER], [Eo_SUPER]>
  */
-inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<in C?, in Si, out So, in Ei?, out Eo>.combine(
-    y: _Decider<in C2?, in Si2, out So2, in Ei2?, out Eo2>
+inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<in C?, Si, So, in Ei?, Eo>.combine(
+    y: _Decider<in C2?, Si2, So2, in Ei2?, Eo2>
 ): _Decider<C_SUPER, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER> {
 
     val deciderX = this
@@ -194,15 +194,8 @@ inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, r
         .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.second }
         .dimapOnEvent<Ei_SUPER, Eo_SUPER>({ it as? Ei2 }, { it })
 
-    val deciderZ = deciderX.productOnState(deciderY)
-
-    return _Decider(
-        decide = { c, si -> deciderZ.decide(c, si) },
-        evolve = { pair, ei -> deciderZ.evolve(pair, ei) },
-        initialState = deciderZ.initialState
-    )
+    return deciderX.productOnState(deciderY)
 }
-
 
 /**
  * A typealias for [_Decider]<C, Si, So, Ei, Eo>, specializing the [_Decider] to three generic parameters: C, S and E, where C=C, Si=S, So=S, Ei=E, Eo=E

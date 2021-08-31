@@ -132,8 +132,8 @@ data class _View<Si, So, E>(
  * @param y second View
  * @return new View of type [_View]<[Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [E_SUPER]>
  */
-inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<in Si, out So, in E?>.combine(
-    y: _View<in Si2, out So2, in E2?>
+inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<Si, So, in E?>.combine(
+    y: _View<Si2, So2, in E2?>
 ): _View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER> {
 
     val viewX = this
@@ -144,12 +144,7 @@ inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER
         .mapLeftOnEvent<E_SUPER> { it as? E2 }
         .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.second }
 
-    val viewZ = viewX.productOnState(viewY)
-
-    return _View(
-        evolve = { si, e -> viewZ.evolve(si, e) },
-        initialState = viewZ.initialState
-    )
+    return viewX.productOnState(viewY)
 }
 
 /**

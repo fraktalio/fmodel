@@ -75,8 +75,8 @@ data class _Saga<AR, A>(
  * @param y second saga
  * @return new Saga of type `[_Saga]<[AR_SUPER], [A_SUPER]>`
  */
-inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> _Saga<in AR?, out A>.combine(
-    y: _Saga<in AR2?, out A2>
+inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> _Saga<in AR?, A>.combine(
+    y: _Saga<in AR2?, A2>
 ): _Saga<AR_SUPER, A_SUPER> {
 
     val sagaX = this
