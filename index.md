@@ -380,7 +380,14 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 
 ### Examples
 
-- [https://github.com/fraktalio/fmodel-demos](https://github.com/fraktalio/fmodel-demos)
+ - Envision how information system will look like and behave like by modeling the flow of information - [event modeling](https://eventmodeling.org/posts/what-is-event-modeling/)
+ - The result is a blueprint of the overall solution
+
+![event-modeling](https://github.com/fraktalio/fmodel/raw/main/.assets/event-modeling.png)
+
+ - Translate the blueprint into the [source code](https://github.com/fraktalio/fmodel-demos)
+
+[https://github.com/fraktalio/fmodel-demos](https://github.com/fraktalio/fmodel-demos)
 
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/U8NzcWV8b4Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
