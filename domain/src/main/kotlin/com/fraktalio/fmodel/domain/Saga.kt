@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.map
 
 /**
  * [_Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).
- * It is responsible for mapping different events from aggregates into action results ([AR]) that the [_Saga] then can use to calculate the next actions ([A]) to be mapped to command of other aggregates.
+ * It is responsible for mapping different events into action results ([AR]) that the [_Saga] then can use to calculate the next actions ([A]) to be mapped to command(s).
  *
  * Saga does not maintain the state.
  *
@@ -44,7 +44,7 @@ data class _Saga<AR, A>(
      * @param f
      */
     inline fun <ARn> mapLeftOnActionResult(crossinline f: (ARn) -> AR): _Saga<ARn, A> = _Saga(
-        react = { ar -> this.react(f(ar)) }
+        react = { arn -> this.react(f(arn)) }
     )
 
     /**

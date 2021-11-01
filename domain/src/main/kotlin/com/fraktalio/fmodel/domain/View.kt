@@ -47,7 +47,7 @@ data class _View<Si, So, E>(
      * @param f
      */
     inline fun <En> mapLeftOnEvent(crossinline f: (En) -> E): _View<Si, So, En> = _View(
-        evolve = { si, e -> this.evolve(si, f(e)) },
+        evolve = { si, en -> this.evolve(si, f(en)) },
         initialState = this.initialState
     )
 
@@ -63,7 +63,7 @@ data class _View<Si, So, E>(
         crossinline fl: (Sin) -> Si,
         crossinline fr: (So) -> Son
     ): _View<Sin, Son, E> = _View(
-        evolve = { si, e -> fr(this.evolve(fl(si), e)) },
+        evolve = { sin, e -> fr(this.evolve(fl(sin), e)) },
         initialState = fr(this.initialState)
     )
 

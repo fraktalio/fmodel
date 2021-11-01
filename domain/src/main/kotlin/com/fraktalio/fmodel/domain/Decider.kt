@@ -54,14 +54,12 @@ data class _Decider<C, Si, So, Ei, Eo>(
      * @param f
      */
     inline fun <Cn> mapLeftOnCommand(crossinline f: (Cn) -> C): _Decider<Cn, Si, So, Ei, Eo> = _Decider(
-        decide = { cn, s -> this.decide(f(cn), s) },
+        decide = { cn, si -> this.decide(f(cn), si) },
         evolve = { si, ei -> this.evolve(si, ei) },
         initialState = this.initialState
     )
 
     /**
-     *
-     *
      * Dimap on E/Event parameter - Contravariant on input event and Covariant on output event = Profunctor
      *
      * @param Ein Event input new
