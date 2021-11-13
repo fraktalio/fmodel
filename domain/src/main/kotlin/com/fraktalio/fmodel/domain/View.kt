@@ -37,7 +37,7 @@ package com.fraktalio.fmodel.domain
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class _View<Si, So, E>(
-    val evolve: suspend (Si, E) -> So,
+    val evolve: (Si, E) -> So,
     val initialState: So,
 ) {
     /**
@@ -92,8 +92,8 @@ data class _View<Si, So, E>(
      * @param ff
      */
     fun <Son> applyOnState(ff: _View<Si, (So) -> Son, E>): _View<Si, Son, E> = _View(
-        evolve = { si, e -> ff.evolve(si, e).invoke(this.evolve(si, e)) },
-        initialState = ff.initialState.invoke(this.initialState)
+        evolve = { si, e -> ff.evolve(si, e)(this.evolve(si, e)) },
+        initialState = ff.initialState(this.initialState)
     )
 
     /**
