@@ -114,7 +114,7 @@ parameters:
 ```kotlin
 data class Decider<C, S, E>(
     val decide: (C, S) -> Flow<E>,
-    val evolve: suspend (S, E) -> S,
+    val evolve: (S, E) -> S,
 )
 ```
 
@@ -143,7 +143,7 @@ to the 3 generic parameters: `typealias Decider<C, S, E> = _Decider<C, S, S, E, 
 ```kotlin
 data class _Decider<C, Si, So, Ei, Eo>(
     val decide: (C, Si) -> Flow<Eo>,
-    val evolve: suspend (Si, Ei) -> So,
+    val evolve: (Si, Ei) -> So,
     val initialState: So
 )
 
@@ -250,7 +250,7 @@ to the 2 generic parameters: `typealias View<S, E> = _View<S, S, E>`
 
 ```kotlin
 data class _View<Si, So, E>(
-    val evolve: suspend (Si, E) -> So,
+    val evolve: (Si, E) -> So,
     val initialState: So,
 )
 
