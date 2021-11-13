@@ -53,8 +53,8 @@ data class _Saga<AR, A>(
      * @param An
      * @param f
      */
-    inline fun <An> mapOnAction(crossinline f: suspend (A) -> An): _Saga<AR, An> = _Saga(
-        react = { ar -> this.react(ar).map(f) }
+    inline fun <An> mapOnAction(crossinline f: (A) -> An): _Saga<AR, An> = _Saga(
+        react = { ar -> this.react(ar).map { f(it) } }
     )
 
 }

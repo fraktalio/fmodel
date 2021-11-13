@@ -44,7 +44,7 @@ import kotlinx.coroutines.flow.map
  */
 data class _Decider<C, Si, So, Ei, Eo>(
     val decide: (C, Si) -> Flow<Eo>,
-    val evolve: suspend (Si, Ei) -> So,
+    val evolve: (Si, Ei) -> So,
     val initialState: So
 ) {
     /**
@@ -69,9 +69,9 @@ data class _Decider<C, Si, So, Ei, Eo>(
      */
     inline fun <Ein, Eon> dimapOnEvent(
         crossinline fl: (Ein) -> Ei,
-        crossinline fr: suspend (Eo) -> Eon
+        crossinline fr: (Eo) -> Eon
     ): _Decider<C, Si, So, Ein, Eon> = _Decider(
-        decide = { c, si -> this.decide(c, si).map(fr) },
+        decide = { c, si -> this.decide(c, si).map { fr(it) } },
         evolve = { si, ein -> this.evolve(si, fl(ein)) },
         initialState = this.initialState
     )
@@ -91,7 +91,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
      * @param Eon Event output new
      * @param f
      */
-    inline fun <Eon> mapOnEvent(crossinline f: suspend (Eo) -> Eon): _Decider<C, Si, So, Ei, Eon> =
+    inline fun <Eon> mapOnEvent(crossinline f: (Eo) -> Eon): _Decider<C, Si, So, Ei, Eon> =
         dimapOnEvent({ it }, f)
 
     /**
@@ -138,8 +138,8 @@ data class _Decider<C, Si, So, Ei, Eo>(
      */
     fun <Son> applyOnState(ff: _Decider<C, Si, (So) -> Son, Ei, Eo>): _Decider<C, Si, Son, Ei, Eo> = _Decider(
         decide = { c, si -> flowOf(ff.decide(c, si), this.decide(c, si)).flattenConcat() },
-        evolve = { si, ei -> ff.evolve(si, ei).invoke(this.evolve(si, ei)) },
-        initialState = ff.initialState.invoke(this.initialState)
+        evolve = { si, ei -> ff.evolve(si, ei)(this.evolve(si, ei)) },
+        initialState = ff.initialState(this.initialState)
     )
 
     /**

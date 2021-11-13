@@ -95,7 +95,7 @@ data class EventSourcingAggregate<C, S, E>(
 
 
     private suspend fun Flow<E>.calculateNewEvents(command: C): Flow<E> {
-        val currentState = fold(decider.initialState, decider.evolve)
+        val currentState = fold(decider.initialState) { s, e -> decider.evolve(s, e) }
         var resultingEvents = decider.decide(command, currentState)
 
         if (saga != null)

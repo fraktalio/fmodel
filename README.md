@@ -119,7 +119,7 @@ parameters:
 ```kotlin
 data class Decider<C, S, E>(
     val decide: (C, S) -> Flow<E>,
-    val evolve: suspend (S, E) -> S,
+    val evolve: (S, E) -> S,
 )
 ```
 
@@ -148,7 +148,7 @@ to the 3 generic parameters: `typealias Decider<C, S, E> = _Decider<C, S, S, E, 
 ```kotlin
 data class _Decider<C, Si, So, Ei, Eo>(
     val decide: (C, Si) -> Flow<Eo>,
-    val evolve: suspend (Si, Ei) -> So,
+    val evolve: (Si, Ei) -> So,
     val initialState: So
 )
 
@@ -255,7 +255,7 @@ to the 2 generic parameters: `typealias View<S, E> = _View<S, S, E>`
 
 ```kotlin
 data class _View<Si, So, E>(
-    val evolve: suspend (Si, E) -> So,
+    val evolve: (Si, E) -> So,
     val initialState: So,
 )
 
@@ -385,12 +385,13 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 
 ### Examples
 
- - Envision how information system will look like and behave like by modeling the flow of information - [event modeling](https://eventmodeling.org/posts/what-is-event-modeling/)
- - The result is a blueprint of the overall solution
+- Envision how information system will look like and behave like by modeling the flow of information
+  - [event modeling](https://eventmodeling.org/posts/what-is-event-modeling/)
+- The result is a blueprint of the overall solution
 
 ![event-modeling](.assets/event-modeling.png)
 
- - Translate the blueprint into the [source code](https://github.com/fraktalio/fmodel-demos)
+- Translate the blueprint into the [source code](https://github.com/fraktalio/fmodel-demos)
 
 [https://github.com/fraktalio/fmodel-demos](https://github.com/fraktalio/fmodel-demos)
 

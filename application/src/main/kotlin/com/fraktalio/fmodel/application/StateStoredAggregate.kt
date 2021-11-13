@@ -100,7 +100,7 @@ data class StateStoredAggregate<C, S, E>(
 
     private suspend fun S.calculateNewState(command: C): S {
         val events = decider.decide(command, this)
-        val newState = events.fold(this@calculateNewState, decider.evolve)
+        val newState = events.fold(this) { s, e -> decider.evolve(s, e) }
         if (saga != null) events.flatMapConcat { saga.react(it) }.collect { newState.calculateNewState(it) }
         return newState
     }
