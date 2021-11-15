@@ -48,7 +48,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kotlin.version>1.5.31</kotlin.version>
+        <kotlin.version>1.6.0</kotlin.version>
         <kotlin-test.version>1.5.31</kotlin-test.version>
         <kotlin.coroutines.version>1.5.2</kotlin.coroutines.version>
         <kotlin.code.style>official</kotlin.code.style>
