@@ -94,18 +94,21 @@ data class EventSourcingAggregate<C, S, E>(
         commands.flatMapConcat { handle(it) }
 
 
-    private suspend fun Flow<E>.calculateNewEvents(command: C): Flow<E> {
-        val currentState = fold(decider.initialState) { s, e -> decider.evolve(s, e) }
-        var resultingEvents = decider.decide(command, currentState)
+    private suspend fun Flow<E>.calculateNewEvents(command: C): Flow<E> =
+        flow {
+            val currentState = fold(decider.initialState) { s, e -> decider.evolve(s, e) }
+            var resultingEvents = decider.decide(command, currentState)
 
-        if (saga != null)
-            resultingEvents.flatMapConcat { saga.react(it) }.collect {
-                val newEvents = flowOf(this, resultingEvents).flattenConcat().calculateNewEvents(it)
-                resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
-            }
+            if (saga != null)
+                resultingEvents.flatMapConcat { saga.react(it) }.collect {
+                    val newEvents =
+                        flowOf(this@calculateNewEvents, resultingEvents).flattenConcat().calculateNewEvents(it)
+                    resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
+                }
 
-        return resultingEvents
-    }
+            emitAll(resultingEvents)
+        }
+
 }
 
 /**

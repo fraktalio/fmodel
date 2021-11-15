@@ -165,6 +165,30 @@ object AggregateTest : Spek({
             }
         }
 
+        Scenario("Error - All Numbers Aggregate -  Even") {
+            lateinit var result: Flow<Either<Error, NumberEvent?>>
+
+            When("handling command of type AddEvenNumber") {
+                runBlockingTest {
+                    result = allNumbersAggregate.handleEither(
+                        AddEvenNumber(
+                            Description("Add 2000"),
+                            NumberValue(2000)
+                        )
+                    )
+                }
+            }
+            Then("expect error") {
+
+                runBlockingTest {
+                    result.take(1).collect {
+                        assert(it is Either.Left && it.value is Error.CommandHandlingFailed<*>)
+                    }
+                }
+            }
+        }
+
+
     }
 
 })
