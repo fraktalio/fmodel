@@ -65,7 +65,9 @@ data class SagaManager<AR, A>(
      * @return [Flow] of [Either] [Error] or Actions of type [A]
      */
     fun handleEither(actionResults: Flow<AR>): Flow<Either<Error, A>> =
-        actionResults.flatMapConcat { handleEither(it) }
+        actionResults
+            .flatMapConcat { handleEither(it) }
+            .catch { emit(Either.Left(Error.ActionResultPublishingFailed(it))) }
 
     /**
      * Handles the the [Flow] of action results of type [AR]

@@ -35,6 +35,9 @@ sealed class Result
 sealed class Error : Result() {
     abstract val throwable: Throwable?
 
+    data class CommandPublishingFailed(override val throwable: Throwable? = null) : Error()
+    data class EventPublishingFailed(override val throwable: Throwable? = null) : Error()
+    data class ActionResultPublishingFailed(override val throwable: Throwable? = null) : Error()
     data class CommandHandlingFailed<C>(val command: C, override val throwable: Throwable? = null) : Error()
     data class ActionResultHandlingFailed<AR>(val actionResult: AR, override val throwable: Throwable? = null) : Error()
     data class FetchingStateFailed<C>(val command: C, override val throwable: Throwable? = null) : Error()

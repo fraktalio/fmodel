@@ -32,10 +32,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runBlockingTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
@@ -188,7 +185,37 @@ object AggregateTest : Spek({
             }
         }
 
+        Scenario("Error Publishing - All Numbers Aggregate -  Even") {
+            lateinit var result: Flow<Either<Error, EvenNumberEvent?>>
 
+            When("handling/publishing command of type AddEvenNumber") {
+                runBlockingTest {
+                    result = flow<NumberCommand.EvenNumberCommand?> {
+                        emit(
+                            AddEvenNumber(
+                                Description("Add 20"),
+                                NumberValue(20)
+                            )
+                        )
+                        throw RuntimeException("just any exception")
+                    }
+                        .publishEitherTo(evenAggregate)
+
+                }
+            }
+            Then("expect error") {
+
+                runBlockingTest {
+
+                    val listRes = result.toList()
+                    val zero = listRes[0]
+                    val first = listRes[1]
+                    assert(zero is Either.Right && zero.value is EvenNumberEvent)
+                    assert(first is Either.Left && first.value is Error.CommandPublishingFailed)
+
+                }
+            }
+        }
     }
 
 })

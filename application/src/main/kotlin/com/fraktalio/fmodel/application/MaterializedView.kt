@@ -20,6 +20,7 @@ import arrow.core.Either
 import arrow.core.computations.either
 import com.fraktalio.fmodel.domain.View
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
 /**
@@ -60,7 +61,9 @@ data class MaterializedView<S, E>(
      * @return [Flow] of [Either] [Error] or State of type [S]
      */
     fun handleEither(events: Flow<E>): Flow<Either<Error, S>> =
-        events.map { handleEither(it) }
+        events
+            .map { handleEither(it) }
+            .catch { emit(Either.Left(Error.EventPublishingFailed(it))) }
 
     /**
      * Handles the event of type [E]
@@ -83,13 +86,13 @@ data class MaterializedView<S, E>(
         events.map { handle(it) }
 
 
-    private suspend fun S.calculateNewStateEither(event: E): Either<Error, S> =
+    private fun S.calculateNewStateEither(event: E): Either<Error, S> =
         Either.catch {
             calculateNewState(event)
         }.mapLeft { throwable -> Error.CalculatingNewViewStateFailed(this, event, throwable) }
 
 
-    private suspend fun S.calculateNewState(event: E): S = view.evolve(this, event)
+    private fun S.calculateNewState(event: E): S = view.evolve(this, event)
 }
 
 /**

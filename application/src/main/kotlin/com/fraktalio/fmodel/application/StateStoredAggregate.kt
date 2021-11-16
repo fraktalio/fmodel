@@ -68,7 +68,9 @@ data class StateStoredAggregate<C, S, E>(
      * @return [Flow] of [Either] [Error] or State of type [S]
      */
     fun handleEither(commands: Flow<C>): Flow<Either<Error, S>> =
-        commands.map { handleEither(it) }
+        commands
+            .map { handleEither(it) }
+            .catch { emit(Either.Left(Error.CommandPublishingFailed(it))) }
 
     /**
      * Handles the command message of type [C]
