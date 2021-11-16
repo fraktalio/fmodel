@@ -48,8 +48,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kotlin.version>1.5.31</kotlin.version>
-        <kotlin-test.version>1.5.31</kotlin-test.version>
+        <kotlin.version>1.6.0</kotlin.version>
         <kotlin.coroutines.version>1.5.2</kotlin.coroutines.version>
         <kotlin.code.style>official</kotlin.code.style>
         <java.version>11</java.version>
@@ -90,7 +89,7 @@
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-test</artifactId>
-                <version>${kotlin-test.version}</version>
+                <version>${kotlin.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -133,33 +132,6 @@
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
-                <version>${kotlin.version}</version>
-                <configuration>
-                    <jvmTarget>1.8</jvmTarget>
-                    <languageVersion>1.5</languageVersion>
-                    <experimentalCoroutines>enable</experimentalCoroutines>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <sourceDirs>
-                                <sourceDir>src/main/kotlin</sourceDir>
-                            </sourceDirs>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>test-compile</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>test-compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

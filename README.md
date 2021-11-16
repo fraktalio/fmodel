@@ -386,7 +386,7 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 ### Examples
 
 - Envision how information system will look like and behave like by modeling the flow of information
-  - [event modeling](https://eventmodeling.org/posts/what-is-event-modeling/)
+    - [event modeling](https://eventmodeling.org/posts/what-is-event-modeling/)
 - The result is a blueprint of the overall solution
 
 ![event-modeling](.assets/event-modeling.png)
