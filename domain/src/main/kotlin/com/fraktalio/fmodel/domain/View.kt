@@ -36,7 +36,7 @@ package com.fraktalio.fmodel.domain
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class _View<Si, So, E>(
+data class _View<in Si, out So, in E>(
     val evolve: (Si, E) -> So,
     val initialState: So,
 ) {
@@ -84,38 +84,38 @@ data class _View<Si, So, E>(
      */
     inline fun <Son> mapOnState(crossinline f: (So) -> Son): _View<Si, Son, E> =
         dimapOnState({ it }, f)
-
-    /**
-     * Right apply on S/State parameter - Applicative
-     *
-     * @param Son State output new
-     * @param ff
-     */
-    fun <Son> applyOnState(ff: _View<Si, (So) -> Son, E>): _View<Si, Son, E> = _View(
-        evolve = { si, e -> ff.evolve(si, e)(this.evolve(si, e)) },
-        initialState = ff.initialState(this.initialState)
-    )
-
-    /**
-     * Right product on S/State parameter - Applicative
-     *
-     * @param Son State output new
-     * @param fb
-     */
-    fun <Son> productOnState(fb: _View<Si, Son, E>): _View<Si, Pair<So, Son>, E> =
-        applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
-
-    /**
-     * Right just on S/State parameter - Applicative
-     *
-     * @param so State output
-     */
-    fun justOnState(so: So): _View<Si, So, E> = _View(
-        evolve = { _, _ -> so },
-        initialState = so
-    )
-
 }
+
+// ### Extension functions ###
+// We could have included these functions inside the _View data type if we had changed _View’s type arguments to be invariant but this would cascade poorly for inference.
+// If we move it to an extension then E, Si, ... are no longer coming from the instance but from the environment in invariant position which is acceptable.
+
+
+/**
+ * Apply on S/State parameter - Applicative
+ *
+ * @param Si State input type
+ * @param So State output type
+ * @param E Event type
+ * @param Son State output new type
+ * @param ff
+ */
+fun <Si, So, E, Son> _View<Si, So, E>.applyOnState(ff: _View<Si, (So) -> Son, E>): _View<Si, Son, E> = _View(
+    evolve = { si, e -> ff.evolve(si, e)(this.evolve(si, e)) },
+    initialState = ff.initialState(this.initialState)
+)
+
+/**
+ * Product on S/State parameter - Applicative
+ *
+ * @param Si State input type
+ * @param So State output type
+ * @param E Event type
+ * @param Son State output new type
+ * @param fb
+ */
+fun <Si, So, E, Son> _View<Si, So, E>.productOnState(fb: _View<Si, Son, E>): _View<Si, Pair<So, Son>, E> =
+    applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
 
 /**
  * Combines [_View]s into one bigger [_View]
@@ -132,8 +132,8 @@ data class _View<Si, So, E>(
  * @param y second View
  * @return new View of type [_View]<[Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [E_SUPER]>
  */
-inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<Si, So, in E?>.combine(
-    y: _View<Si2, So2, in E2?>
+inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<Si, So, E?>.combine(
+    y: _View<Si2, So2, E2?>
 ): _View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER> {
 
     val viewX = this

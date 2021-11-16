@@ -30,11 +30,11 @@ import kotlinx.coroutines.flow.map
  *
  * [_Decider] is a pure domain component.
  *
- * @param C Command type
- * @param Si Input_State type
- * @param So Output_State type
- * @param Ei Input_Event type
- * @param Eo Output_Event type
+ * @param C Command type - contravariant/in type parameter
+ * @param Si Input_State type - contravariant/in type parameter
+ * @param So Output_State type - covariant/out type parameter
+ * @param Ei Input_Event type - contravariant/in type parameter
+ * @param Eo Output_Event type - covariant/out type parameter
  * @property decide A function/lambda that takes command of type [C] and input state of type [Si] as parameters, and returns/emits the flow of output events [Flow]<[Eo]>
  * @property evolve A function/lambda that takes input state of type [Si] and input event of type [Ei] as parameters, and returns the output/new state [So]
  * @property initialState A starting point / An initial state of type [So]
@@ -42,7 +42,7 @@ import kotlinx.coroutines.flow.map
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class _Decider<C, Si, So, Ei, Eo>(
+data class _Decider<in C, in Si, out So, in Ei, out Eo>(
     val decide: (C, Si) -> Flow<Eo>,
     val evolve: (Si, Ei) -> So,
     val initialState: So
@@ -128,29 +128,48 @@ data class _Decider<C, Si, So, Ei, Eo>(
      */
     inline fun <Son> mapOnState(crossinline f: (So) -> Son): _Decider<C, Si, Son, Ei, Eo> =
         dimapOnState({ it }, f)
+}
 
+// ### Extension functions ###
+// We could have included these functions inside the _Decider data type if we had changed Decider’s type arguments to be invariant but this would cascade poorly for inference.
+// If we move it to an extension then C, Si, ... are no longer coming from the instance but from the environment in invariant position which is acceptable.
 
-    /**
-     * Right apply on S/State parameter - Applicative
-     *
-     * @param Son State output new
-     * @param ff
-     */
-    fun <Son> applyOnState(ff: _Decider<C, Si, (So) -> Son, Ei, Eo>): _Decider<C, Si, Son, Ei, Eo> = _Decider(
+/**
+ * Apply on S/State - Applicative
+ *
+ * @param C Command type
+ * @param Si Input_State type
+ * @param So Output_State type
+ * @param Ei Input_Event type
+ * @param Eo Output_Event type
+ * @param Son Output_State type new
+ *
+ * @param ff of type [_Decider]<[C], [Si], ([So]) -> [Son], [Ei], [Eo]>
+ *
+ * @return new decider of type [_Decider]<[C], [Si], [Son], [Ei], [Eo]>
+ */
+fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.applyOnState(ff: _Decider<C, Si, (So) -> Son, Ei, Eo>): _Decider<C, Si, Son, Ei, Eo> =
+    _Decider(
         decide = { c, si -> flowOf(ff.decide(c, si), this.decide(c, si)).flattenConcat() },
         evolve = { si, ei -> ff.evolve(si, ei)(this.evolve(si, ei)) },
         initialState = ff.initialState(this.initialState)
     )
 
-    /**
-     * Right product on S/State parameter - Applicative
-     *
-     * @param Son State output new
-     * @param fb
-     */
-    fun <Son> productOnState(fb: _Decider<C, Si, Son, Ei, Eo>): _Decider<C, Si, Pair<So, Son>, Ei, Eo> =
-        applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
-}
+/**
+ * Product on S/State parameter - Applicative
+ *
+ * @param C Command type
+ * @param Si Input_State type
+ * @param So Output_State type
+ * @param Ei Input_Event type
+ * @param Eo Output_Event type
+ * @param Son Output_State type new
+ * @param fb
+ *
+ * @return new decider of type [_Decider]<[C], [Si], [Pair]<[So], [Son]>, [Ei], [Eo]>
+ */
+fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.productOnState(fb: _Decider<C, Si, Son, Ei, Eo>): _Decider<C, Si, Pair<So, Son>, Ei, Eo> =
+    applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
 
 
 /**
@@ -178,8 +197,8 @@ data class _Decider<C, Si, So, Ei, Eo>(
  * @param y second Decider
  * @return [_Decider]<[C_SUPER], [Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [Ei_SUPER], [Eo_SUPER]>
  */
-inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<in C?, Si, So, in Ei?, Eo>.combine(
-    y: _Decider<in C2?, Si2, So2, in Ei2?, Eo2>
+inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<C?, Si, So, Ei?, Eo>.combine(
+    y: _Decider<C2?, Si2, So2, Ei2?, Eo2>
 ): _Decider<C_SUPER, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER> {
 
     val deciderX = this

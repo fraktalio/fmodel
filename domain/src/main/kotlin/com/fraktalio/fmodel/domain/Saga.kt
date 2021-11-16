@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.map
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class _Saga<AR, A>(
+data class _Saga<in AR, out A>(
     val react: (AR) -> Flow<A>
 ) {
     /**
@@ -56,7 +56,6 @@ data class _Saga<AR, A>(
     inline fun <An> mapOnAction(crossinline f: (A) -> An): _Saga<AR, An> = _Saga(
         react = { ar -> this.react(ar).map { f(it) } }
     )
-
 }
 
 /**
@@ -75,8 +74,8 @@ data class _Saga<AR, A>(
  * @param y second saga
  * @return new Saga of type `[_Saga]<[AR_SUPER], [A_SUPER]>`
  */
-inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> _Saga<in AR?, A>.combine(
-    y: _Saga<in AR2?, A2>
+inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> _Saga<AR?, A>.combine(
+    y: _Saga<AR2?, A2>
 ): _Saga<AR_SUPER, A_SUPER> {
 
     val sagaX = this
