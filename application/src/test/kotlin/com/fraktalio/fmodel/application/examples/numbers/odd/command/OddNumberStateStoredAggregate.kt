@@ -18,6 +18,7 @@ package com.fraktalio.fmodel.application.examples.numbers.odd.command
 
 import com.fraktalio.fmodel.application.StateRepository
 import com.fraktalio.fmodel.application.StateStoredAggregate
+import com.fraktalio.fmodel.application.stateStoredAggregate
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
@@ -36,7 +37,7 @@ fun oddNumberStateStoredAggregate(
     repository: StateRepository<OddNumberCommand?, OddNumberState>
 ): StateStoredAggregate<OddNumberCommand?, OddNumberState, OddNumberEvent?> =
 
-    StateStoredAggregate(
+    stateStoredAggregate(
         decider = decider,
         stateRepository = repository
     )

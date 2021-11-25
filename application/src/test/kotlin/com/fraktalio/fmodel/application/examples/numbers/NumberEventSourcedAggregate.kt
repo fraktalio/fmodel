@@ -17,7 +17,7 @@
 package com.fraktalio.fmodel.application.examples.numbers
 
 import com.fraktalio.fmodel.application.EventRepository
-import com.fraktalio.fmodel.application.EventSourcingAggregate
+import com.fraktalio.fmodel.application.eventSourcingOrchestratingAggregate
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.Saga
 import com.fraktalio.fmodel.domain.combine
@@ -48,7 +48,7 @@ fun numberAggregate(
     repository: EventRepository<NumberCommand?, NumberEvent?>
 ) =
 
-    EventSourcingAggregate(
+    eventSourcingOrchestratingAggregate(
         decider = evenNumberDecider.combine(oddNumberDecider),
         eventRepository = repository,
         saga = evenNumberSaga.combine(oddNumberSaga)

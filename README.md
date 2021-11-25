@@ -208,13 +208,21 @@ a result. Produced events are then stored via `EventRepository.save` suspending 
 
 ![event sourced aggregate](.assets/es-aggregate.png)
 
-`EventSourcingAggregate` implements an interface `EventRepository` by delegating all of its public members to a
-specified object. The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin
-supports it natively requiring zero boilerplate code.
+`EventSourcingAggregate` extends an interface `EventRepository`.
 
-The `by` -clause in the supertype list for `EventSourcingAggregate` indicates that `eventRepository` will be stored
-internally in objects of `EventSourcingAggregate` and the compiler will generate all the methods of `EventRepository`
-that forward to `eventRepository`
+A convenient extension factory function is available:
+
+```kotlin
+fun <C, S, E> eventSourcingAggregate(
+    decider: Decider<C, S, E>,
+    eventRepository: EventRepository<C, E>
+): EventSourcingAggregate<C, S, E> =
+    object : EventSourcingAggregate<C, S, E>, EventRepository<C, E> by eventRepository {
+        override val decider = decider
+    }
+```
+
+> The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
 
 ### State-stored aggregate
 
@@ -226,13 +234,21 @@ via `StateRepository.save` suspending function.
 
 ![state storedaggregate](.assets/ss-aggregate.png)
 
-`StateStoredAggregate` implements an interface `StateRepository` by delegating all of its public members to a specified
-object. The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it
-natively requiring zero boilerplate code.
+`StateStoredAggregate` extends an interface `StateRepository`.
 
-The `by` -clause in the supertype list for `StateStoredAggregate` indicates that `aggregateStateRepository` will be
-stored internally in objects of `StateStoredAggregate` and the compiler will generate all the methods
-of `StateRepository` that forward to `stateRepository`
+A convenient extension factory function is available:
+
+```kotlin
+fun <C, S, E> stateStoredAggregate(
+    decider: Decider<C, S, E>,
+    stateRepository: StateRepository<C, S>
+): StateStoredAggregate<C, S, E> =
+    object : StateStoredAggregate<C, S, E>, StateRepository<C, S> by stateRepository {
+        override val decider = decider
+    }
+```
+
+> The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
 
 ## View
 
@@ -295,13 +311,29 @@ We can now construct `materialized` view by using this `view`.
 
 ### Materialized View
 
-A [Materialized view](application/src/main/kotlin/com/fraktalio/fmodel/application/MaterializedView.kt) is
-using/delegating a `View` to handle events of type `E` and to maintain a state of denormalized projection(s) as a
-result. Essentially, it represents the query/view side of the CQRS pattern. It belongs to the Application layer.
+A [Materialized view](application/src/main/kotlin/com/fraktalio/fmodel/application/MaterializedView.kt) is using
+a `View` to handle events of type `E` and to maintain a state of denormalized projection(s) as a result. Essentially, it
+represents the query/view side of the CQRS pattern. It belongs to the Application layer.
 
 In order to handle the event, materialized view needs to fetch the current state via `ViewStateRepository.fetchState`
 suspending function first, and then delegate the event to the view, which can produce new state as a result. New state
 is then stored via `ViewStateRepository.save` suspending function.
+
+`MaterializedView` extends an interface `ViewStateRepository`.
+
+A convenient extension factory function is available:
+
+```kotlin
+fun <S, E> materializedView(
+    view: View<S, E>,
+    viewStateRepository: ViewStateRepository<E, S>,
+): MaterializedView<S, E> =
+    object : MaterializedView<S, E>, ViewStateRepository<E, S> by viewStateRepository {
+        override val view = view
+    }
+```
+
+> The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
 
 ## Saga
 
@@ -357,6 +389,22 @@ going to be published via `ActionPublisher.publish` suspending function.
 
 It belongs to the Application layer.
 
+`SagaManager` extends an interface `ActionPublisher`.
+
+A convenient extension factory function is available:
+
+```kotlin
+fun <AR, A> sagaManager(
+    saga: Saga<AR, A>,
+    actionPublisher: ActionPublisher<A>
+): SagaManager<AR, A> =
+    object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher {
+        override val saga = saga
+    }
+```
+
+> The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+
 ## Kotlin
 
 *"Kotlin has both object-oriented and functional constructs. You can use it in both OO and FP styles, or mix elements of
@@ -373,13 +421,13 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.1</version>
 </dependency>
 
 <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.1</version>
 </dependency>
 ```
 
@@ -393,7 +441,10 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 
 - Translate the blueprint into the [source code](https://github.com/fraktalio/fmodel-demos)
 
-[https://github.com/fraktalio/fmodel-demos](https://github.com/fraktalio/fmodel-demos)
+**Valuable resources:**
+
+- [The Blog - Domain modeling](https://fraktalio.com/blog/)
+- [The Demo Source Code](https://github.com/fraktalio/fmodel-demos)
 
 ## Deploy to Maven Central
 

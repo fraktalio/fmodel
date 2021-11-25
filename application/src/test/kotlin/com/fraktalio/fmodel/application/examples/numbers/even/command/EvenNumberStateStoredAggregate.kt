@@ -18,6 +18,7 @@ package com.fraktalio.fmodel.application.examples.numbers.even.command
 
 import com.fraktalio.fmodel.application.StateRepository
 import com.fraktalio.fmodel.application.StateStoredAggregate
+import com.fraktalio.fmodel.application.stateStoredAggregate
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
@@ -36,7 +37,7 @@ fun evenNumberStateStoredAggregate(
     repository: StateRepository<EvenNumberCommand?, EvenNumberState>
 ): StateStoredAggregate<EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?> =
 
-    StateStoredAggregate(
+    stateStoredAggregate(
         decider = decider,
         stateRepository = repository
     )

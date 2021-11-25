@@ -16,6 +16,8 @@
 
 package com.fraktalio.fmodel.application
 
+import arrow.core.Either
+import com.fraktalio.fmodel.domain.Saga
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -46,3 +48,103 @@ interface ActionPublisher<A> {
     fun Flow<A>.publish(): Flow<A> =
         map { it.publish() }
 }
+
+/**
+ * Handle the Action Result of type [AR] and publish [Flow] of Actions of type [A] based on it.
+ * Usually, Action Results are Events, and Actions are Commands.
+ * But, it does not have to be like that. For example, an Action could be an HTTP Request to a third-party system.
+ *
+ * Dependency injection
+ * ____________________
+ * Internally, the [sagaManager] is used to create the object/instance of [SagaManager]<[AR], [A]>.
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ * Kotlin natively supports dependency injection with receivers.
+ * -------------------
+ *
+ * @param P The type of the publisher - [P] : [ActionPublisher]<[A]>
+ * @param AR Action Result
+ * @param A Action
+ * @param actionResult Action Result represent the outcome of some action you want to handle in some way
+ * @param saga Saga component
+ * @return The flow of published actions - [Flow]<[A]>
+ */
+fun <P, AR, A> P.handle(
+    actionResult: AR,
+    saga: Saga<AR, A>
+): Flow<A> where P : ActionPublisher<A> =
+    actionResult.publishTo(sagaManager(saga, this))
+
+/**
+ * Handle the [Flow] of Action Results of type [AR] and publish [Flow] of Actions of type [A] based on it.
+ * Usually, Action Results are Events, and Actions are Commands.
+ * But, it does not have to be like that. For example, an Action could be an HTTP Request to a third-party system.
+ *
+ * Dependency injection
+ * ____________________
+ * Internally, the [sagaManager] is used to create the object/instance of [SagaManager]<[AR], [A]>.
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ * Kotlin natively supports dependency injection with receivers.
+ * -------------------
+ *
+ * @param P The type of the publisher - [P] : [ActionPublisher]<[A]>
+ * @param AR Action Result
+ * @param A Action
+ * @param actionResults The flow of Action Results represent the outcome of some action you want to handle in some way
+ * @param saga Saga component
+ * @return The flow of published actions - [Flow]<[A]>
+ */
+fun <P, AR, A> P.handle(
+    actionResults: Flow<AR>,
+    saga: Saga<AR, A>
+): Flow<A> where P : ActionPublisher<A> =
+    actionResults.publishTo(sagaManager(saga, this))
+
+/**
+ * Handle the Action Result of type [AR] and publish [Flow] of [Either] Actions of type [A] or [Error].
+ * Usually, Action Results are Events, and Actions are Commands.
+ * But, it does not have to be like that. For example, an Action could be an HTTP Request to a third-party system.
+ *
+ * Dependency injection
+ * ____________________
+ * Internally, the [sagaManager] is used to create the object/instance of [SagaManager]<[AR], [A]>.
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ * Kotlin natively supports dependency injection with receivers.
+ * -------------------
+ *
+ * @param P The type of the publisher - [P] : [ActionPublisher]<[A]>
+ * @param AR Action Result
+ * @param A Action
+ * @param actionResult Action Result represent the outcome of some action you want to handle in some way
+ * @param saga Saga component
+ * @return The flow of published actions - [Flow]<[Either]<[Error], [A]>>
+ */
+fun <P, AR, A> P.eitherHandleOrFail(
+    actionResult: AR,
+    saga: Saga<AR, A>
+): Flow<Either<Error, A>> where P : ActionPublisher<A> =
+    actionResult.publishEitherTo(sagaManager(saga, this))
+
+/**
+ * Handle the Action Result of type [AR] and publish [Flow] of [Either] Actions of type [A] or [Error].
+ * Usually, Action Results are Events, and Actions are Commands.
+ * But, it does not have to be like that. For example, an Action could be an HTTP Request to a third-party system.
+ *
+ * Dependency injection
+ * ____________________
+ * Internally, the [sagaManager] is used to create the object/instance of [SagaManager]<[AR], [A]>.
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ * Kotlin natively supports dependency injection with receivers.
+ * -------------------
+ *
+ * @param P The type of the publisher - [P] : [ActionPublisher]<[A]>
+ * @param AR Action Result
+ * @param A Action
+ * @param actionResult Action Result represent the outcome of some action you want to handle in some way
+ * @param saga Saga component
+ * @return The flow of published actions - [Flow]<[Either]<[Error], [A]>>
+ */
+fun <P, AR, A> P.eitherHandleOrFail(
+    actionResult: Flow<AR>,
+    saga: Saga<AR, A>
+): Flow<Either<Error, A>> where P : ActionPublisher<A> =
+    actionResult.publishEitherTo(sagaManager(saga, this))

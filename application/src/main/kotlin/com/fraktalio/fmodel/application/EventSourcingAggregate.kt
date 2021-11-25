@@ -22,30 +22,21 @@ import com.fraktalio.fmodel.domain.Saga
 import kotlinx.coroutines.flow.*
 
 /**
- *
- * Event sourcing aggregate is using/delegating a [EventSourcingAggregate.decider] of type [Decider]<[C], [S], [E]> to handle commands and produce events.
+ * Event sourcing aggregate is using a [EventSourcingAggregate.decider] of type [Decider]<[C], [S], [E]> to handle commands and produce events.
  * In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via [EventRepository.fetchEvents] function, and then delegate the command to the [EventSourcingAggregate.decider] which can produce new event(s) as a result.
- * If the [EventSourcingAggregate.decider] is combined out of many deciders via `combine` function, an optional [EventSourcingAggregate.saga] could be used to react on new events and send new commands to the [EventSourcingAggregate.decider] recursively, in one transaction.
  * Produced events are then stored via [EventRepository.save] suspending function.
  *
- * [EventSourcingAggregate] implements an interface [EventRepository] by delegating all of its public members to a specified object.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ * [EventSourcingAggregate] extends an interface [EventRepository].
  *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
  * @param E Events of type [E] that this aggregate can publish
  * @property decider A decider component of type [Decider]<[C], [S], [E]>.
- * @property eventRepository Interface for [E]vent management/persistence - dependencies by delegation
- * @property saga A saga component of type [Saga]<[E], [C]>
- * @constructor Creates [EventSourcingAggregate]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class EventSourcingAggregate<C, S, E>(
-    private val decider: Decider<C, S, E>,
-    private val eventRepository: EventRepository<C, E>,
-    private val saga: Saga<E, C>? = null
-) : EventRepository<C, E> by eventRepository {
+interface EventSourcingAggregate<C, S, E> : EventRepository<C, E> {
+    val decider: Decider<C, S, E>
 
     /**
      * Handles the command message of type [C]
@@ -56,7 +47,7 @@ data class EventSourcingAggregate<C, S, E>(
     fun handleEither(command: C): Flow<Either<Error, E>> =
         command
             .fetchEvents()
-            .calculateNewEvents(command)
+            .computeNewEvents(command)
             .save()
             .map { Either.Right(it) }
             .catch<Either<Error, E>> {
@@ -72,7 +63,7 @@ data class EventSourcingAggregate<C, S, E>(
     fun handle(command: C): Flow<E> =
         command
             .fetchEvents()
-            .calculateNewEvents(command)
+            .computeNewEvents(command)
             .save()
 
     /**
@@ -96,28 +87,115 @@ data class EventSourcingAggregate<C, S, E>(
         commands.flatMapConcat { handle(it) }
 
 
-    private fun Flow<E>.calculateNewEvents(command: C): Flow<E> =
+    /**
+     * Computes new Events based on the previous Events and the [command].
+     *
+     * @param command of type [C]
+     * @return The Flow of newly computed events of type [E]
+     */
+    fun Flow<E>.computeNewEvents(command: C): Flow<E> =
+        flow {
+            val currentState = fold(decider.initialState) { s, e -> decider.evolve(s, e) }
+            var resultingEvents = decider.decide(command, currentState)
+            emitAll(resultingEvents)
+        }
+}
+
+/**
+ * Event sourcing aggregate is using a [EventSourcingOrchestratingAggregate.decider] of type [Decider]<[C], [S], [E]> to handle commands and produce events.
+ * In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via [EventRepository.fetchEvents] function, and then delegate the command to the [EventSourcingAggregate.decider] which can produce new event(s) as a result.
+ * If the [EventSourcingOrchestratingAggregate.decider] is combined out of many deciders via `combine` function, an optional [EventSourcingOrchestratingAggregate.saga] could be used to react on new events and send new commands to the [EventSourcingAggregate.decider] recursively, in one transaction.
+ * Produced events are then stored via [EventRepository.save] suspending function.
+ *
+ * [EventSourcingOrchestratingAggregate] extends an interface [EventSourcingAggregate].
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that this aggregate can publish
+ * @property decider A decider component of type [Decider]<[C], [S], [E]>.
+ * @property saga A saga component of type [Saga]<[E], [C]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface EventSourcingOrchestratingAggregate<C, S, E> : EventSourcingAggregate<C, S, E> {
+    val saga: Saga<E, C>
+
+    /**
+     * Computes new Events based on the previous events and the [command].
+     *
+     * @param command of type [C]
+     * @return The Flow of newly computed events of type [E]
+     */
+    override fun Flow<E>.computeNewEvents(command: C): Flow<E> =
         flow {
             val currentState = fold(decider.initialState) { s, e -> decider.evolve(s, e) }
             var resultingEvents = decider.decide(command, currentState)
 
-            if (saga != null)
-                resultingEvents.flatMapConcat { saga.react(it) }.collect {
-                    val newEvents =
-                        flowOf(this@calculateNewEvents, resultingEvents).flattenConcat().calculateNewEvents(it)
-                    resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
-                }
+            resultingEvents.flatMapConcat { saga.react(it) }.collect {
+                val newEvents =
+                    flowOf(this@computeNewEvents, resultingEvents).flattenConcat().computeNewEvents(it)
+                resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
+            }
 
             emitAll(resultingEvents)
         }
-
 }
+
+/**
+ * Event Sourced aggregate factory function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param decider A decider component of type [Decider]<[C], [S], [E]>
+ * @param eventRepository An aggregate event repository of type [EventRepository]<[C], [E]>
+ * @return An object/instance of type [EventSourcingAggregate]<[C], [S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E> eventSourcingAggregate(
+    decider: Decider<C, S, E>,
+    eventRepository: EventRepository<C, E>
+): EventSourcingAggregate<C, S, E> =
+    object : EventSourcingAggregate<C, S, E>, EventRepository<C, E> by eventRepository {
+        override val decider = decider
+    }
+
+/**
+ * Extension function - Event Sourced Orchestrating aggregate factory function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param decider A decider component of type [Decider]<[C], [S], [E]>
+ * @param eventRepository An aggregate event repository of type [EventRepository]<[C], [E]>
+ * @param saga A saga component of type [Saga]<[E], [C]> - orchestrates the deciders
+ * @return An object/instance of type [EventSourcingOrchestratingAggregate]<[C], [S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E> eventSourcingOrchestratingAggregate(
+    decider: Decider<C, S, E>,
+    eventRepository: EventRepository<C, E>,
+    saga: Saga<E, C>
+): EventSourcingOrchestratingAggregate<C, S, E> =
+    object : EventSourcingOrchestratingAggregate<C, S, E>, EventRepository<C, E> by eventRepository {
+        override val decider = decider
+        override val saga = saga
+    }
+
 
 /**
  * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
  * @receiver command of type [C]
  * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
  * @return the [Flow] of stored Events of type [E]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)
 
@@ -126,6 +204,8 @@ fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = ag
  * @receiver [Flow] of commands of type [C]
  * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
  * @return the [Flow] of stored Events of type [E]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)
 
@@ -134,6 +214,8 @@ fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E
  * @receiver command of type [C]
  * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
  * @return the [Flow] of [Either] [Error] or successfully stored Events of type [E]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <C, E> C.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Either<Error, E>> =
     aggregate.handleEither(this)
@@ -143,6 +225,8 @@ fun <C, E> C.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E
  * @receiver [Flow] of commands of type [C]
  * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
  * @return the [Flow] of [Either] [Error] or successfully stored Events of type [E]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <C, E> Flow<C>.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Either<Error, E>> =
     aggregate.handleEither(this)

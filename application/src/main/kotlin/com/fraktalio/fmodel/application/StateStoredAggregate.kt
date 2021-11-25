@@ -23,29 +23,65 @@ import com.fraktalio.fmodel.domain.Saga
 import kotlinx.coroutines.flow.*
 
 /**
- * State stored aggregate is using/delegating a [StateStoredAggregate.decider] of type [Decider]<[C], [S], [E]> to handle commands and produce new state.
- * In order to handle the command, aggregate needs to fetch the current state via [StateRepository.fetchState] function first, and then delegate the command to the [StateStoredAggregate.decider] which can produce new state as a result.
- * If the [StateStoredAggregate.decider] is combined out of many deciders via `combine` function, an optional [StateStoredAggregate.saga] could be used to react on new events and send new commands to the [StateStoredAggregate.decider] recursively, in one transaction.
+ * State stored aggregate is using a [StateStoredAggregate.decider] of type [Decider]<[C], [S], [E]> to handle commands and produce new state.
+ * In order to handle the command, aggregate needs to fetch the current state via [StateRepository.fetchState] function first, and then delegate the command to the [StateStoredAggregate.decider] which can compute new state as a result.
  * New state is then stored via [StateRepository.save] suspending function.
  *
- * [StateStoredAggregate] implements an interface [StateRepository] by delegating all of its public members to a specified object.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ * [StateStoredAggregate] implements an interface [StateRepository].
  *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
  * @param E Events of type [E] that are used internally to build/fold new state
  * @property decider A decider component of type [Decider]<[C], [S], [E]>.
- * @property stateRepository Interface for [S]tate management/persistence - dependencies by delegation
- * @property saga A saga component of type [Saga]<[E], [C]>
- * @constructor Creates [StateStoredAggregate]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class StateStoredAggregate<C, S, E>(
-    private val decider: Decider<C, S, E>,
-    private val stateRepository: StateRepository<C, S>,
-    private val saga: Saga<E, C>? = null
-) : StateRepository<C, S> by stateRepository {
+interface StateStoredAggregate<C, S, E> : StateRepository<C, S> {
+    val decider: Decider<C, S, E>
+
+    /**
+     * Computes new State based on the previous State and the [command].
+     *
+     * @param command of type [C]
+     * @return The newly computed state of type [S]
+     */
+    suspend fun S.computeNewState(command: C): S {
+        val events = decider.decide(command, this)
+        return events.fold(this) { s, e -> decider.evolve(s, e) }
+    }
+
+    /**
+     * Computes new State based on the previous State and the [command] or fails.
+     *
+     * @param command of type [C]
+     * @return [Either] the newly computed state of type [S] or [Error]
+     */
+    suspend fun S.eitherComputeNewStateOrFail(command: C): Either<Error, S> =
+        Either.catch {
+            computeNewState(command)
+        }.mapLeft { throwable ->
+            Error.CalculatingNewStateFailed(this, command, throwable)
+        }
+
+    /**
+     * Handles the command message of type [C]
+     *
+     * @param command Command message of type [C]
+     * @return State of type [S]
+     */
+    suspend fun handle(command: C): S =
+        (command.fetchState() ?: decider.initialState)
+            .computeNewState(command)
+            .save()
+
+    /**
+     * Handles the [Flow] of command messages of type [C]
+     *
+     * @param commands [Flow] of Command messages of type [C]
+     * @return [Flow] of State of type [S]
+     */
+    fun handle(commands: Flow<C>): Flow<S> =
+        commands.map { handle(it) }
 
     /**
      * Handles the command message of type [C]
@@ -56,9 +92,9 @@ data class StateStoredAggregate<C, S, E>(
     suspend fun handleEither(command: C): Either<Error, S> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            (command.fetchStateEither().bind() ?: decider.initialState)
-                .calculateNewStateEither(command).bind()
-                .saveEither().bind()
+            (command.eitherFetchStateOrFail().bind() ?: decider.initialState)
+                .eitherComputeNewStateOrFail(command).bind()
+                .eitherSaveOrFail().bind()
         }
 
     /**
@@ -71,49 +107,96 @@ data class StateStoredAggregate<C, S, E>(
         commands
             .map { handleEither(it) }
             .catch { emit(Either.Left(Error.CommandPublishingFailed(it))) }
+}
+
+/**
+ * Orchestrating State stored aggregate is extending [StateStoredAggregate] by introducing [StateStoredOrchestratingAggregate.saga] property. It is using a [StateStoredAggregate.decider] of type [Decider]<[C], [S], [E]> to handle commands and produce new state.
+ * In order to handle the command, aggregate needs to fetch the current state via [StateRepository.fetchState] function first, and then delegate the command to the [StateStoredAggregate.decider] which can compute new state as a result.
+ * If the [StateStoredAggregate.decider] is combined out of many deciders via `combine` function, a [StateStoredOrchestratingAggregate.saga] could be used to react on new events and send new commands to the [StateStoredAggregate.decider] recursively, in one transaction.
+ * New state is then stored via [StateRepository.save] suspending function.
+ *
+ * [StateStoredOrchestratingAggregate] extends interface [StateStoredAggregate].
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @property decider A decider component of type [Decider]<[C], [S], [E]>
+ * @property saga A saga component of type [Saga]<[E], [C]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface StateStoredOrchestratingAggregate<C, S, E> : StateStoredAggregate<C, S, E> {
+    val saga: Saga<E, C>
 
     /**
-     * Handles the command message of type [C]
+     * Computes new State based on the previous State and the [command].
      *
-     * @param command Command message of type [C]
-     * @return State of type [S]
+     * @param command of type [C]
+     * @return The newly computed state of type [S]
      */
-    suspend fun handle(command: C): S =
-        (command.fetchState() ?: decider.initialState)
-            .calculateNewState(command)
-            .save()
-
-    /**
-     * Handles the [Flow] of command messages of type [C]
-     *
-     * @param commands [Flow] of Command messages of type [C]
-     * @return [Flow] of State of type [S]
-     */
-    fun handle(commands: Flow<C>): Flow<S> =
-        commands.map { handle(it) }
-
-
-    private suspend fun S.calculateNewStateEither(command: C): Either<Error, S> =
-        Either.catch {
-            calculateNewState(command)
-        }.mapLeft { throwable ->
-            Error.CalculatingNewStateFailed(this, command, throwable)
-        }
-
-    private suspend fun S.calculateNewState(command: C): S {
+    override suspend fun S.computeNewState(command: C): S {
         val events = decider.decide(command, this)
         val newState = events.fold(this) { s, e -> decider.evolve(s, e) }
-        if (saga != null) events.flatMapConcat { saga.react(it) }.collect { newState.calculateNewState(it) }
+        events.flatMapConcat { saga.react(it) }.collect { newState.computeNewState(it) }
         return newState
     }
-
 }
+
+/**
+ * State stored orchestrating aggregate factory function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param decider A decider component of type [Decider]<[C], [S], [E]>
+ * @param stateRepository An aggregate state repository of type [StateRepository]<[C], [S]>
+ * @param saga A saga component of type [Saga]<[E], [C]>
+ * @return An object/instance of type [StateStoredOrchestratingAggregate]<[C], [S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E> stateStoredOrchestratingAggregate(
+    decider: Decider<C, S, E>,
+    stateRepository: StateRepository<C, S>,
+    saga: Saga<E, C>
+): StateStoredOrchestratingAggregate<C, S, E> =
+    object : StateStoredOrchestratingAggregate<C, S, E>, StateRepository<C, S> by stateRepository {
+        override val decider = decider
+        override val saga = saga
+    }
+
+/**
+ * Extension function - State stored aggregate factory function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param decider A decider component of type [Decider]<[C], [S], [E]>
+ * @param stateRepository An aggregate state repository of type [StateRepository]<[C], [S]>
+ * @return An object/instance of type [StateStoredAggregate]<[C], [S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E> stateStoredAggregate(
+    decider: Decider<C, S, E>,
+    stateRepository: StateRepository<C, S>
+): StateStoredAggregate<C, S, E> =
+    object : StateStoredAggregate<C, S, E>, StateRepository<C, S> by stateRepository {
+        override val decider = decider
+    }
+
 
 /**
  * Extension function - Publishes the command of type [C] to the state stored aggregate of type  [StateStoredAggregate]<[C], [S], *>
  * @receiver command of type [C]
  * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
  * @return the stored State of type [S]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 suspend fun <C, S> C.publishTo(aggregate: StateStoredAggregate<C, S, *>): S = aggregate.handle(this)
 
@@ -122,6 +205,8 @@ suspend fun <C, S> C.publishTo(aggregate: StateStoredAggregate<C, S, *>): S = ag
  * @receiver [Flow] of commands of type [C]
  * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
  * @return the [Flow] of State of type [S]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <C, S> Flow<C>.publishTo(aggregate: StateStoredAggregate<C, S, *>): Flow<S> = aggregate.handle(this)
 
@@ -130,6 +215,8 @@ fun <C, S> Flow<C>.publishTo(aggregate: StateStoredAggregate<C, S, *>): Flow<S> 
  * @receiver command of type [C]
  * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
  * @return [Either] [Error] or successfully stored State of type [S]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 suspend fun <C, S> C.publishEitherTo(aggregate: StateStoredAggregate<C, S, *>): Either<Error, S> =
     aggregate.handleEither(this)
@@ -139,6 +226,8 @@ suspend fun <C, S> C.publishEitherTo(aggregate: StateStoredAggregate<C, S, *>): 
  * @receiver [Flow] of commands of type [C]
  * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
  * @return the [Flow] of [Either] [Error] or successfully  stored State of type [S]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <C, S> Flow<C>.publishToEither(aggregate: StateStoredAggregate<C, S, *>): Flow<Either<Error, S>> =
+fun <C, S> Flow<C>.publishEitherTo(aggregate: StateStoredAggregate<C, S, *>): Flow<Either<Error, S>> =
     aggregate.handleEither(this)

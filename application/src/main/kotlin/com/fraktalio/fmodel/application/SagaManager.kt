@@ -29,37 +29,35 @@ import kotlinx.coroutines.flow.map
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class SagaManager<AR, A>(
-    private val saga: Saga<AR, A>,
-    private val actionPublisher: ActionPublisher<A>,
-) : ActionPublisher<A> by actionPublisher {
+interface SagaManager<AR, A> : ActionPublisher<A> {
+    val saga: Saga<AR, A>
 
     /**
-     * Handles the action result of type [AR]
+     * Handles the action result of type [AR].
      *
      * @param actionResult Action Result represent the outcome of some action you want to handle in some way
      * @return [Flow] of [Either] [Error] or Actions of type [A]
      */
     fun handleEither(actionResult: AR): Flow<Either<Error, A>> =
         actionResult
-            .calculateNewActions()
+            .computeNewActions()
             .publish()
             .map { Either.Right(it) }
             .catch<Either<Error, A>> { emit(Either.Left(Error.ActionResultHandlingFailed(actionResult))) }
 
     /**
-     * Handles the action result of type [AR]
+     * Handles the action result of type [AR].
      *
      * @param actionResult Action Result represent the outcome of some action you want to handle in some way
      * @return [Flow] of Actions of type [A]
      */
     fun handle(actionResult: AR): Flow<A> =
         actionResult
-            .calculateNewActions()
+            .computeNewActions()
             .publish()
 
     /**
-     * Handles the the [Flow] of action results of type [AR]
+     * Handles the the [Flow] of action results of type [AR].
      *
      * @param actionResults Action Results represent the outcome of some action you want to handle in some way
      * @return [Flow] of [Either] [Error] or Actions of type [A]
@@ -70,7 +68,7 @@ data class SagaManager<AR, A>(
             .catch { emit(Either.Left(Error.ActionResultPublishingFailed(it))) }
 
     /**
-     * Handles the the [Flow] of action results of type [AR]
+     * Handles the the [Flow] of action results of type [AR].
      *
      * @param actionResults Action Results represent the outcome of some action you want to handle in some way
      * @return [Flow] of Actions of type [A]
@@ -79,9 +77,35 @@ data class SagaManager<AR, A>(
         actionResults.flatMapConcat { handle(it) }
 
 
-    private fun AR.calculateNewActions(): Flow<A> = saga.react(this)
+    /**
+     * Computes new Actions based on the Action Results.
+     *
+     * @return The newly computed [Flow] of Actions/[A]
+     */
+    private fun AR.computeNewActions(): Flow<A> = saga.react(this)
 
 }
+
+/**
+ * Extension function - Saga Manager factory function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param AR Action Result of type [AR], Action Result is usually an Event
+ * @param A An Action of type [A] to be taken. Action is usually a Command.
+ * @property saga A saga component of type [Saga]<[AR], [A]>
+ * @property actionPublisher Interface for publishing the Actions of type [A] - dependencies by delegation
+ * @return An object/instance of type [SagaManager]<[AR], [A]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <AR, A> sagaManager(
+    saga: Saga<AR, A>,
+    actionPublisher: ActionPublisher<A>
+): SagaManager<AR, A> =
+    object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher {
+        override val saga = saga
+    }
 
 /**
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
