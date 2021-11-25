@@ -42,6 +42,9 @@ import kotlin.test.assertTrue
 object StateStoredAggregateTest : Spek({
 
     Feature("Aggregate") {
+        val evenNumberStateRepository by memoized {
+            evenNumberStateRepository()
+        }
         val evenAggregate by memoized {
             evenNumberStateStoredAggregate(
                 evenNumberDecider(),
@@ -79,6 +82,28 @@ object StateStoredAggregateTest : Spek({
             }
         }
 
+        Scenario("Success - Repo -  Either") {
+            lateinit var result: Either<Error, EvenNumberState>
+
+            When("handling command of type AddEvenNumber") {
+                runBlockingTest {
+
+                    result = evenNumberStateRepository.eitherHandleOrFail(
+                        AddEvenNumber(
+                            Description("Add 2"),
+                            NumberValue(2)
+                        ),
+                        evenNumberDecider()
+                    )
+                }
+            }
+            Then("expect success") {
+                runBlockingTest {
+                    assert(result is Either.Right)
+                }
+            }
+        }
+
         Scenario("Success") {
             lateinit var result: EvenNumberState
 
@@ -90,6 +115,32 @@ object StateStoredAggregateTest : Spek({
                             Description("Add 2"),
                             NumberValue(2)
                         )
+                    )
+                }
+            }
+            Then("expect success") {
+                runBlockingTest {
+                    assertEquals(
+                        EvenNumberState(Description("Add 2"), NumberValue(2)),
+                        result
+                    )
+                }
+            }
+        }
+
+
+        Scenario("Success - Repo") {
+            lateinit var result: EvenNumberState
+
+            When("handling command of type AddEvenNumber") {
+                runBlockingTest {
+                    (evenNumberStateRepository() as EvenNumberStateRepository).deleteAll()
+                    result = evenNumberStateRepository.handle(
+                        AddEvenNumber(
+                            Description("Add 2"),
+                            NumberValue(2)
+                        ),
+                        evenNumberDecider()
                     )
                 }
             }

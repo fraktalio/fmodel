@@ -17,7 +17,7 @@
 package com.fraktalio.fmodel.application.examples.numbers
 
 import com.fraktalio.fmodel.application.StateRepository
-import com.fraktalio.fmodel.application.StateStoredAggregate
+import com.fraktalio.fmodel.application.stateStoredOrchestratingAggregate
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.Saga
 import com.fraktalio.fmodel.domain.combine
@@ -47,7 +47,7 @@ fun numberStateStoredAggregate(
     oddNumberSaga: Saga<OddNumberEvent?, EvenNumberCommand>,
     repository: StateRepository<NumberCommand?, Pair<EvenNumberState, OddNumberState>>
 ) =
-    StateStoredAggregate(
+    stateStoredOrchestratingAggregate(
         decider = evenNumberDecider.combine(oddNumberDecider),
         stateRepository = repository,
         saga = evenNumberSaga.combine(oddNumberSaga)
