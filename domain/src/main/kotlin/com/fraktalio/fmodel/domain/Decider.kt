@@ -21,6 +21,33 @@ import kotlinx.coroutines.flow.flattenConcat
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
+/**
+ * An Interface of the [_Decider].
+ *
+ * @param C Command type - contravariant/in type parameter
+ * @param Si Input_State type - contravariant/in type parameter
+ * @param So Output_State type - covariant/out type parameter
+ * @param Ei Input_Event type - contravariant/in type parameter
+ * @param Eo Output_Event type - covariant/out type parameter
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface I_Decider<in C, in Si, out So, in Ei, out Eo> {
+    val decide: (C, Si) -> Flow<Eo>
+    val evolve: (Si, Ei) -> So
+    val initialState: So
+}
+
+/**
+ * A convenient typealias for the [I_Decider] interface. It is specializing the five parameters [I_Decider] interface to only three parameters interface [IDecider].
+ *
+ * `Si=So -> S`
+ * `Ei=Eo -> E`
+ * `C -> C`
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+typealias IDecider<C, S, E> = I_Decider<C, S, S, E, E>
 
 /**
  * [_Decider] is a datatype that represents the main decision-making algorithm.
@@ -43,10 +70,10 @@ import kotlinx.coroutines.flow.map
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class _Decider<in C, in Si, out So, in Ei, out Eo>(
-    val decide: (C, Si) -> Flow<Eo>,
-    val evolve: (Si, Ei) -> So,
-    val initialState: So
-) {
+    override val decide: (C, Si) -> Flow<Eo>,
+    override val evolve: (Si, Ei) -> So,
+    override val initialState: So
+) : I_Decider<C, Si, So, Ei, Eo> {
     /**
      * Left map on C/Command parameter - Contravariant
      *

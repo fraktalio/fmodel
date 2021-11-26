@@ -17,8 +17,8 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import com.fraktalio.fmodel.domain.Decider
-import com.fraktalio.fmodel.domain.Saga
+import com.fraktalio.fmodel.domain.IDecider
+import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -64,14 +64,6 @@ interface EventRepository<C, E> {
  * compute the new `flow of events` based on the current/fetched flow of events and the command being handled,
  * and save new events.
  *
- * Dependency injection
- * ____________________
- * Internally, the [eventSourcingAggregate] is used to create the object/instance of [EventSourcingAggregate]<[C], [S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
- *
- * @param R The type of the repository - [R] : [EventRepository]<[C], [S]>
  * @param C Commands of type [C] that this [decider] can handle
  * @param S State of type [S]
  * @param E Events of type [E]
@@ -82,11 +74,11 @@ interface EventRepository<C, E> {
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <R, C, S, E> R.handle(
+fun <C, S, E> EventRepository<C, E>.handle(
     command: C,
-    decider: Decider<C, S, E>,
-    saga: Saga<E, C>? = null
-): Flow<E> where R : EventRepository<C, E> =
+    decider: IDecider<C, S, E>,
+    saga: ISaga<E, C>? = null
+): Flow<E> =
     if (saga == null) command.publishTo(eventSourcingAggregate(decider, this))
     else command.publishTo(eventSourcingOrchestratingAggregate(decider, this, saga))
 
@@ -96,14 +88,7 @@ fun <R, C, S, E> R.handle(
  * and save new events / [Either.isRight],
  * or fail transparently by returning [Error] / [Either.isLeft].
  *
- * Dependency injection
- * ____________________
- * Internally, the [eventSourcingAggregate] is used to create the object/instance of [EventSourcingAggregate]<[C], [S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
  *
- * @param R The type of the repository - [R] : [EventRepository]<[C], [E]>
  * @param C Commands of type [C] that this [decider] can handle
  * @param S State of type [S]
  * @param E Events of type [E]
@@ -114,11 +99,11 @@ fun <R, C, S, E> R.handle(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <R, C, S, E> R.eitherHandleOrFail(
+fun <C, S, E> EventRepository<C, E>.eitherHandleOrFail(
     command: C,
-    decider: Decider<C, S, E>,
-    saga: Saga<E, C>? = null
-): Flow<Either<Error, E>> where R : EventRepository<C, E> =
+    decider: IDecider<C, S, E>,
+    saga: ISaga<E, C>? = null
+): Flow<Either<Error, E>> =
     if (saga == null) command.publishEitherTo(eventSourcingAggregate(decider, this))
     else command.publishEitherTo(eventSourcingOrchestratingAggregate(decider, this, saga))
 
@@ -127,14 +112,7 @@ fun <R, C, S, E> R.eitherHandleOrFail(
  * compute the new `flow of events` based on the current/fetched flow of events and the command being handled,
  * and save new events.
  *
- * Dependency injection
- * ____________________
- * Internally, the [eventSourcingAggregate] is used to create the object/instance of [EventSourcingAggregate]<[C], [S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
  *
- * @param R The type of the repository - [R] : [EventRepository]<[C], [S]>
  * @param C Commands of type [C] that this [decider] can handle
  * @param S State of type [S]
  * @param E Events of type [E]
@@ -145,11 +123,11 @@ fun <R, C, S, E> R.eitherHandleOrFail(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <R, C, S, E> R.handle(
+fun <C, S, E> EventRepository<C, E>.handle(
     command: Flow<C>,
-    decider: Decider<C, S, E>,
-    saga: Saga<E, C>? = null
-): Flow<E> where R : EventRepository<C, E> =
+    decider: IDecider<C, S, E>,
+    saga: ISaga<E, C>? = null
+): Flow<E> =
     if (saga == null) command.publishTo(eventSourcingAggregate(decider, this))
     else command.publishTo(eventSourcingOrchestratingAggregate(decider, this, saga))
 
@@ -159,14 +137,6 @@ fun <R, C, S, E> R.handle(
  * and save new events / [Either.isRight],
  * or fail transparently by returning [Error] / [Either.isLeft].
  *
- * Dependency injection
- * ____________________
- * Internally, the [eventSourcingAggregate] is used to create the object/instance of [EventSourcingAggregate]<[C], [S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
- *
- * @param R The type of the repository - [R] : [EventRepository]<[C], [E]>
  * @param C Commands of type [C] that this [decider] can handle
  * @param S State of type [S]
  * @param E Events of type [E]
@@ -177,10 +147,10 @@ fun <R, C, S, E> R.handle(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <R, C, S, E> R.eitherHandleOrFail(
+fun <C, S, E> EventRepository<C, E>.eitherHandleOrFail(
     command: Flow<C>,
-    decider: Decider<C, S, E>,
-    saga: Saga<E, C>? = null
-): Flow<Either<Error, E>> where R : EventRepository<C, E> =
+    decider: IDecider<C, S, E>,
+    saga: ISaga<E, C>? = null
+): Flow<Either<Error, E>> =
     if (saga == null) command.publishEitherTo(eventSourcingAggregate(decider, this))
     else command.publishEitherTo(eventSourcingOrchestratingAggregate(decider, this, saga))

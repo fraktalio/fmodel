@@ -17,6 +17,30 @@
 package com.fraktalio.fmodel.domain
 
 /**
+ * An interface of the [_View]
+ *
+ * @param Si Input_State type
+ * @param So Output_State type
+ * @param E Event type
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface I_View<in Si, out So, in E> {
+    val evolve: (Si, E) -> So
+    val initialState: So
+}
+
+/**
+ * A convenient typealias for the [I_View] interface. It is specializing the three parameters [I_View] interface to only two parameters interface [IView].
+ *
+ * `Si=So -> S`
+ * `E -> E`
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+typealias IView<S, E> = I_View<S, S, E>
+
+/**
  * [_View] is a datatype that represents the event handling algorithm,
  * responsible for translating the events into denormalized state,
  * which is more adequate for querying.
@@ -37,9 +61,9 @@ package com.fraktalio.fmodel.domain
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class _View<in Si, out So, in E>(
-    val evolve: (Si, E) -> So,
-    val initialState: So,
-) {
+    override val evolve: (Si, E) -> So,
+    override val initialState: So,
+) : I_View<Si, So, E> {
     /**
      * Left map on E/Event parameter - Contravariant
      *

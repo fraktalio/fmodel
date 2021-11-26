@@ -17,21 +17,22 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import com.fraktalio.fmodel.domain.Saga
+import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.map
 
 /**
- * Saga manager - Stateless process orchestrator
- * It is reacting on Action Results of type [AR] and produces new actions [A] based on them
+ * Saga manager - Stateless process orchestrator.
+ * It is reacting on Action Results of type [AR] and produces new actions [A] based on them.
+ *
+ * [SagaManager] extends [ISaga] and [ActionPublisher] interfaces,
+ * clearly communicating that it is composed out of these two behaviours.
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-interface SagaManager<AR, A> : ActionPublisher<A> {
-    val saga: Saga<AR, A>
-
+interface SagaManager<AR, A> : ISaga<AR, A>, ActionPublisher<A> {
     /**
      * Handles the action result of type [AR].
      *
@@ -82,7 +83,7 @@ interface SagaManager<AR, A> : ActionPublisher<A> {
      *
      * @return The newly computed [Flow] of Actions/[A]
      */
-    private fun AR.computeNewActions(): Flow<A> = saga.react(this)
+    private fun AR.computeNewActions(): Flow<A> = react(this)
 
 }
 
@@ -93,19 +94,17 @@ interface SagaManager<AR, A> : ActionPublisher<A> {
  *
  * @param AR Action Result of type [AR], Action Result is usually an Event
  * @param A An Action of type [A] to be taken. Action is usually a Command.
- * @property saga A saga component of type [Saga]<[AR], [A]>
+ * @property saga A saga component of type [ISaga]<[AR], [A]>
  * @property actionPublisher Interface for publishing the Actions of type [A] - dependencies by delegation
  * @return An object/instance of type [SagaManager]<[AR], [A]>
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <AR, A> sagaManager(
-    saga: Saga<AR, A>,
+    saga: ISaga<AR, A>,
     actionPublisher: ActionPublisher<A>
 ): SagaManager<AR, A> =
-    object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher {
-        override val saga = saga
-    }
+    object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher, ISaga<AR, A> by saga {}
 
 /**
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>

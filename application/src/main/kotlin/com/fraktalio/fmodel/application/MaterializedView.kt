@@ -18,25 +18,24 @@ package com.fraktalio.fmodel.application
 
 import arrow.core.Either
 import arrow.core.computations.either
-import com.fraktalio.fmodel.domain.View
+import com.fraktalio.fmodel.domain.IView
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
 /**
- * Materialized view is using/delegating a [View] to handle events of type [E] and to maintain a state of denormalized projection(s) as a result.
+ * Materialized view is using/delegating a `view` to handle events of type [E] and to maintain a state of denormalized projection(s) as a result.
  * Essentially, it represents the query/view side of the CQRS pattern.
+ *
+ * [MaterializedView] extends [IView] and [ViewStateRepository] interfaces,
+ * clearly communicating that it is composed out of these two behaviours.
  *
  * @param S Materialized View state of type [S]
  * @param E Events of type [E] that are handled by this Materialized View
- * @property view A view component of type [View]<[S], [E]>
- * @constructor Creates [MaterializedView]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-interface MaterializedView<S, E> : ViewStateRepository<E, S> {
-    val view: View<S, E>
-
+interface MaterializedView<S, E> : IView<S, E>, ViewStateRepository<E, S> {
     /**
      * Handles the event of type [E]
      *
@@ -46,7 +45,7 @@ interface MaterializedView<S, E> : ViewStateRepository<E, S> {
     suspend fun handleEither(event: E): Either<Error, S> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
-            (event.eitherFetchStateOrFail().bind() ?: view.initialState)
+            (event.eitherFetchStateOrFail().bind() ?: initialState)
                 .eitherComputeNewStateOrFail(event).bind()
                 .eitherSaveOrFail().bind()
         }
@@ -69,7 +68,7 @@ interface MaterializedView<S, E> : ViewStateRepository<E, S> {
      * @return State of type [S]
      */
     suspend fun handle(event: E): S =
-        (event.fetchState() ?: view.initialState)
+        (event.fetchState() ?: initialState)
             .computeNewState(event)
             .save()
 
@@ -88,7 +87,7 @@ interface MaterializedView<S, E> : ViewStateRepository<E, S> {
      * @param event of type [E]
      * @return The newly computed state of type [S]
      */
-    fun S.computeNewState(event: E): S = view.evolve(this, event)
+    fun S.computeNewState(event: E): S = evolve(this, event)
 
     /**
      * Computes new State based on the Event or fails.
@@ -109,19 +108,17 @@ interface MaterializedView<S, E> : ViewStateRepository<E, S> {
  *
  * @param S Aggregate state of type [S]
  * @param E Events of type [E] that are used internally to build/fold new state
- * @property view A view component of type [View]<[S], [E]>
+ * @property view A view component of type [IView]<[S], [E]>
  * @property viewStateRepository Interface for [S]tate management/persistence - dependencies by delegation
  * @return An object/instance of type [MaterializedView]<[S], [E]>
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <S, E> materializedView(
-    view: View<S, E>,
+    view: IView<S, E>,
     viewStateRepository: ViewStateRepository<E, S>,
 ): MaterializedView<S, E> =
-    object : MaterializedView<S, E>, ViewStateRepository<E, S> by viewStateRepository {
-        override val view = view
-    }
+    object : MaterializedView<S, E>, ViewStateRepository<E, S> by viewStateRepository, IView<S, E> by view {}
 
 /**
  * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>

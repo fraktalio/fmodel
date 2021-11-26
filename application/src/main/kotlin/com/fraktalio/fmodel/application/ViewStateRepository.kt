@@ -17,11 +17,11 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import com.fraktalio.fmodel.domain.View
+import com.fraktalio.fmodel.domain.IView
 import kotlinx.coroutines.flow.Flow
 
 /**
- * View state repository interface
+ * IView state repository interface
  *
  * Used by [MaterializedView]
  *
@@ -75,14 +75,6 @@ interface ViewStateRepository<E, S> {
  * compute the new state of type [S] based on the current/fetched state and the event being handled,
  * and save new state.
  *
- * Dependency injection
- * ____________________
- * Internally, the [materializedView] is used to create the object/instance of [MaterializedView]<[S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
- *
- * @param R The type of the repository - [R] : [ViewStateRepository]<[E], [S]>
  * @param S State of type [S]
  * @param E Events of type [E] that are used internally by [view] to build/fold new state
  * @param event The event being handled
@@ -90,25 +82,16 @@ interface ViewStateRepository<E, S> {
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-suspend fun <R, S, E> R.handle(
+suspend fun <S, E> ViewStateRepository<E, S>.handle(
     event: E,
-    view: View<S, E>
-): S where R : ViewStateRepository<E, S> =
-    event.publishTo(materializedView(view, this))
+    view: IView<S, E>
+): S = event.publishTo(materializedView(view, this))
 
 /**
  * Handle events of type [E],
  * compute the new state of type [S] based on the current/fetched state and the event being handled,
  * and save new state.
  *
- * Dependency injection
- * ____________________
- * Internally, the [materializedView] is used to create the object/instance of [MaterializedView]<[S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
- *
- * @param R The type of the repository - [R] : [ViewStateRepository]<[E], [S]>
  * @param S State of type [S]
  * @param E Events of type [E] that are used internally by [view] to build/fold new state
  * @param events The events being handled
@@ -116,25 +99,16 @@ suspend fun <R, S, E> R.handle(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <R, S, E> R.handle(
+fun <S, E> ViewStateRepository<E, S>.handle(
     events: Flow<E>,
-    view: View<S, E>
-): Flow<S> where R : ViewStateRepository<E, S> =
-    events.publishTo(materializedView(view, this))
+    view: IView<S, E>
+): Flow<S> = events.publishTo(materializedView(view, this))
 
 /**
  * Handle events of type [E],
  * compute the new state of type [S] based on the current/fetched state and the event being handled,
  * and save new state / [Either.isRight], or fail transparently by returning [Error] / [Either.isLeft].
  *
- * Dependency injection
- * ____________________
- * Internally, the [materializedView] is used to create the object/instance of [MaterializedView]<[S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
- *
- * @param R The type of the repository - [R] : [ViewStateRepository]<[E], [S]>
  * @param S State of type [S]
  * @param E Events of type [E] that are used internally by [view] to build/fold new state
  * @param event The event being handled
@@ -142,25 +116,16 @@ fun <R, S, E> R.handle(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-suspend fun <R, S, E> R.eitherHandleOrFail(
+suspend fun <S, E> ViewStateRepository<E, S>.eitherHandleOrFail(
     event: E,
-    view: View<S, E>
-): Either<Error, S> where R : ViewStateRepository<E, S> =
-    event.publishEitherTo(materializedView(view, this))
+    view: IView<S, E>
+): Either<Error, S> = event.publishEitherTo(materializedView(view, this))
 
 /**
  * Handle events of type [E],
  * compute the new state of type [S] based on the current/fetched state and the event being handled,
  * and save new state.
  *
- * Dependency injection
- * ____________________
- * Internally, the [materializedView] is used to create the object/instance of [MaterializedView]<[S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
- *
- * @param R The type of the repository - [R] : [ViewStateRepository]<[E], [S]>
  * @param S State of type [S]
  * @param E Events of type [E] that are used internally by [view] to build/fold new state
  * @param events The events being handled
@@ -168,8 +133,7 @@ suspend fun <R, S, E> R.eitherHandleOrFail(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <R, S, E> R.eitherHandleOrFail(
+fun <S, E> ViewStateRepository<E, S>.eitherHandleOrFail(
     events: Flow<E>,
-    view: View<S, E>
-): Flow<S> where R : ViewStateRepository<E, S> =
-    events.publishTo(materializedView(view, this))
+    view: IView<S, E>
+): Flow<S> = events.publishTo(materializedView(view, this))
