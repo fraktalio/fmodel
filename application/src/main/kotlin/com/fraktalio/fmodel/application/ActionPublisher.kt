@@ -17,7 +17,7 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import com.fraktalio.fmodel.domain.Saga
+import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -61,18 +61,16 @@ interface ActionPublisher<A> {
  * Kotlin natively supports dependency injection with receivers.
  * -------------------
  *
- * @param P The type of the publisher - [P] : [ActionPublisher]<[A]>
  * @param AR Action Result
  * @param A Action
  * @param actionResult Action Result represent the outcome of some action you want to handle in some way
- * @param saga Saga component
+ * @param saga ISaga component
  * @return The flow of published actions - [Flow]<[A]>
  */
-fun <P, AR, A> P.handle(
+fun <AR, A> ActionPublisher<A>.handle(
     actionResult: AR,
-    saga: Saga<AR, A>
-): Flow<A> where P : ActionPublisher<A> =
-    actionResult.publishTo(sagaManager(saga, this))
+    saga: ISaga<AR, A>
+): Flow<A> = actionResult.publishTo(sagaManager(saga, this))
 
 /**
  * Handle the [Flow] of Action Results of type [AR] and publish [Flow] of Actions of type [A] based on it.
@@ -86,18 +84,16 @@ fun <P, AR, A> P.handle(
  * Kotlin natively supports dependency injection with receivers.
  * -------------------
  *
- * @param P The type of the publisher - [P] : [ActionPublisher]<[A]>
  * @param AR Action Result
  * @param A Action
  * @param actionResults The flow of Action Results represent the outcome of some action you want to handle in some way
- * @param saga Saga component
+ * @param saga ISaga component
  * @return The flow of published actions - [Flow]<[A]>
  */
-fun <P, AR, A> P.handle(
+fun <AR, A> ActionPublisher<A>.handle(
     actionResults: Flow<AR>,
-    saga: Saga<AR, A>
-): Flow<A> where P : ActionPublisher<A> =
-    actionResults.publishTo(sagaManager(saga, this))
+    saga: ISaga<AR, A>
+): Flow<A> = actionResults.publishTo(sagaManager(saga, this))
 
 /**
  * Handle the Action Result of type [AR] and publish [Flow] of [Either] Actions of type [A] or [Error].
@@ -111,18 +107,16 @@ fun <P, AR, A> P.handle(
  * Kotlin natively supports dependency injection with receivers.
  * -------------------
  *
- * @param P The type of the publisher - [P] : [ActionPublisher]<[A]>
  * @param AR Action Result
  * @param A Action
  * @param actionResult Action Result represent the outcome of some action you want to handle in some way
- * @param saga Saga component
+ * @param saga ISaga component
  * @return The flow of published actions - [Flow]<[Either]<[Error], [A]>>
  */
-fun <P, AR, A> P.eitherHandleOrFail(
+fun <AR, A> ActionPublisher<A>.eitherHandleOrFail(
     actionResult: AR,
-    saga: Saga<AR, A>
-): Flow<Either<Error, A>> where P : ActionPublisher<A> =
-    actionResult.publishEitherTo(sagaManager(saga, this))
+    saga: ISaga<AR, A>
+): Flow<Either<Error, A>> = actionResult.publishEitherTo(sagaManager(saga, this))
 
 /**
  * Handle the Action Result of type [AR] and publish [Flow] of [Either] Actions of type [A] or [Error].
@@ -136,15 +130,13 @@ fun <P, AR, A> P.eitherHandleOrFail(
  * Kotlin natively supports dependency injection with receivers.
  * -------------------
  *
- * @param P The type of the publisher - [P] : [ActionPublisher]<[A]>
  * @param AR Action Result
  * @param A Action
  * @param actionResult Action Result represent the outcome of some action you want to handle in some way
- * @param saga Saga component
+ * @param saga ISaga component
  * @return The flow of published actions - [Flow]<[Either]<[Error], [A]>>
  */
-fun <P, AR, A> P.eitherHandleOrFail(
+fun <AR, A> ActionPublisher<A>.eitherHandleOrFail(
     actionResult: Flow<AR>,
-    saga: Saga<AR, A>
-): Flow<Either<Error, A>> where P : ActionPublisher<A> =
-    actionResult.publishEitherTo(sagaManager(saga, this))
+    saga: ISaga<AR, A>
+): Flow<Either<Error, A>> = actionResult.publishEitherTo(sagaManager(saga, this))

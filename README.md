@@ -150,12 +150,14 @@ data class _Decider<C, Si, So, Ei, Eo>(
     val decide: (C, Si) -> Flow<Eo>,
     val evolve: (Si, Ei) -> So,
     val initialState: So
-)
+) : I_Decider<C, Si, So, Ei, Eo>
 
 typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
+typealias IDecider<C, S, E> = I_Decider<C, S, S, E, E>
 ```
 
 Additionally, `initialState` of the Decider is introduced to gain more control over the initial state of the Decider.
+Notice that `Decider` implements an interface `IDecider` to communicate the contract.
 
 ![decider image](.assets/decider.png)
 
@@ -208,21 +210,23 @@ a result. Produced events are then stored via `EventRepository.save` suspending 
 
 ![event sourced aggregate](.assets/es-aggregate.png)
 
-`EventSourcingAggregate` extends an interface `EventRepository`.
+`EventSourcingAggregate` extends `IDecider` and `EventRepository` interfaces, clearly communicating that it is composed
+out of these two behaviours.
 
-A convenient extension factory function is available:
+The Delegation pattern has proven to be a good alternative to `implementation inheritance`, and Kotlin supports it
+natively requiring zero boilerplate code.
+`eventSourcingAggregate` function is a good example:
 
 ```kotlin
 fun <C, S, E> eventSourcingAggregate(
-    decider: Decider<C, S, E>,
+    decider: IDecider<C, S, E>,
     eventRepository: EventRepository<C, E>
 ): EventSourcingAggregate<C, S, E> =
-    object : EventSourcingAggregate<C, S, E>, EventRepository<C, E> by eventRepository {
-        override val decider = decider
-    }
+    object :
+        EventSourcingAggregate<C, S, E>,
+        EventRepository<C, E> by eventRepository,
+        IDecider<C, S, E> by decider {}
 ```
-
-> The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
 
 ### State-stored aggregate
 
@@ -234,21 +238,23 @@ via `StateRepository.save` suspending function.
 
 ![state storedaggregate](.assets/ss-aggregate.png)
 
-`StateStoredAggregate` extends an interface `StateRepository`.
+`StateStoredAggregate` extends `IDecider` and `StateRepository` interfaces, clearly communicating that it is composed
+out of these two behaviours.
 
-A convenient extension factory function is available:
+The Delegation pattern has proven to be a good alternative to `implementation inheritance`, and Kotlin supports it
+natively requiring zero boilerplate code.
+`stateStoredAggregate` function is a good example:
 
 ```kotlin
 fun <C, S, E> stateStoredAggregate(
-    decider: Decider<C, S, E>,
+    decider: IDecider<C, S, E>,
     stateRepository: StateRepository<C, S>
 ): StateStoredAggregate<C, S, E> =
-    object : StateStoredAggregate<C, S, E>, StateRepository<C, S> by stateRepository {
-        override val decider = decider
-    }
+    object :
+        StateStoredAggregate<C, S, E>,
+        StateRepository<C, S> by stateRepository,
+        IDecider<C, S, E> by decider {}
 ```
-
-> The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
 
 ## View
 
@@ -273,10 +279,13 @@ to the 2 generic parameters: `typealias View<S, E> = _View<S, S, E>`
 data class _View<Si, So, E>(
     val evolve: (Si, E) -> So,
     val initialState: So,
-)
+) : I_View<Si, So, E>
 
 typealias View<S, E> = _View<S, S, E>
+typealias IView<S, E> = I_View<S, S, E>
 ```
+
+Notice that `View` implements an interface `IView` to communicate the contract.
 
 ![view image](.assets/view.png)
 
@@ -311,29 +320,28 @@ We can now construct `materialized` view by using this `view`.
 
 ### Materialized View
 
-A [Materialized view](application/src/main/kotlin/com/fraktalio/fmodel/application/MaterializedView.kt) is using
-a `View` to handle events of type `E` and to maintain a state of denormalized projection(s) as a result. Essentially, it
-represents the query/view side of the CQRS pattern. It belongs to the Application layer.
+A [Materialized view](application/src/main/kotlin/com/fraktalio/fmodel/application/MaterializedView.kt) is
+using/delegating a `View` to handle events of type `E` and to maintain a state of denormalized projection(s) as a
+result. Essentially, it represents the query/view side of the CQRS pattern. It belongs to the Application layer.
 
 In order to handle the event, materialized view needs to fetch the current state via `ViewStateRepository.fetchState`
 suspending function first, and then delegate the event to the view, which can produce new state as a result. New state
 is then stored via `ViewStateRepository.save` suspending function.
 
-`MaterializedView` extends an interface `ViewStateRepository`.
+`MaterializedView` extends `IView` and `ViewStateRepository` interfaces, clearly communicating that it is composed out
+of these two behaviours.
 
-A convenient extension factory function is available:
+The Delegation pattern has proven to be a good alternative to `implementation inheritance`, and Kotlin supports it
+natively requiring zero boilerplate code.
+`materializedView` function is a good example:
 
 ```kotlin
 fun <S, E> materializedView(
-    view: View<S, E>,
+    view: IView<S, E>,
     viewStateRepository: ViewStateRepository<E, S>,
 ): MaterializedView<S, E> =
-    object : MaterializedView<S, E>, ViewStateRepository<E, S> by viewStateRepository {
-        override val view = view
-    }
+    object : MaterializedView<S, E>, ViewStateRepository<E, S> by viewStateRepository, IView<S, E> by view {}
 ```
-
-> The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
 
 ## Saga
 
@@ -355,10 +363,13 @@ It has two generic parameters `AR`, `A`, representing the type of the values tha
 ```kotlin
 data class _Saga<AR, A>(
     val react: (AR) -> Flow<A>
-)
+) : I_Saga<AR, A>
 
 typealias Saga<AR, A> = _Saga<AR, A>
+typealias ISaga<AR, A> = I_Saga<AR, A>
 ```
+
+Notice that `Saga` implements an interface `ISaga` to communicate the contract.
 
 ![saga image](.assets/saga.png)
 
@@ -389,21 +400,20 @@ going to be published via `ActionPublisher.publish` suspending function.
 
 It belongs to the Application layer.
 
-`SagaManager` extends an interface `ActionPublisher`.
+`SagaManager` extends `ISaga` and `ActionPublisher` interfaces, clearly communicating that it is composed out of these
+two behaviours.
 
-A convenient extension factory function is available:
+The Delegation pattern has proven to be a good alternative to `implementation inheritance`, and Kotlin supports it
+natively requiring zero boilerplate code.
+`sagaManager` function is a good example:
 
 ```kotlin
 fun <AR, A> sagaManager(
-    saga: Saga<AR, A>,
+    saga: ISaga<AR, A>,
     actionPublisher: ActionPublisher<A>
 ): SagaManager<AR, A> =
-    object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher {
-        override val saga = saga
-    }
+    object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher, ISaga<AR, A> by saga {}
 ```
-
-> The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
 
 ## Kotlin
 

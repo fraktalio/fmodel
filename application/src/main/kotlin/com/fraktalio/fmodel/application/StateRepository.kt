@@ -17,8 +17,8 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import com.fraktalio.fmodel.domain.Decider
-import com.fraktalio.fmodel.domain.Saga
+import com.fraktalio.fmodel.domain.IDecider
+import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -74,14 +74,6 @@ interface StateRepository<C, S> {
  * compute the new state of type [S] based on the current/fetched state and the command being handled,
  * and save new state.
  *
- * Dependency injection
- * ____________________
- * Internally, the [stateStoredAggregate] is used to create the object/instance of [StateStoredAggregate]<[C], [S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
- *
- * @param R The type of the repository - [R] : [StateRepository]<[C], [S]>
  * @param C Commands of type [C] that this [decider] can handle
  * @param S State of type [S]
  * @param E Events of type [E] that are used internally by [decider] to build/fold new state
@@ -92,11 +84,11 @@ interface StateRepository<C, S> {
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-suspend fun <R, C, S, E> R.handle(
+suspend fun <C, S, E> StateRepository<C, S>.handle(
     command: C,
-    decider: Decider<C, S, E>,
-    saga: Saga<E, C>? = null
-): S where R : StateRepository<C, S> =
+    decider: IDecider<C, S, E>,
+    saga: ISaga<E, C>? = null
+): S =
     if (saga == null) command.publishTo(stateStoredAggregate(decider, this))
     else command.publishTo(stateStoredOrchestratingAggregate(decider, this, saga))
 
@@ -105,14 +97,6 @@ suspend fun <R, C, S, E> R.handle(
  * compute the new state of type [S] based on the current/fetched state and the command being handled,
  * and save new state / [Either.isRight], or fail transparently by returning [Error] / [Either.isLeft].
  *
- * Dependency injection
- * ____________________
- * Internally, the [stateStoredAggregate] is used to create the object/instance of [StateStoredAggregate]<[C], [S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
- *
- * @param R The type of the repository - [R] : [StateRepository]<[C], [S]>
  * @param C Commands of type [C] that this [decider] can handle
  * @param S State of type [S]
  * @param E Events of type [E] that are used internally by [decider] to build/fold new state
@@ -123,11 +107,11 @@ suspend fun <R, C, S, E> R.handle(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-suspend fun <R, C, S, E> R.eitherHandleOrFail(
+suspend fun <C, S, E> StateRepository<C, S>.eitherHandleOrFail(
     command: C,
-    decider: Decider<C, S, E>,
-    saga: Saga<E, C>? = null
-): Either<Error, S> where R : StateRepository<C, S> =
+    decider: IDecider<C, S, E>,
+    saga: ISaga<E, C>? = null
+): Either<Error, S> =
     if (saga == null) command.publishEitherTo(stateStoredAggregate(decider, this))
     else command.publishEitherTo(stateStoredOrchestratingAggregate(decider, this, saga))
 
@@ -136,14 +120,6 @@ suspend fun <R, C, S, E> R.eitherHandleOrFail(
  * compute the new state of type [S] based on the current/fetched state and the command being handled,
  * and save new state.
  *
- * Dependency injection
- * ____________________
- * Internally, the [stateStoredAggregate] is used to create the object/instance of [StateStoredAggregate]<[C], [S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
- *
- * @param R The type of the repository - [R] : [StateRepository]<[C], [S]>
  * @param C Commands of type [C] that this [decider] can handle
  * @param S State of type [S]
  * @param E Events of type [E] that are used internally by [decider] to build/fold new state
@@ -154,11 +130,11 @@ suspend fun <R, C, S, E> R.eitherHandleOrFail(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <R, C, S, E> R.handle(
+fun <C, S, E> StateRepository<C, S>.handle(
     commands: Flow<C>,
-    decider: Decider<C, S, E>,
-    saga: Saga<E, C>? = null
-): Flow<S> where R : StateRepository<C, S> =
+    decider: IDecider<C, S, E>,
+    saga: ISaga<E, C>? = null
+): Flow<S> =
     if (saga == null) commands.publishTo(stateStoredAggregate(decider, this))
     else commands.publishTo(stateStoredOrchestratingAggregate(decider, this, saga))
 
@@ -169,14 +145,6 @@ fun <R, C, S, E> R.handle(
  * or fail transparently by returning [Error] / [Either.isLeft]
  * within a flow [Flow]<[Either]<[Error], [S]>>
  *
- * Dependency injection
- * ____________________
- * Internally, the [stateStoredAggregate] is used to create the object/instance of [StateStoredAggregate]<[C], [S], [E]>.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- * Kotlin natively supports dependency injection with receivers.
- * -------------------
- *
- * @param R The type of the repository - [R] : [StateRepository]<[C], [S]>
  * @param C Commands of type [C] that this [decider] can handle
  * @param S State of type [S]
  * @param E Events of type [E] that are used internally by [decider] to build/fold new state
@@ -187,10 +155,10 @@ fun <R, C, S, E> R.handle(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <R, C, S, E> R.eitherHandleOrFail(
+fun <C, S, E> StateRepository<C, S>.eitherHandleOrFail(
     commands: Flow<C>,
-    decider: Decider<C, S, E>,
-    saga: Saga<E, C>? = null
-): Flow<Either<Error, S>> where R : StateRepository<C, S> =
+    decider: IDecider<C, S, E>,
+    saga: ISaga<E, C>? = null
+): Flow<Either<Error, S>> =
     if (saga == null) commands.publishEitherTo(stateStoredAggregate(decider, this))
     else commands.publishEitherTo(stateStoredOrchestratingAggregate(decider, this, saga))

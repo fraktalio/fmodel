@@ -22,6 +22,20 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /**
+ * An interface of the [_Saga].
+ *
+ * @param AR Action Result type
+ * @param A Action type
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface I_Saga<in AR, out A> {
+    val react: (AR) -> Flow<A>
+}
+
+typealias ISaga<AR, A> = I_Saga<AR, A>
+
+/**
  * [_Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).
  * It is responsible for mapping different events into action results ([AR]) that the [_Saga] then can use to calculate the next actions ([A]) to be mapped to command(s).
  *
@@ -35,8 +49,8 @@ import kotlinx.coroutines.flow.map
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class _Saga<in AR, out A>(
-    val react: (AR) -> Flow<A>
-) {
+    override val react: (AR) -> Flow<A>
+) : I_Saga<AR, A> {
     /**
      * Left map on AR/ActionResult parameter - Contravariant
      *
