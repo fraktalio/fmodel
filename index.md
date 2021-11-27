@@ -205,8 +205,12 @@ a result. Produced events are then stored via `EventRepository.save` suspending 
 
 ![event sourced aggregate](https://github.com/fraktalio/fmodel/raw/main/.assets/es-aggregate.png)
 
-`EventSourcingAggregate` extends `IDecider` and `EventRepository` interfaces, clearly communicating that it is composed
+`EventSourcingAggregate` extends `IDecider` (decision-making) and `EventRepository` (fetch-save) interfaces, clearly communicating that it is composed
 out of these two behaviours.
+
+```kotlin
+interface EventSourcingAggregate<C, S, E> : IDecider<C, S, E>, EventRepository<C, E>
+```
 
 The Delegation pattern has proven to be a good alternative to `implementation inheritance`, and Kotlin supports it
 natively requiring zero boilerplate code.
@@ -234,8 +238,13 @@ via `StateRepository.save` suspending function.
 
 ![state storedaggregate](https://github.com/fraktalio/fmodel/raw/main/.assets/ss-aggregate.png)
 
-`StateStoredAggregate` extends `IDecider` and `StateRepository` interfaces, clearly communicating that it is composed
+`StateStoredAggregate` extends `IDecider` (decision-making) and `StateRepository` (fetch-save) interfaces, clearly communicating that it is composed
 out of these two behaviours.
+
+
+```kotlin
+interface StateStoredAggregate<C, S, E> : IDecider<C, S, E>, StateRepository<C, S>
+```
 
 The Delegation pattern has proven to be a good alternative to `implementation inheritance`, and Kotlin supports it
 natively requiring zero boilerplate code.
@@ -325,8 +334,12 @@ In order to handle the event, materialized view needs to fetch the current state
 suspending function first, and then delegate the event to the view, which can produce new state as a result. New state
 is then stored via `ViewStateRepository.save` suspending function.
 
-`MaterializedView` extends `IView` and `ViewStateRepository` interfaces, clearly communicating that it is composed out
+`MaterializedView` extends `IView` (decision-making) and `ViewStateRepository` (fetch-save) interfaces, clearly communicating that it is composed out
 of these two behaviours.
+
+```kotlin
+interface MaterializedView<S, E> : IView<S, E>, ViewStateRepository<E, S>
+```
 
 The Delegation pattern has proven to be a good alternative to `implementation inheritance`, and Kotlin supports it
 natively requiring zero boilerplate code.
@@ -397,8 +410,12 @@ going to be published via `ActionPublisher.publish` suspending function.
 
 It belongs to the Application layer.
 
-`SagaManager` extends `ISaga` and `ActionPublisher` interfaces, clearly communicating that it is composed out of these
+`SagaManager` extends `ISaga` (decision-making) and `ActionPublisher` (publishing) interfaces, clearly communicating that it is composed out of these
 two behaviours.
+
+```kotlin
+interface SagaManager<AR, A> : ISaga<AR, A>, ActionPublisher<A>
+```
 
 The Delegation pattern has proven to be a good alternative to `implementation inheritance`, and Kotlin supports it
 natively requiring zero boilerplate code.
