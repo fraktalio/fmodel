@@ -22,19 +22,28 @@ Design patterns, optimised for Event Sourcing and CQRS.
   declaration of the program logic. It is written in [Kotlin](https://kotlinlang.org/) programming language, without
   additional
   dependencies. [![Maven Central - domain](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/domain.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22domain%22)
-- The `application` library orchestrates the execution of the logic by loading state, executing `domain` components and
-  storing new state. It is written in [Kotlin](https://kotlinlang.org/) programming language,
-  with [Arrow](https://arrow-kt.io/) as additional
-  dependency. [![Maven Central - application](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/application.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22application%22)
+- The `application` libraries orchestrates the execution of the logic by loading state, executing `domain` components
+  and storing new state. It is written in [Kotlin](https://kotlinlang.org/) programming language. Two flavors (
+  extensions of `Application` module) are available:
+  [![Maven Central - application](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/application.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22application%22)
+  - `application-vanilla` is using plain/vanilla Kotlin to implement the application layer in order to load the state,
+    orchestrate the execution of the logic and save new state.
+  - `application-arrow` is using [Arrow](https://arrow-kt.io/) and Kotlin to implement the application layer in order to
+    load the state, orchestrate the execution of the logic and save new state - managing errors much better (using
+    Either).
+
+The libraries are non-intrusive, and you can select any flavor, or choose both (`vanila` and `arrow`). You can use
+only `domain` library and model the orchestration (`application` library) on your own. Or, you can simply be inspired by
+this project :)
 
 ## Table of Contents
 
 * [<strong>f(model)</strong> - Functional domain modeling](#fmodel---functional-domain-modeling)
-    * [Abstraction and generalization](#abstraction-and-generalization)
-    * [decide: (C, S) -&gt; Flow&lt;E&gt;](#decide-c-s---flowe)
-    * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
-    * [Event-sourced or State-stored systems](#event-sourced-or-state-stored-systems)
-    * [Decider](#decider)
+  * [Abstraction and generalization](#abstraction-and-generalization)
+  * [decide: (C, S) -&gt; Flow&lt;E&gt;](#decide-c-s---flowe)
+  * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
+  * [Event-sourced or State-stored systems](#event-sourced-or-state-stored-systems)
+  * [Decider](#decider)
         * [Decider extensions and functions](#decider-extensions-and-functions)
         * [Event-sourcing aggregate](#event-sourcing-aggregate)
         * [State-stored aggregate](#state-stored-aggregate)
@@ -436,7 +445,13 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 
 <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
-    <artifactId>application</artifactId>
+    <artifactId>application-vanilla</artifactId>
+    <version>2.2.0</version>
+</dependency>
+
+<dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>application-arrow</artifactId>
     <version>2.2.0</version>
 </dependency>
 ```
