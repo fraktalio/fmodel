@@ -17,6 +17,7 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
+import com.fraktalio.fmodel.application.examples.numbers.NumberStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberStateStoredAggregate
@@ -26,6 +27,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
+import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
@@ -41,9 +43,6 @@ import kotlin.test.assertTrue
 object StateStoredAggregateTest : Spek({
 
     Feature("Aggregate") {
-        val evenNumberStateRepository by memoized {
-            evenNumberStateRepository()
-        }
         val evenAggregate by memoized {
             evenNumberStateStoredAggregate(
                 evenNumberDecider(),
@@ -65,7 +64,7 @@ object StateStoredAggregateTest : Spek({
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
-
+                    (evenNumberStateRepository() as EvenNumberStateRepository).deleteAll()
                     result = evenAggregate.handleEither(
                         AddEvenNumber(
                             Description("Add 2"),
@@ -81,7 +80,29 @@ object StateStoredAggregateTest : Spek({
             }
         }
 
-        Scenario("Error - either Left") {
+        Scenario("Success - Combined - Either") {
+            lateinit var result: Either<Error, Pair<EvenNumberState, OddNumberState>>
+
+            When("handling command of type AddEvenNumber") {
+                runBlockingTest {
+                    (numberStateRepository() as NumberStateRepository).deleteAll()
+                    result = allNumbersAggregate.handleEither(
+                        AddEvenNumber(
+                            Description("Add 2"),
+                            NumberValue(2)
+                        )
+                    )
+                }
+            }
+            Then("expect success") {
+                runBlockingTest {
+                    assert(result is Either.Right)
+                }
+            }
+        }
+
+
+        Scenario("Error - Either Left") {
             lateinit var result: Either<Error, EvenNumberState>
 
             When("handling command of type AddEvenNumber") {
@@ -102,7 +123,7 @@ object StateStoredAggregateTest : Spek({
             }
         }
 
-        Scenario("Success - either") {
+        Scenario("Success 2 - Either") {
             lateinit var result: Either<Error, EvenNumberState>
 
             When("handling command of type AddEvenNumber") {

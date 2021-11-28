@@ -16,6 +16,7 @@
 
 package com.fraktalio.fmodel.application
 
+import com.fraktalio.fmodel.application.examples.numbers.NumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberMaterializedView
 import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberViewRepository
@@ -32,6 +33,9 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.even.query.evenNumberView
 import com.fraktalio.fmodel.domain.examples.numbers.odd.query.oddNumberView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runBlockingTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
@@ -74,7 +78,7 @@ object MaterializedViewTest : Spek({
 
             When("handling event of type EvenNumberAdded") {
                 runBlockingTest {
-                    (evenNumberViewRepository() as EvenNumberViewRepository).deleteAll()
+                    (numberViewRepository() as NumberViewRepository).deleteAll()
                     result = allNumbersView.handle(
                         EvenNumberAdded(
                             Description("Add 2"),
@@ -93,7 +97,7 @@ object MaterializedViewTest : Spek({
 
             When("handling event of type EvenNumberAdded") {
                 runBlockingTest {
-                    (oddNumberViewRepository() as OddNumberViewRepository).deleteAll()
+                    (numberViewRepository() as NumberViewRepository).deleteAll()
                     result = allNumbersView.handle(
                         OddNumberAdded(
                             Description("Add 3"),
@@ -104,6 +108,31 @@ object MaterializedViewTest : Spek({
             }
             Then("expect success") {
                 assertTrue(result.second?.value?.get == 3)
+            }
+        }
+
+        Scenario("Success - combined view - flow - even") {
+            lateinit var result: Flow<Pair<EvenNumberState?, OddNumberState?>>
+
+            When("handling flow of event(s) of type EvenNumberAdded") {
+                runBlockingTest {
+                    (numberViewRepository() as NumberViewRepository).deleteAll()
+                    result = allNumbersView.handle(
+                        flowOf(
+                            EvenNumberAdded(
+                                Description("Add 2"),
+                                NumberValue(2)
+                            )
+                        )
+                    )
+                }
+            }
+            Then("expect success") {
+                runBlockingTest {
+                    result.collect {
+                        assertTrue(it.first?.value?.get == 2)
+                    }
+                }
             }
         }
 

@@ -55,6 +55,11 @@ class NumberViewRepository :
             is OddNumberEvent -> Pair(null, numberStateStorage2)
             else -> throw UnsupportedOperationException("fetching state failed")
         }
+
+    fun deleteAll() {
+        numberStateStorage1 = EvenNumberState(Description("0"), NumberValue(0))
+        numberStateStorage2 = OddNumberState(Description("0"), NumberValue(0))
+    }
 }
 
 /**

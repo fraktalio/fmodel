@@ -47,6 +47,11 @@ class NumberStateRepository : StateRepository<NumberCommand?, Pair<EvenNumberSta
     override suspend fun NumberCommand?.fetchState(): Pair<EvenNumberState, OddNumberState> =
         Pair(numberStateAggregateStorage1, numberStateAggregateStorage2)
 
+    fun deleteAll() {
+        numberStateAggregateStorage1 = EvenNumberState(Description("0"), NumberValue(0))
+        numberStateAggregateStorage2 = OddNumberState(Description("0"), NumberValue(0))
+    }
+
 }
 
 /**
