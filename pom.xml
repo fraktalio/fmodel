@@ -60,6 +60,8 @@
     <modules>
         <module>domain</module>
         <module>application</module>
+        <module>application-vanilla</module>
+        <module>application-arrow</module>
     </modules>
 
     <dependencyManagement>

@@ -16,12 +16,8 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
 import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.map
 
 /**
  * Saga manager - Stateless process orchestrator.
@@ -61,107 +57,3 @@ fun <AR, A> sagaManager(
     actionPublisher: ActionPublisher<A>
 ): SagaManager<AR, A> =
     object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher, ISaga<AR, A> by saga {}
-
-// #################################################
-// ##########  Native Kotlin Extensions   ##########
-// #################################################
-
-/**
- * Extension function - Handles the action result of type [AR].
- *
- * @param actionResult Action Result represent the outcome of some action you want to handle in some way
- * @return [Flow] of Actions of type [A]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <AR, A> SagaManager<AR, A>.handle(actionResult: AR): Flow<A> =
-    actionResult
-        .computeNewActions()
-        .publish()
-
-/**
- * Extension function - Handles the the [Flow] of action results of type [AR].
- *
- * @param actionResults Action Results represent the outcome of some action you want to handle in some way
- * @return [Flow] of Actions of type [A]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <AR, A> SagaManager<AR, A>.handle(actionResults: Flow<AR>): Flow<A> =
-    actionResults.flatMapConcat { handle(it) }
-
-/**
- * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
- * @receiver action result of type [AR]
- * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @return the [Flow] of published Actions of type [A]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <AR, A> AR.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager.handle(this)
-
-/**
- * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
- * @receiver [Flow] of action results of type [AR]
- * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @return the [Flow] of published Actions of type [A]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <AR, A> Flow<AR>.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager.handle(this)
-
-
-// #################################################
-// ##########  Arrow Kotlin Extensions   ##########
-// #################################################
-
-/**
- * Extension function - Handles the action result of type [AR].
- *
- * @param actionResult Action Result represent the outcome of some action you want to handle in some way
- * @return [Flow] of [Either] [Error] or Actions of type [A]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <AR, A> SagaManager<AR, A>.handleEither(actionResult: AR): Flow<Either<Error, A>> =
-    actionResult
-        .computeNewActions()
-        .publish()
-        .map { Either.Right(it) }
-        .catch<Either<Error, A>> { emit(Either.Left(Error.ActionResultHandlingFailed(actionResult))) }
-
-/**
- * Extension function - Handles the the [Flow] of action results of type [AR].
- *
- * @param actionResults Action Results represent the outcome of some action you want to handle in some way
- * @return [Flow] of [Either] [Error] or Actions of type [A]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <AR, A> SagaManager<AR, A>.handleEither(actionResults: Flow<AR>): Flow<Either<Error, A>> =
-    actionResults
-        .flatMapConcat { handleEither(it) }
-        .catch { emit(Either.Left(Error.ActionResultPublishingFailed(it))) }
-
-
-/**
- * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
- * @receiver action result of type [AR]
- * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @return the [Flow] of [Either] [Error] or successfully published Actions of type [A]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <AR, A> AR.publishEitherTo(sagaManager: SagaManager<AR, A>): Flow<Either<Error, A>> = sagaManager.handleEither(this)
-
-/**
- * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
- * @receiver [Flow] of action results of type [AR]
- * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @return the [Flow] of [Either] [Error] or successfully published Actions of type [A]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <AR, A> Flow<AR>.publishEitherTo(sagaManager: SagaManager<AR, A>): Flow<Either<Error, A>> =
-    sagaManager.handleEither(this)
-

@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runBlockingTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
-import kotlin.test.assertFails
 import kotlin.test.assertTrue
 
 
@@ -118,26 +117,6 @@ object AggregateTest : Spek({
                 }
             }
 
-        }
-
-        Scenario("handled with exception") {
-            lateinit var result: Flow<EvenNumberEvent?>
-
-            When("handling command of type AddEvenNumber") {
-                runBlockingTest {
-                    result = evenAggregate.handle(
-                        AddEvenNumber(
-                            Description("Add 2000"),
-                            NumberValue(2000)
-                        )
-                    )
-                }
-            }
-            Then("expect exception") {
-                runBlockingTest {
-                    assertFails { result.collect() }
-                }
-            }
         }
 
         Scenario("handled with Either Left / Error") {

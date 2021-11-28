@@ -34,7 +34,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 
@@ -78,30 +77,6 @@ object StateStoredAggregateTest : Spek({
             Then("expect success") {
                 runBlockingTest {
                     assert(result is Either.Right)
-                }
-            }
-        }
-
-        Scenario("Success") {
-            lateinit var result: EvenNumberState
-
-            When("handling command of type AddEvenNumber") {
-                runBlockingTest {
-                    (evenNumberStateRepository() as EvenNumberStateRepository).deleteAll()
-                    result = evenAggregate.handle(
-                        AddEvenNumber(
-                            Description("Add 2"),
-                            NumberValue(2)
-                        )
-                    )
-                }
-            }
-            Then("expect success") {
-                runBlockingTest {
-                    assertEquals(
-                        EvenNumberState(Description("Add 2"), NumberValue(2)),
-                        result
-                    )
                 }
             }
         }
