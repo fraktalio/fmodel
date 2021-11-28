@@ -16,9 +16,6 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
-import com.fraktalio.fmodel.domain.IDecider
-import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -58,99 +55,3 @@ interface EventRepository<C, E> {
      */
     fun Flow<E>.save(): Flow<E> = map { it.save() }
 }
-
-/**
- * Handles the command of type [C],
- * compute the new `flow of events` based on the current/fetched flow of events and the command being handled,
- * and save new events.
- *
- * @param C Commands of type [C] that this [decider] can handle
- * @param S State of type [S]
- * @param E Events of type [E]
- * @param command The command being handled
- * @param decider The decider to compute new state / new events
- * @param saga Optional saga to orchestrate the computation of the new state / new events
- * @return The persisted, new flow of events
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <C, S, E> EventRepository<C, E>.handle(
-    command: C,
-    decider: IDecider<C, S, E>,
-    saga: ISaga<E, C>? = null
-): Flow<E> =
-    if (saga == null) command.publishTo(eventSourcingAggregate(decider, this))
-    else command.publishTo(eventSourcingOrchestratingAggregate(decider, this, saga))
-
-/**
- * Handle the command of type [C],
- * compute the new `flow of events` based on the current/fetched flow of events and the command being handled,
- * and save new events / [Either.isRight],
- * or fail transparently by returning [Error] / [Either.isLeft].
- *
- *
- * @param C Commands of type [C] that this [decider] can handle
- * @param S State of type [S]
- * @param E Events of type [E]
- * @param command The command being handled
- * @param decider The decider to compute new state / new events
- * @param saga Optional saga to orchestrate the computation of the new state / new events
- * @return The persisted, new flow of events
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <C, S, E> EventRepository<C, E>.eitherHandleOrFail(
-    command: C,
-    decider: IDecider<C, S, E>,
-    saga: ISaga<E, C>? = null
-): Flow<Either<Error, E>> =
-    if (saga == null) command.publishEitherTo(eventSourcingAggregate(decider, this))
-    else command.publishEitherTo(eventSourcingOrchestratingAggregate(decider, this, saga))
-
-/**
- * Handle the [Flow] of commands of type [C],
- * compute the new `flow of events` based on the current/fetched flow of events and the command being handled,
- * and save new events.
- *
- *
- * @param C Commands of type [C] that this [decider] can handle
- * @param S State of type [S]
- * @param E Events of type [E]
- * @param command The command being handled
- * @param decider The decider to compute new state / new events
- * @param saga Optional saga to orchestrate the computation of the new state / new events
- * @return The persisted, new flow of events
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <C, S, E> EventRepository<C, E>.handle(
-    command: Flow<C>,
-    decider: IDecider<C, S, E>,
-    saga: ISaga<E, C>? = null
-): Flow<E> =
-    if (saga == null) command.publishTo(eventSourcingAggregate(decider, this))
-    else command.publishTo(eventSourcingOrchestratingAggregate(decider, this, saga))
-
-/**
- * Handle the command of type [C],
- * compute the new `flow of events` based on the current/fetched flow of events and the command being handled,
- * and save new events / [Either.isRight],
- * or fail transparently by returning [Error] / [Either.isLeft].
- *
- * @param C Commands of type [C] that this [decider] can handle
- * @param S State of type [S]
- * @param E Events of type [E]
- * @param command The command being handled
- * @param decider The decider to compute new state / new events
- * @param saga Optional saga to orchestrate the computation of the new state / new events
- * @return The persisted, new flow of events
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <C, S, E> EventRepository<C, E>.eitherHandleOrFail(
-    command: Flow<C>,
-    decider: IDecider<C, S, E>,
-    saga: ISaga<E, C>? = null
-): Flow<Either<Error, E>> =
-    if (saga == null) command.publishEitherTo(eventSourcingAggregate(decider, this))
-    else command.publishEitherTo(eventSourcingOrchestratingAggregate(decider, this, saga))

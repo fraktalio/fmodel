@@ -76,29 +76,6 @@ object AggregateTest : Spek({
             }
         }
 
-        Scenario("Success - Repo") {
-            lateinit var result: Flow<Either<Error, EvenNumberEvent?>>
-
-            When("handling command of type AddEvenNumber") {
-                runBlockingTest {
-                    result = evenNumberRepository().eitherHandleOrFail(
-                        AddEvenNumber(
-                            Description("Add 2"),
-                            NumberValue(2)
-                        ),
-                        evenNumberDecider()
-                    )
-                }
-            }
-            Then("expect success") {
-                runBlockingTest {
-                    result.take(1).collect {
-                        assert(it is Either.Right && it.value is EvenNumberEvent.EvenNumberAdded)
-                    }
-                }
-            }
-        }
-
         Scenario("Success - All Numbers Aggregate -  Even") {
             lateinit var result: Flow<Either<Error, NumberEvent?>>
 
