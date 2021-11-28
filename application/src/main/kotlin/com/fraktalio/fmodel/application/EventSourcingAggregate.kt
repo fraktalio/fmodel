@@ -16,7 +16,6 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
 import com.fraktalio.fmodel.domain.IDecider
 import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.flow.*
@@ -40,61 +39,6 @@ import kotlinx.coroutines.flow.*
  */
 interface EventSourcingAggregate<C, S, E> : IDecider<C, S, E>, EventRepository<C, E> {
 
-    /**
-     * Handles the command message of type [C]
-     *
-     * @param command Command message of type [C]
-     * @return [Flow] of [Either] [Error] or Events of type [E]
-     */
-    fun handleEither(command: C): Flow<Either<Error, E>> =
-        command
-            .fetchEvents()
-            .computeNewEvents(command)
-            .save()
-            .map { Either.Right(it) }
-            .catch<Either<Error, E>> {
-                emit(Either.Left(Error.CommandHandlingFailed(command)))
-            }
-
-    /**
-     * Handles the command message of type [C]
-     *
-     * @param command Command message of type [C]
-     * @return [Flow] of stored Events of type [E]
-     */
-    fun handle(command: C): Flow<E> =
-        command
-            .fetchEvents()
-            .computeNewEvents(command)
-            .save()
-
-    /**
-     * Handles the flow of command messages of type [C]
-     *
-     * @param commands [Flow] of Command messages of type [C]
-     * @return [Flow] of [Either] [Error] or Events of type [E]
-     */
-    fun handleEither(commands: Flow<C>): Flow<Either<Error, E>> =
-        commands
-            .flatMapConcat { handleEither(it) }
-            .catch { emit(Either.Left(Error.CommandPublishingFailed(it))) }
-
-    /**
-     * Handles the flow of command messages of type [C]
-     *
-     * @param commands [Flow] of Command messages of type [C]
-     * @return [Flow] of stored Events of type [E]
-     */
-    fun handle(commands: Flow<C>): Flow<E> =
-        commands.flatMapConcat { handle(it) }
-
-
-    /**
-     * Computes new Events based on the previous Events and the [command].
-     *
-     * @param command of type [C]
-     * @return The Flow of newly computed events of type [E]
-     */
     fun Flow<E>.computeNewEvents(command: C): Flow<E> =
         flow {
             val currentState = fold(initialState) { s, e -> evolve(s, e) }
@@ -169,7 +113,7 @@ fun <C, S, E> eventSourcingAggregate(
 
 
 /**
- * Extension function - Event Sourced Orchestrating aggregate factory function.
+ * Event Sourced Orchestrating aggregate factory function.
  *
  * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
  *
@@ -193,46 +137,3 @@ fun <C, S, E> eventSourcingOrchestratingAggregate(
         EventRepository<C, E> by eventRepository,
         IDecider<C, S, E> by decider,
         ISaga<E, C> by saga {}
-
-
-/**
- * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
- * @receiver command of type [C]
- * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
- * @return the [Flow] of stored Events of type [E]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)
-
-/**
- * Extension function - Publishes [Flow] of commands of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
- * @receiver [Flow] of commands of type [C]
- * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
- * @return the [Flow] of stored Events of type [E]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)
-
-/**
- * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
- * @receiver command of type [C]
- * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
- * @return the [Flow] of [Either] [Error] or successfully stored Events of type [E]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <C, E> C.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Either<Error, E>> =
-    aggregate.handleEither(this)
-
-/**
- * Extension function - Publishes [Flow] of commands of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
- * @receiver [Flow] of commands of type [C]
- * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
- * @return the [Flow] of [Either] [Error] or successfully stored Events of type [E]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <C, E> Flow<C>.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Either<Error, E>> =
-    aggregate.handleEither(this)

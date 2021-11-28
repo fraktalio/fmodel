@@ -16,12 +16,7 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
-import arrow.core.computations.either
 import com.fraktalio.fmodel.domain.IView
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
 
 /**
  * Materialized view is using/delegating a `view` to handle events of type [E] and to maintain a state of denormalized projection(s) as a result.
@@ -37,72 +32,16 @@ import kotlinx.coroutines.flow.map
  */
 interface MaterializedView<S, E> : IView<S, E>, ViewStateRepository<E, S> {
     /**
-     * Handles the event of type [E]
-     *
-     * @param event Event of type [E] to be handled
-     * @return [Either] [Error] or State of type [S]
-     */
-    suspend fun handleEither(event: E): Either<Error, S> =
-        // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
-        either {
-            (event.eitherFetchStateOrFail().bind() ?: initialState)
-                .eitherComputeNewStateOrFail(event).bind()
-                .eitherSaveOrFail().bind()
-        }
-
-    /**
-     * Handles the flow of events of type [E]
-     *
-     * @param events Flow of Events of type [E] to be handled
-     * @return [Flow] of [Either] [Error] or State of type [S]
-     */
-    fun handleEither(events: Flow<E>): Flow<Either<Error, S>> =
-        events
-            .map { handleEither(it) }
-            .catch { emit(Either.Left(Error.EventPublishingFailed(it))) }
-
-    /**
-     * Handles the event of type [E]
-     *
-     * @param event Event of type [E] to be handled
-     * @return State of type [S]
-     */
-    suspend fun handle(event: E): S =
-        (event.fetchState() ?: initialState)
-            .computeNewState(event)
-            .save()
-
-    /**
-     * Handles the flow of events of type [E]
-     *
-     * @param events Flow of Events of type [E] to be handled
-     * @return [Flow] of State of type [S]
-     */
-    fun handle(events: Flow<E>): Flow<S> =
-        events.map { handle(it) }
-
-    /**
      * Computes new State based on the Event.
      *
      * @param event of type [E]
      * @return The newly computed state of type [S]
      */
     fun S.computeNewState(event: E): S = evolve(this, event)
-
-    /**
-     * Computes new State based on the Event or fails.
-     *
-     * @param event of type [E]
-     * @return The newly computed state of type [S] or [Error]
-     */
-    fun S.eitherComputeNewStateOrFail(event: E): Either<Error, S> =
-        Either.catch {
-            computeNewState(event)
-        }.mapLeft { throwable -> Error.CalculatingNewViewStateFailed(this, event, throwable) }
 }
 
 /**
- * Extension function - Materialized View factory function.
+ * Materialized View factory function.
  *
  * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
  *
@@ -119,45 +58,3 @@ fun <S, E> materializedView(
     viewStateRepository: ViewStateRepository<E, S>,
 ): MaterializedView<S, E> =
     object : MaterializedView<S, E>, ViewStateRepository<E, S> by viewStateRepository, IView<S, E> by view {}
-
-/**
- * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
- * @receiver event of type [E]
- * @param materializedView of type  [MaterializedView]<[S], [E]>
- * @return the stored State of type [S]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-suspend fun <S, E> E.publishTo(materializedView: MaterializedView<S, E>): S = materializedView.handle(this)
-
-/**
- * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
- * @receiver [Flow] of events of type [E]
- * @param materializedView of type  [MaterializedView]<[S], [E]>
- * @return the stored State of type [S]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <S, E> Flow<E>.publishTo(materializedView: MaterializedView<S, E>): Flow<S> = materializedView.handle(this)
-
-/**
- * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
- * @receiver event of type [E]
- * @param materializedView of type  [MaterializedView]<[S], [E]>
- * @return [Either] [Error] or the successfully stored State of type [S]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-suspend fun <S, E> E.publishEitherTo(materializedView: MaterializedView<S, E>): Either<Error, S> =
-    materializedView.handleEither(this)
-
-/**
- * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
- * @receiver [Flow] of events of type [E]
- * @param materializedView of type  [MaterializedView]<[S], [E]>
- * @return [Flow] of [Either] [Error] or the successfully stored State of type [S]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <S, E> Flow<E>.publishEitherTo(materializedView: MaterializedView<S, E>): Flow<Either<Error, S>> =
-    materializedView.handleEither(this)
