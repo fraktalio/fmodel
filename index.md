@@ -17,10 +17,15 @@ Design patterns, optimised for Event Sourcing and CQRS.
   declaration of the program logic. It is written in [Kotlin](https://kotlinlang.org/) programming language, without
   additional
   dependencies. [![Maven Central - domain](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/domain.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22domain%22)
-- The `application` library orchestrates the execution of the logic by loading state, executing `domain` components and
-  storing new state. It is written in [Kotlin](https://kotlinlang.org/) programming language,
-  with [Arrow](https://arrow-kt.io/) as additional
-  dependency. [![Maven Central - application](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/application.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22application%22)
+- The `application` libraries orchestrates the execution of the logic by loading state, executing `domain` components
+  and storing new state. It is written in [Kotlin](https://kotlinlang.org/) programming language. Two flavors (
+  extensions of `Application` module) are available:
+  [![Maven Central - application](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/application.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22application%22)
+    - `application-vanilla` is using plain/vanilla Kotlin to implement the application layer in order to load the state,
+      orchestrate the execution of the logic and save new state.
+    - `application-arrow` is using [Arrow](https://arrow-kt.io/) and Kotlin to implement the application layer in order
+      to load the state, orchestrate the execution of the logic and save new state - managing errors much better (using
+      Either).
 
 ## Table of Contents
 
@@ -445,14 +450,20 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>2.1.1</version>
-</dependency>
+    <version>2.3.0</version>
+ </dependency>
 
-<dependency>
+ <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
-    <artifactId>application</artifactId>
-    <version>2.1.1</version>
-</dependency>
+    <artifactId>application-vanilla</artifactId>
+    <version>2.3.0</version>
+ </dependency>
+ 
+ <dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>application-arrow</artifactId>
+    <version>2.3.0</version>
+ </dependency>
 ```
 
 ### Examples
