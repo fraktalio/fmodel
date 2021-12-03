@@ -26,11 +26,11 @@ Design patterns, optimised for Event Sourcing and CQRS.
   and storing new state. It is written in [Kotlin](https://kotlinlang.org/) programming language. Two flavors (
   extensions of `Application` module) are available:
   [![Maven Central - application](https://img.shields.io/maven-central/v/com.fraktalio.fmodel/application.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.fraktalio.fmodel%22%20AND%20a:%22application%22)
-  - `application-vanilla` is using plain/vanilla Kotlin to implement the application layer in order to load the state,
-    orchestrate the execution of the logic and save new state.
-  - `application-arrow` is using [Arrow](https://arrow-kt.io/) and Kotlin to implement the application layer in order to
-    load the state, orchestrate the execution of the logic and save new state - managing errors much better (using
-    Either).
+    - `application-vanilla` is using plain/vanilla Kotlin to implement the application layer in order to load the state,
+      orchestrate the execution of the logic and save new state.
+    - `application-arrow` is using [Arrow](https://arrow-kt.io/) and Kotlin to implement the application layer in order
+      to load the state, orchestrate the execution of the logic and save new state - managing errors much better (using
+      Either).
 
 The libraries are non-intrusive, and you can select any flavor, or choose both (`vanila` and `arrow`). You can use
 only `domain` library and model the orchestration (`application` library) on your own. Or, you can simply be inspired by
@@ -39,23 +39,23 @@ this project :)
 ## Table of Contents
 
 * [<strong>f(model)</strong> - Functional domain modeling](#fmodel---functional-domain-modeling)
-  * [Abstraction and generalization](#abstraction-and-generalization)
-  * [decide: (C, S) -&gt; Flow&lt;E&gt;](#decide-c-s---flowe)
-  * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
-  * [Event-sourced or State-stored systems](#event-sourced-or-state-stored-systems)
-  * [Decider](#decider)
-    * [Decider extensions and functions](#decider-extensions-and-functions)
-    * [Event-sourcing aggregate](#event-sourcing-aggregate)
-    * [State-stored aggregate](#state-stored-aggregate)
-      * [View](#view)
-        * [View extensions and functions](#view-extensions-and-functions)
-        * [Materialized View](#materialized-view)
-      * [Saga](#saga)
-        * [Saga extensions and functions](#saga-extensions-and-functions)
-        * [Saga Manager](#saga-manager)
-      * [Kotlin](#kotlin)
-      * [Examples](#start-using-the-libraries)
-      * [References and further reading](#references-and-further-reading)
+    * [Abstraction and generalization](#abstraction-and-generalization)
+    * [decide: (C, S) -&gt; Flow&lt;E&gt;](#decide-c-s---flowe)
+    * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
+    * [Event-sourced or State-stored systems](#event-sourced-or-state-stored-systems)
+    * [Decider](#decider)
+        * [Decider extensions and functions](#decider-extensions-and-functions)
+        * [Event-sourcing aggregate](#event-sourcing-aggregate)
+        * [State-stored aggregate](#state-stored-aggregate)
+            * [View](#view)
+                * [View extensions and functions](#view-extensions-and-functions)
+                * [Materialized View](#materialized-view)
+            * [Saga](#saga)
+                * [Saga extensions and functions](#saga-extensions-and-functions)
+                * [Saga Manager](#saga-manager)
+            * [Kotlin](#kotlin)
+            * [Examples](#start-using-the-libraries)
+            * [References and further reading](#references-and-further-reading)
 
 ## Abstraction and generalization
 
@@ -440,20 +440,20 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>2.2.1-SNAPSHOT</version>
-</dependency>
+    <version>2.3.0</version>
+ </dependency>
 
-<dependency>
+ <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-vanilla</artifactId>
-    <version>2.2.1-SNAPSHOT</version>
-</dependency>
-
-<dependency>
+    <version>2.3.0</version>
+ </dependency>
+ 
+ <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-arrow</artifactId>
-    <version>2.2.1-SNAPSHOT</version>
-</dependency>
+    <version>2.3.0</version>
+ </dependency>
 ```
 
 ### Examples
