@@ -53,7 +53,7 @@ object AggregateTest : Spek({
             )
         }
         Scenario("Success") {
-            lateinit var result: Either<Error, Iterable<EvenNumberEvent?>>
+            lateinit var result: Either<Error, Sequence<EvenNumberEvent?>>
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
@@ -67,11 +67,11 @@ object AggregateTest : Spek({
             }
             Then("expect success") {
                 assertTrue(result.isRight())
-                assert(result is Either.Right && (result as Either.Right<Iterable<EvenNumberEvent?>>).value.count() == 1)
+                assert(result is Either.Right && (result as Either.Right<Sequence<EvenNumberEvent?>>).value.count() == 1)
             }
         }
         Scenario("Success - handling null command") {
-            lateinit var result: Either<Error, Iterable<EvenNumberEvent?>>
+            lateinit var result: Either<Error, Sequence<EvenNumberEvent?>>
 
             When("handling command of type null") {
                 runBlockingTest {
@@ -79,12 +79,12 @@ object AggregateTest : Spek({
                 }
             }
             Then("expect success") {
-                assert(result is Either.Right && (result as Either.Right<Iterable<EvenNumberEvent?>>).value.count() == 0)
+                assert(result is Either.Right && (result as Either.Right<Sequence<EvenNumberEvent?>>).value.count() == 0)
             }
         }
 
         Scenario("Success - All Numbers Aggregate -  Even") {
-            lateinit var result: Either<Error, Iterable<NumberEvent?>>
+            lateinit var result: Either<Error, Sequence<NumberEvent?>>
 
             When("handling command of type AddEvenNumber") {
                 runBlockingTest {
@@ -102,7 +102,7 @@ object AggregateTest : Spek({
         }
 
         Scenario("Success - All Numbers Aggregate -  Odd") {
-            lateinit var result: Either<Error, Iterable<NumberEvent?>>
+            lateinit var result: Either<Error, Sequence<NumberEvent?>>
 
             When("handling command of type AddOddNumber") {
                 runBlockingTest {
@@ -116,7 +116,7 @@ object AggregateTest : Spek({
             }
             Then("expect success") {
                 assertTrue(result.isRight())
-                assert(result is Either.Right && (result as Either.Right<Iterable<NumberEvent?>>).value.count() == 2)
+                assert(result is Either.Right && (result as Either.Right<Sequence<NumberEvent?>>).value.count() == 2)
 
             }
         }

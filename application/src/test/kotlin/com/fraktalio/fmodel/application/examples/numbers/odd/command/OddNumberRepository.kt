@@ -25,7 +25,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * A very simple event store ;)  It is initially empty.
  */
-private var oddNumberEventStorage: List<OddNumberEvent?> = emptyList()
+private var oddNumberEventStorage: Sequence<OddNumberEvent?> = emptySequence()
 private val oddNumberEventStorageMutex = Mutex()
 
 /**
@@ -35,7 +35,7 @@ private val oddNumberEventStorageMutex = Mutex()
  */
 class OddNumberRepository : EventRepository<OddNumberCommand?, OddNumberEvent?> {
 
-    override suspend fun OddNumberCommand?.fetchEvents(): Iterable<OddNumberEvent?> = oddNumberEventStorage
+    override suspend fun OddNumberCommand?.fetchEvents(): Sequence<OddNumberEvent?> = oddNumberEventStorage
 
     override suspend fun OddNumberEvent?.save(): OddNumberEvent? {
         oddNumberEventStorageMutex.withLock {
@@ -43,6 +43,8 @@ class OddNumberRepository : EventRepository<OddNumberCommand?, OddNumberEvent?> 
         }
         return this
     }
+
+
 }
 
 /**

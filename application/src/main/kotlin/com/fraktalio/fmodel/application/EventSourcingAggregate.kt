@@ -53,17 +53,17 @@ data class EventSourcingAggregate<C, S, E>(
      * @param command Command message of type [C]
      * @return Either [Error] or [Iterable] of [E]
      */
-    suspend fun handle(command: C): Either<Error, Iterable<E>> =
+    suspend fun handle(command: C): Either<Error, Sequence<E>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
             command
                 .fetchEventsEither().bind()
-                .calculateNewEvents(command).bind()
+                .calculateNewEvents(command).bind().asIterable()
                 .saveEither().bind()
         }
 
 
-    private suspend fun Iterable<E>.calculateNewEvents(command: C): Either<Error, Iterable<E>> =
+    private suspend fun Sequence<E>.calculateNewEvents(command: C): Either<Error, Sequence<E>> =
         Either.catch {
             val currentEvents = this@calculateNewEvents
             val currentState = currentEvents.fold(decider.initialState, decider.evolve)
@@ -72,7 +72,7 @@ data class EventSourcingAggregate<C, S, E>(
             if (saga != null) newEvents
                 .flatMap { saga.react(it) }
                 .forEach { c ->
-                    either<Error, Iterable<E>> {
+                    either<Error, Sequence<E>> {
                         newEvents = newEvents.plus(
                             currentEvents.plus(newEvents)
                                 .calculateNewEvents(c).bind()
@@ -82,6 +82,6 @@ data class EventSourcingAggregate<C, S, E>(
                 }
             newEvents
         }.mapLeft { throwable ->
-            Error.CalculatingNewEventsFailed(this, throwable)
+            Error.CalculatingNewEventsFailed(this.toList(), throwable)
         }
 }

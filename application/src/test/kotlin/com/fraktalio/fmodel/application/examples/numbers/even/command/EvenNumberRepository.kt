@@ -25,7 +25,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * A very simple event store ;)  It is initially empty.
  */
-private var evenNumberEventStorage: List<EvenNumberEvent?> = emptyList()
+private var evenNumberEventStorage: Sequence<EvenNumberEvent?> = emptySequence()
 private val evenNumberEventStorageMutex = Mutex()
 
 /**
@@ -35,7 +35,7 @@ private val evenNumberEventStorageMutex = Mutex()
  */
 class EvenNumberRepository : EventRepository<EvenNumberCommand?, EvenNumberEvent?> {
 
-    override suspend fun EvenNumberCommand?.fetchEvents(): Iterable<EvenNumberEvent?> = evenNumberEventStorage
+    override suspend fun EvenNumberCommand?.fetchEvents(): Sequence<EvenNumberEvent?> = evenNumberEventStorage
 
 
     override suspend fun EvenNumberEvent?.save(): EvenNumberEvent? {

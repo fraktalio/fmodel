@@ -41,19 +41,19 @@ fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEven
         ),
         decide = { c, _ ->
             when (c) {
-                is AddOddNumber -> listOf(
+                is AddOddNumber -> sequenceOf(
                     OddNumberAdded(
                         c.description,
                         c.value
                     )
                 )
-                is SubtractOddNumber -> listOf(
+                is SubtractOddNumber -> sequenceOf(
                     OddNumberSubtracted(
                         c.description,
                         c.value
                     )
                 )
-                null -> emptyList()
+                null -> emptySequence()
             }
         },
         evolve = { s, e ->

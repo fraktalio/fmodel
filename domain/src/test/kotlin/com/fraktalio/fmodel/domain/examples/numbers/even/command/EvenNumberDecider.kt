@@ -41,19 +41,19 @@ fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumber
         ),
         decide = { c, _ ->
             when (c) {
-                is AddEvenNumber -> listOf(
+                is AddEvenNumber -> sequenceOf(
                     EvenNumberAdded(
                         c.description,
                         c.value
                     )
                 )
-                is SubtractEvenNumber -> listOf(
+                is SubtractEvenNumber -> sequenceOf(
                     EvenNumberSubtracted(
                         c.description,
                         c.value
                     )
                 )
-                null -> emptyList()
+                null -> emptySequence()
             }
         },
         evolve = { s, e ->

@@ -33,19 +33,10 @@ object DeciderTest : Spek({
         val evenDecider by memoized { evenNumberDecider() }
         val oddDecider by memoized { oddNumberDecider() }
         val combinedDecider by memoized { evenDecider.combine(oddDecider) }
-        val combinedDeciderList by memoized {
-            evenDecider.dimapOnState(
-                fr = { v -> listOfNotNull(v) },
-                fl = { sin: List<EvenNumberState> -> sin.first() })
-                .combineL(
-                    oddDecider.dimapOnState(
-                        fr = { v -> listOfNotNull(v) },
-                        fl = { sin: List<OddNumberState> -> sin.first() })
-                )
-        }
+
 
         Scenario("Decide") {
-            lateinit var result: Iterable<EvenNumberEvent?>
+            lateinit var result: Sequence<EvenNumberEvent?>
 
             When("being in current/initial state of type EvenNumberState and handling command of type AddEvenNumber") {
                 result = evenDecider
@@ -59,19 +50,19 @@ object DeciderTest : Spek({
 
             Then("event of type EvenNumberEvent should be published") {
                 assertEquals(
-                    listOf(
+                    sequenceOf(
                         EvenNumberAdded(
                             Description("2"),
                             NumberValue(2)
                         )
-                    ), result
+                    ).toList(), result.toList()
                 )
             }
 
         }
 
         Scenario("Decide - Combine") {
-            lateinit var result: Iterable<NumberEvent?>
+            lateinit var result: Sequence<NumberEvent?>
 
             When("being in current/initial state of type Pair<EvenNumberState, OddNumberState> and handling command of super type NumberCommand") {
                 result = combinedDecider
@@ -85,46 +76,19 @@ object DeciderTest : Spek({
 
             Then("event of super type NumberEvent should be published") {
                 assertEquals(
-                    listOf(
+                    sequenceOf(
                         EvenNumberAdded(
                             Description("2"),
                             NumberValue(2)
                         )
-                    ), result
+                    ).toList(), result.toList()
                 )
             }
 
         }
-
-        Scenario("Decide - Combine List") {
-            lateinit var result: Iterable<NumberEvent?>
-
-            When("being in current/initial state of type Pair<EvenNumberState, OddNumberState> and handling command of super type NumberCommand") {
-                result = combinedDeciderList
-                    .decide(
-                        AddEvenNumber(
-                            Description("2"),
-                            NumberValue(2)
-                        ), combinedDeciderList.initialState
-                    )
-            }
-
-            Then("event of super type NumberEvent should be published") {
-                assertEquals(
-                    listOf(
-                        EvenNumberAdded(
-                            Description("2"),
-                            NumberValue(2)
-                        )
-                    ), result
-                )
-            }
-
-        }
-
 
         Scenario("Decide - left map over Command parameter - functor") {
-            lateinit var result: Iterable<EvenNumberEvent?>
+            lateinit var result: Sequence<EvenNumberEvent?>
 
             When("being in current/initial state of type EvenNumberState and handling command of type Int") {
                 result = evenDecider
@@ -139,18 +103,18 @@ object DeciderTest : Spek({
 
             Then("event of type EvenNumberEvent should be published") {
                 assertEquals(
-                    listOf(
+                    sequenceOf(
                         EvenNumberAdded(
                             Description("2"),
                             NumberValue(2)
                         )
-                    ), result
+                    ).toList(), result.toList()
                 )
             }
         }
 
         Scenario("Decide - dimap over Event parameter - profunctor") {
-            lateinit var result: Iterable<Int?>
+            lateinit var result: Sequence<Int?>
 
             When("being in current/initial state of type EvenNumberState and handling command of type AddEvenNumber") {
                 result = evenDecider
@@ -173,12 +137,12 @@ object DeciderTest : Spek({
             }
 
             Then("event of type Int should be published") {
-                assertEquals(listOf(2), result)
+                assertEquals(sequenceOf(2).toList(), result.toList())
             }
         }
 
         Scenario("Decide - dimap over State parameter - profunctor") {
-            lateinit var result: Iterable<EvenNumberEvent?>
+            lateinit var result: Sequence<EvenNumberEvent?>
 
             When("being in current/initial state of type Int and handling command of type AddEvenNumber") {
                 result = evenDecider
@@ -196,18 +160,18 @@ object DeciderTest : Spek({
 
             Then("event of type EvenNumberEvent should be published") {
                 assertEquals(
-                    listOf(
+                    sequenceOf(
                         EvenNumberAdded(
                             Description("2"),
                             NumberValue(2)
                         )
-                    ), result
+                    ).toList(), result.toList()
                 )
             }
         }
 
         Scenario("Decide - product over State parameter - applicative") {
-            lateinit var result: Iterable<EvenNumberEvent?>
+            lateinit var result: Sequence<EvenNumberEvent?>
 
             When("being in current/initial of type EvenNumberState and handling command of type AddEvenNumber by the product of two deciders") {
                 val decider2 =
@@ -224,7 +188,7 @@ object DeciderTest : Spek({
 
             Then("two events of type EvenNumberEvent should be published") {
                 assertEquals(
-                    listOf(
+                    sequenceOf(
                         EvenNumberAdded(
                             Description("2"),
                             NumberValue(2)
@@ -233,7 +197,7 @@ object DeciderTest : Spek({
                             Description("2"),
                             NumberValue(2)
                         )
-                    ), result
+                    ).toList(), result.toList()
                 )
             }
         }

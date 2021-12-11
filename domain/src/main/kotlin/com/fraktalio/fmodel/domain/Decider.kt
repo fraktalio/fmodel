@@ -16,7 +16,6 @@
 
 package com.fraktalio.fmodel.domain
 
-
 /**
  * [_Decider] is a datatype that represents the main decision making algorithm.
  * It has five generic parameters [C], [Si], [So], [Ei], [Eo] , representing the type of the values that [_Decider] may contain or use.
@@ -37,8 +36,8 @@ package com.fraktalio.fmodel.domain
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class _Decider<C, Si, So, Ei, Eo>(
-    val decide: (C, Si) -> Iterable<Eo>,
+data class _Decider<in C, in Si, out So, in Ei, out Eo>(
+    val decide: (C, Si) -> Sequence<Eo>,
     val evolve: (Si, Ei) -> So,
     val initialState: So,
 ) {
@@ -68,7 +67,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
         crossinline fl: (Ein) -> Ei,
         crossinline fr: (Eo) -> Eon
     ): _Decider<C, Si, So, Ein, Eon> = _Decider(
-        decide = { c, si -> this.decide(c, si).map(fr) },
+        decide = { c, si -> this.decide(c, si).map { fr(it) } },
         evolve = { si, ein -> this.evolve(si, fl(ein)) },
         initialState = this.initialState
     )
@@ -80,7 +79,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
      * @param f
      */
     inline fun <Ein> mapLeftOnEvent(crossinline f: (Ein) -> Ei): _Decider<C, Si, So, Ein, Eo> =
-        dimapOnEvent(f, ::identity)
+        dimapOnEvent(f) { it }
 
     /**
      * Right map on E/Event parameter - Covariant
@@ -89,7 +88,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
      * @param f
      */
     inline fun <Eon> mapOnEvent(crossinline f: (Eo) -> Eon): _Decider<C, Si, So, Ei, Eon> =
-        dimapOnEvent(::identity, f)
+        dimapOnEvent({ it }, f)
 
     /**
      * Dimap on S/State parameter - Contravariant on input state (Si) and Covariant on output state (So) = Profunctor
@@ -115,7 +114,7 @@ data class _Decider<C, Si, So, Ei, Eo>(
      * @param f
      */
     inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _Decider<C, Sin, So, Ei, Eo> =
-        dimapOnState(f, ::identity)
+        dimapOnState(f) { it }
 
     /**
      * Right map on S/State parameter - Covariant
@@ -124,30 +123,45 @@ data class _Decider<C, Si, So, Ei, Eo>(
      * @param f
      */
     inline fun <Son> mapOnState(crossinline f: (So) -> Son): _Decider<C, Si, Son, Ei, Eo> =
-        dimapOnState(::identity, f)
+        dimapOnState({ it }, f)
+}
 
-
-    /**
-     * Right apply on S/State parameter - Applicative
-     *
-     * @param Son State output new
-     * @param ff
-     */
-    fun <Son> applyOnState(ff: _Decider<C, Si, (So) -> Son, Ei, Eo>): _Decider<C, Si, Son, Ei, Eo> = _Decider(
+/**
+ * Apply on S/State - Applicative
+ *
+ * @param C Command type
+ * @param Si Input_State type
+ * @param So Output_State type
+ * @param Ei Input_Event type
+ * @param Eo Output_Event type
+ * @param Son Output_State type new
+ *
+ * @param ff of type [_Decider]<[C], [Si], ([So]) -> [Son], [Ei], [Eo]>
+ *
+ * @return new decider of type [_Decider]<[C], [Si], [Son], [Ei], [Eo]>
+ */
+fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.applyOnState(ff: _Decider<C, Si, (So) -> Son, Ei, Eo>): _Decider<C, Si, Son, Ei, Eo> =
+    _Decider(
         decide = { c, si -> ff.decide(c, si).plus(this.decide(c, si)) },
-        evolve = { si, ei -> ff.evolve(si, ei).invoke(this.evolve(si, ei)) },
-        initialState = ff.initialState.invoke(this.initialState)
+        evolve = { si, ei -> ff.evolve(si, ei)(this.evolve(si, ei)) },
+        initialState = ff.initialState(this.initialState)
     )
 
-    /**
-     * Right product on S/State parameter - Applicative
-     *
-     * @param Son State output new
-     * @param fb
-     */
-    fun <Son> productOnState(fb: _Decider<C, Si, Son, Ei, Eo>): _Decider<C, Si, Pair<So, Son>, Ei, Eo> =
-        applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
-}
+/**
+ * Product on S/State parameter - Applicative
+ *
+ * @param C Command type
+ * @param Si Input_State type
+ * @param So Output_State type
+ * @param Ei Input_Event type
+ * @param Eo Output_Event type
+ * @param Son Output_State type new
+ * @param fb
+ *
+ * @return new decider of type [_Decider]<[C], [Si], [Pair]<[So], [Son]>, [Ei], [Eo]>
+ */
+fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.productOnState(fb: _Decider<C, Si, Son, Ei, Eo>): _Decider<C, Si, Pair<So, Son>, Ei, Eo> =
+    applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
 
 
 /**
@@ -175,140 +189,22 @@ data class _Decider<C, Si, So, Ei, Eo>(
  * @param y second Decider
  * @return [_Decider]<[C_SUPER], [Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [Ei_SUPER], [Eo_SUPER]>
  */
-inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<in C?, in Si, out So, in Ei?, out Eo>.combine(
-    y: _Decider<in C2?, in Si2, out So2, in Ei2?, out Eo2>
+inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<C?, Si, So, Ei?, Eo>.combine(
+    y: _Decider<C2?, Si2, So2, Ei2?, Eo2>
 ): _Decider<C_SUPER, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER> {
 
-    val extractS1: (Pair<Si, Si2>) -> Si = { pair -> pair.first }
-    val extractS2: (Pair<Si, Si2>) -> Si2 = { pair -> pair.second }
-    val extractE1: (Ei_SUPER) -> Ei? = {
-        when (it) {
-            is Ei -> it
-            else -> null
-        }
-    }
-    val extractE2: (Ei_SUPER) -> Ei2? = {
-        when (it) {
-            is Ei2 -> it
-            else -> null
-        }
-    }
-    val extractC1: (C_SUPER) -> C? = {
-        when (it) {
-            is C -> it
-            else -> null
-        }
-    }
-    val extractC2: (C_SUPER) -> C2? = {
-        when (it) {
-            is C2 -> it
-            else -> null
-        }
-    }
-    val extractEoSUPER: (Eo) -> Eo_SUPER = { it }
-    val extractEo2SUPER: (Eo2) -> Eo_SUPER = { it }
-
     val deciderX = this
-        .mapLeftOnCommand(extractC1)
-        .mapLeftOnState(extractS1)
-        .dimapOnEvent(extractE1, extractEoSUPER)
+        .mapLeftOnCommand<C_SUPER> { it as? C }
+        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.first }
+        .dimapOnEvent<Ei_SUPER, Eo_SUPER>({ it as? Ei }, { it })
 
     val deciderY = y
-        .mapLeftOnCommand(extractC2)
-        .mapLeftOnState(extractS2)
-        .dimapOnEvent(extractE2, extractEo2SUPER)
+        .mapLeftOnCommand<C_SUPER> { it as? C2 }
+        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.second }
+        .dimapOnEvent<Ei_SUPER, Eo_SUPER>({ it as? Ei2 }, { it })
 
-    val deciderZ = deciderX.productOnState(deciderY)
+    return deciderX.productOnState(deciderY)
 
-    return _Decider(
-        decide = { c, si -> deciderZ.decide(c, si) },
-        evolve = { pair, ei -> deciderZ.evolve(pair, ei) },
-        initialState = deciderZ.initialState
-    )
-}
-
-/**
- * Combine [_Decider]s into one big [_Decider]
- *
- * Possible to use when:
- *
- * - [Ei] and [Ei2] have common superclass [Ei_SUPER]
- * - [Eo] and [Eo2] have common superclass [Eo_SUPER]
- * - [C] and [C2] have common superclass [C_SUPER]
- * - [Si] and [Si2] have common superclass [Si_SUPER]
- * - [So] and [So2] have common superclass [So_SUPER]
- *
- * @param C Command type of the first Decider
- * @param Si Input_State type of the first Decider
- * @param So Output_State type of the first Decider
- * @param Ei Input_Event type of the first Decider
- * @param Eo Output_Event type of the first Decider
- * @param C2 Command type of the second Decider
- * @param Si2 Input_State type of the second Decider
- * @param So2 Output_State type of the second Decider
- * @param Ei2 Input_Event type of the second Decider
- * @param Eo2 Output_Event type of the second Decider
- * @param C_SUPER super type of the command types C and C2
- * @param Si_SUPER super type for [Si] and [Si2]
- * @param So_SUPER super type for [So] and [So2]
- * @param Ei_SUPER super type of the Ei and Ei2 types
- * @param Eo_SUPER super type of the Eo and Eon types
- * @param y second Decider
- * @return [_Decider]<[C_SUPER], [List]<[Si_SUPER]>, [List]<[So_SUPER]>, [Ei_SUPER], [Eo_SUPER]>
- */
-inline fun <reified C : C_SUPER, reified Si : Si_SUPER, So : So_SUPER, reified Ei : Ei_SUPER, reified Eo : Eo_SUPER, reified C2 : C_SUPER, reified Si2 : Si_SUPER, So2 : So_SUPER, reified Ei2 : Ei_SUPER, reified Eo2 : Eo_SUPER, C_SUPER, Si_SUPER, So_SUPER, Ei_SUPER, Eo_SUPER> _Decider<in C?, List<Si>, List<So>, in Ei?, out Eo>.combineL(
-    y: _Decider<in C2?, List<Si2>, List<So2>, in Ei2?, out Eo2>
-): _Decider<C_SUPER, List<Si_SUPER>, List<So_SUPER>, Ei_SUPER, Eo_SUPER> {
-
-    val extractS1: (List<Si_SUPER>) -> List<Si> = { list -> list.filterIsInstance(Si::class.java) }
-    val extractS2: (List<Si_SUPER>) -> List<Si2> = { list -> list.filterIsInstance(Si2::class.java) }
-
-
-    val extractE1: (Ei_SUPER) -> Ei? = {
-        when (it) {
-            is Ei -> it
-            else -> null
-        }
-    }
-    val extractE2: (Ei_SUPER) -> Ei2? = {
-        when (it) {
-            is Ei2 -> it
-            else -> null
-        }
-    }
-    val extractC1: (C_SUPER) -> C? = {
-        when (it) {
-            is C -> it
-            else -> null
-        }
-    }
-    val extractC2: (C_SUPER) -> C2? = {
-        when (it) {
-            is C2 -> it
-            else -> null
-        }
-    }
-    val extractEoSUPER: (Eo) -> Eo_SUPER = { it }
-    val extractEo2SUPER: (Eo2) -> Eo_SUPER = { it }
-
-    val deciderX = this
-        .mapLeftOnCommand(extractC1)
-        .mapLeftOnState(extractS1)
-        .dimapOnEvent(extractE1, extractEoSUPER)
-
-    val deciderY = y
-        .mapLeftOnCommand(extractC2)
-        .mapLeftOnState(extractS2)
-        .dimapOnEvent(extractE2, extractEo2SUPER)
-
-    val deciderZ =
-        deciderX.productOnState(deciderY).mapOnState { pair: Pair<List<So>, List<So2>> -> pair.toList().flatten() }
-
-    return _Decider(
-        decide = { c, si -> deciderZ.decide(c, si) },
-        evolve = { pair, ei -> deciderZ.evolve(pair, ei) },
-        initialState = deciderZ.initialState
-    )
 }
 
 /**
