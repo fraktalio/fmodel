@@ -18,70 +18,173 @@ package com.fraktalio.fmodel.application
 
 import arrow.core.Either
 import arrow.core.computations.either
-import com.fraktalio.fmodel.domain.Decider
-import com.fraktalio.fmodel.domain.Saga
+import com.fraktalio.fmodel.domain.IDecider
+import com.fraktalio.fmodel.domain.ISaga
 
 /**
- *
- * Event sourcing aggregate is using/delegating a [EventSourcingAggregate.decider] of type [Decider]<[C], [S], [E]> to handle commands and produce events.
- * In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via [EventRepository.fetchEvents] function, and then delegate the command to the [EventSourcingAggregate.decider] which can produce new event(s) as a result.
- * If the [EventSourcingAggregate.decider] is combined out of many deciders via `combine` function, an optional [EventSourcingAggregate.saga] could be used to react on new events and send new commands to the [EventSourcingAggregate.decider] recursively, in one transaction.
+ * Event sourcing aggregate is using/delegating a `decider` of type [IDecider]<[C], [S], [E]> to handle commands and produce events.
+ * In order to handle the command, aggregate needs to fetch the current state (represented as a sequence of events) via [EventRepository.fetchEvents] function, and then delegate the command to the `decider` which can produce new event(s) as a result.
  * Produced events are then stored via [EventRepository.save] suspending function.
  *
- * [EventSourcingAggregate] implements an interface [EventRepository] by delegating all of its public members to a specified object.
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ * [EventSourcingAggregate] extends [IDecider] and [EventRepository] interfaces,
+ * clearly communicating that it is composed out of these two behaviours.
+ *
+ * The Delegation pattern has proven to be a good alternative to `implementation inheritance`,
+ * and Kotlin supports it natively requiring zero boilerplate code. [eventSourcingAggregate] function is a good example.
  *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
  * @param E Events of type [E] that this aggregate can publish
- * @property decider A decider component of type [Decider]<[C], [S], [E]>.
- * @property eventRepository Interface for [E]vent management/persistence - dependencies by delegation
- * @property saga A saga component of type [Saga]<[E], [C]>
- * @constructor Creates [EventSourcingAggregate]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class EventSourcingAggregate<C, S, E>(
-    private val decider: Decider<C, S, E>,
-    private val eventRepository: EventRepository<C, E>,
-    private val saga: Saga<E, C>? = null
-) : EventRepository<C, E> by eventRepository {
+interface EventSourcingAggregate<C, S, E> : IDecider<C, S, E>, EventRepository<C, E> {
+
+    fun Sequence<E>.computeNewEvents(command: C): Sequence<E> =
+        decide(command, fold(initialState) { s, e -> evolve(s, e) })
+}
+
+/**
+ * Orchestrating Event sourcing aggregate is using/delegating a `decider` of type [IDecider]<[C], [S], [E]> to handle commands and produce events.
+ * In order to handle the command, aggregate needs to fetch the current state (represented as a sequence of events) via [EventRepository.fetchEvents] function, and then delegate the command to the `decider` which can produce new event(s) as a result.
+ * If the `decider` is combined out of many deciders via `combine` function, an optional `saga` of type [ISaga] could be used to react on new events and send new commands to the 'decider` recursively, in single transaction.
+ * Produced events are then stored via [EventRepository.save] suspending function.
+ *
+ * [EventSourcingOrchestratingAggregate] extends [ISaga] and [EventSourcingAggregate] interfaces,
+ * clearly communicating that it is composed out of these two behaviours.
+ *
+ * The Delegation pattern has proven to be a good alternative to `implementation inheritance`,
+ * and Kotlin supports it natively requiring zero boilerplate code. [eventSourcingOrchestratingAggregate] function is a good example.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that this aggregate can publish
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface EventSourcingOrchestratingAggregate<C, S, E> : ISaga<E, C>, EventSourcingAggregate<C, S, E> {
 
     /**
-     * Handles the command message of type [C]
+     * Computes new Events based on the previous events and the [command].
      *
-     * @param command Command message of type [C]
-     * @return Either [Error] or [Iterable] of [E]
+     * @param command of type [C]
+     * @return The Sequence of newly computed events of type [E]
      */
-    suspend fun handle(command: C): Either<Error, Sequence<E>> =
-        // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
-        either {
-            command
-                .fetchEventsEither().bind()
-                .calculateNewEvents(command).bind().asIterable()
-                .saveEither().bind()
-        }
+    override fun Sequence<E>.computeNewEvents(command: C): Sequence<E> {
+        var newEvents = decide(command, this.fold(initialState, evolve))
+        newEvents
+            .flatMap { react(it) }
+            .forEach {
+                newEvents = newEvents.plus(this.plus(newEvents).computeNewEvents(it))
+            }
+        return newEvents
+    }
+}
+
+/**
+ * Event Sourced aggregate factory function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param eventRepository An aggregate event repository of type [EventRepository]<[C], [E]>
+ * @return An object/instance of type [EventSourcingAggregate]<[C], [S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E> eventSourcingAggregate(
+    decider: IDecider<C, S, E>,
+    eventRepository: EventRepository<C, E>
+): EventSourcingAggregate<C, S, E> =
+    object :
+        EventSourcingAggregate<C, S, E>,
+        EventRepository<C, E> by eventRepository,
+        IDecider<C, S, E> by decider {}
 
 
-    private suspend fun Sequence<E>.calculateNewEvents(command: C): Either<Error, Sequence<E>> =
+/**
+ * Event Sourced Orchestrating aggregate factory function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param eventRepository An aggregate event repository of type [EventRepository]<[C], [E]>
+ * @param saga A saga component of type [ISaga]<[E], [C]> - orchestrates the deciders
+ * @return An object/instance of type [EventSourcingOrchestratingAggregate]<[C], [S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E> eventSourcingOrchestratingAggregate(
+    decider: IDecider<C, S, E>,
+    eventRepository: EventRepository<C, E>,
+    saga: ISaga<E, C>
+): EventSourcingOrchestratingAggregate<C, S, E> =
+    object :
+        EventSourcingOrchestratingAggregate<C, S, E>,
+        EventRepository<C, E> by eventRepository,
+        IDecider<C, S, E> by decider,
+        ISaga<E, C> by saga {}
+
+
+/**
+ * Extension function - Handles the command message of type [C]
+ *
+ * @param command Command message of type [C]
+ * @return [Either] [Error] or [Sequence] of Events of type [E] that are saved
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(command: C): Either<Error, Sequence<E>> {
+
+    suspend fun C.eitherFetchEventsOrFail(): Either<Error.FetchingEventsFailed, Sequence<E>> =
         Either.catch {
-            val currentEvents = this@calculateNewEvents
-            val currentState = currentEvents.fold(decider.initialState, decider.evolve)
-            var newEvents = decider.decide(command, currentState)
+            fetchEvents()
+        }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
 
-            if (saga != null) newEvents
-                .flatMap { saga.react(it) }
-                .forEach { c ->
-                    either<Error, Sequence<E>> {
-                        newEvents = newEvents.plus(
-                            currentEvents.plus(newEvents)
-                                .calculateNewEvents(c).bind()
-                        )
-                        newEvents
-                    }
-                }
-            newEvents
+    suspend fun E.eitherSaveOrFail(): Either<Error.StoringEventFailed<E>, E> =
+        Either.catch {
+            this.save()
+        }.mapLeft { throwable -> Error.StoringEventFailed(this, throwable) }
+
+    suspend fun Sequence<E>.eitherSaveOrFail(): Either<Error.StoringEventFailed<E>, Sequence<E>> =
+        either<Error.StoringEventFailed<E>, List<E>> {
+            this@eitherSaveOrFail.asIterable().map { it.eitherSaveOrFail().bind() }
+        }.map { it.asSequence() }
+
+    fun Sequence<E>.eitherComputeNewEventsOrFail(command: C): Either<Error, Sequence<E>> =
+        Either.catch {
+            computeNewEvents(command)
         }.mapLeft { throwable ->
             Error.CalculatingNewEventsFailed(this.toList(), throwable)
         }
+
+    // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
+    return either {
+        command
+            .eitherFetchEventsOrFail().bind()
+            .eitherComputeNewEventsOrFail(command).bind()
+            .eitherSaveOrFail().bind()
+    }
 }
+
+/**
+ * Extension function - Handles the command message of type [C]
+ *
+ * @param command Command message of type [C]
+ * @return [Sequence] of Events of type [E] that are saved, or throws an exception
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C): Sequence<E> =
+    command
+        .fetchEvents()
+        .computeNewEvents(command)
+        .save()
+
+

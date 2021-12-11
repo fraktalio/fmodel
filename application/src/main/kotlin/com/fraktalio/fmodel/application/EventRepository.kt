@@ -16,9 +16,6 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
-import arrow.core.computations.either
-
 /**
  * Event repository/store interface
  *
@@ -30,17 +27,8 @@ import arrow.core.computations.either
 interface EventRepository<C, E> {
     suspend fun C.fetchEvents(): Sequence<E>
     suspend fun E.save(): E
+    suspend fun Sequence<E>.save(): Sequence<E> =
+        this.asIterable().map { it.save() }.asSequence()
 
-    suspend fun C.fetchEventsEither(): Either<Error.FetchingEventsFailed, Sequence<E>> =
-        Either.catch {
-            fetchEvents()
-        }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
 
-    suspend fun E.saveEither(): Either<Error.StoringEventFailed<E>, E> =
-        Either.catch {
-            this.save()
-        }.mapLeft { throwable -> Error.StoringEventFailed(this, throwable) }
-
-    suspend fun Iterable<E>.saveEither(): Either<Error.StoringEventFailed<E>, Sequence<E>> =
-        either<Error.StoringEventFailed<E>, List<E>> { map { it.saveEither().bind() } }.map { it.asSequence() }
 }
