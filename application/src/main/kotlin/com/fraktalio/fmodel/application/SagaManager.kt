@@ -35,9 +35,9 @@ data class SagaManager<AR, A>(
      * Handles the action result of type [AR]
      *
      * @param actionResult Action Result represent the outcome of some action you want to handle in some way
-     * @return Either [Error] or [Iterable] of [A]
+     * @return Either [Error] or [Sequence] of [A]
      */
-    suspend fun handle(actionResult: AR): Either<Error, Iterable<A>> =
+    suspend fun handle(actionResult: AR): Either<Error, Sequence<A>> =
         // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
         either {
             actionResult
@@ -45,7 +45,7 @@ data class SagaManager<AR, A>(
                 .publishEither().bind()
         }
 
-    private fun AR.calculateNewActions(): Either<Error, Iterable<A>> =
+    private fun AR.calculateNewActions(): Either<Error, Sequence<A>> =
         Either.catch {
             saga.react(this)
         }.mapLeft { throwable ->

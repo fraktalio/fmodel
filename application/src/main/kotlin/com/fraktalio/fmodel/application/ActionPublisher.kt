@@ -36,6 +36,8 @@ interface ActionPublisher<A> {
             this.publish()
         }.mapLeft { throwable -> Error.PublishingActionFailed(this, throwable) }
 
-    suspend fun Iterable<A>.publishEither(): Either<Error.PublishingActionFailed<A>, Iterable<A>> =
-        either { map { it.publishEither().bind() } }
+    suspend fun Sequence<A>.publishEither(): Either<Error.PublishingActionFailed<A>, Sequence<A>> =
+        either<Error.PublishingActionFailed<A>, List<A>> {
+            this@publishEither.asIterable().map { it.publishEither().bind() }
+        }.map { it.asSequence() }
 }

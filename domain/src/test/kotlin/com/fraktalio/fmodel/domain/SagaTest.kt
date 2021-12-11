@@ -37,7 +37,7 @@ object SagaTest : Spek({
         val oddSaga by memoized { oddNumberSaga() }
 
         Scenario("React") {
-            var result: Iterable<NumberCommand> = emptyList()
+            var result: Sequence<NumberCommand> = emptySequence()
 
             When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type NumberCommand") {
                 result = saga.react(EvenNumberAdded(Description("2"), NumberValue(2)))
@@ -55,7 +55,7 @@ object SagaTest : Spek({
         }
 
         Scenario("React - Combined Saga") {
-            var result: Iterable<NumberCommand> = emptyList()
+            var result: Sequence<NumberCommand> = emptySequence()
 
             When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type NumberCommand") {
                 result = evenSaga.combine(oddSaga).react(EvenNumberAdded(Description("2"), NumberValue(2)))
@@ -73,7 +73,7 @@ object SagaTest : Spek({
         }
 
         Scenario("React - Combined Saga 2") {
-            var result: Iterable<NumberCommand> = emptyList()
+            var result: Sequence<NumberCommand> = emptySequence()
 
             When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type NumberCommand") {
                 result = evenSaga.combine(oddSaga).combine(evenSaga)
@@ -91,27 +91,8 @@ object SagaTest : Spek({
 
         }
 
-//        Scenario("React - Combined Saga 2 - does not compile") {
-//            var result: Iterable<NumberCommand> = emptyList()
-//
-//            When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type NumberCommand") {
-//                result = evenSaga.combine(oddSaga).combine(nonNullableEvenSaga)
-//                    .react(EvenNumberAdded(Description("2"), NumberValue(2)))
-//            }
-//
-//            Then("non empty list of Actions/Commands of type NumberCommand should be published") {
-//                assertTrue(result.any())
-//            }
-//
-//            Then("AddOddNumber should be published twice!") {
-//                assertTrue(result.first() is AddOddNumber && result.first().value.get == 1)
-//                assertTrue(result.count() == 2)
-//            }
-//
-//        }
-
         Scenario("React - lef map over ActionResult/Event parameter in this case - functor (contravariant)") {
-            var result: Iterable<NumberCommand> = emptyList()
+            var result: Sequence<NumberCommand> = emptySequence()
 
             When("when react on ActionResult/Event of type Int, publish list of Actions/Commands of type NumberCommand") {
                 result = saga
@@ -130,7 +111,7 @@ object SagaTest : Spek({
         }
 
         Scenario("React - Combined Saga - lef map over ActionResult/Event parameter in this case - functor (contravariant)") {
-            var result: Iterable<NumberCommand> = emptyList()
+            var result: Sequence<NumberCommand> = emptySequence()
 
             When("when react on ActionResult/Event of type Int, publish list of Actions/Commands of type NumberCommand") {
                 result = evenSaga.combine(oddSaga)
@@ -149,7 +130,7 @@ object SagaTest : Spek({
         }
 
         Scenario("React - right map over Action/Command parameter in this case - functor (covariant)") {
-            var result: Iterable<Int> = emptyList()
+            var result: Sequence<Int> = emptySequence()
 
             When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type Int") {
                 result = saga
@@ -169,7 +150,7 @@ object SagaTest : Spek({
 
 
         Scenario("React - Combined Saga -  right map over Action/Command parameter in this case - functor (covariant)") {
-            var result: Iterable<Int> = emptyList()
+            var result: Sequence<Int> = emptySequence()
 
             When("when react on ActionResult/Event of type NumberEvent, publish list of Actions/Commands of type Int") {
                 result = evenSaga.combine(oddSaga)

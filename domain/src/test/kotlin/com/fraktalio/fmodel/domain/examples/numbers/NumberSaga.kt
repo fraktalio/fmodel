@@ -41,31 +41,31 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 fun numberSaga() = Saga<NumberEvent, NumberCommand>(
     react = { numberEvent ->
         when (numberEvent) {
-            is EvenNumberAdded -> listOf(
+            is EvenNumberAdded -> sequenceOf(
                 AddOddNumber(
                     Description("${numberEvent.value.get - 1}"),
                     NumberValue(numberEvent.value.get - 1)
                 )
             )
-            is EvenNumberSubtracted -> listOf(
+            is EvenNumberSubtracted -> sequenceOf(
                 SubtractOddNumber(
                     Description("${numberEvent.value.get - 1}"),
                     NumberValue(numberEvent.value.get - 1)
                 )
             )
-            is OddNumberAdded -> listOf(
+            is OddNumberAdded -> sequenceOf(
                 AddEvenNumber(
                     Description("${numberEvent.value.get + 1}"),
                     NumberValue(numberEvent.value.get + 1)
                 )
             )
-            is OddNumberSubtracted -> listOf(
+            is OddNumberSubtracted -> sequenceOf(
                 SubtractEvenNumber(
                     Description("${numberEvent.value.get + 1}"),
                     NumberValue(numberEvent.value.get + 1)
                 )
             )
-            else -> emptyList()
+            else -> emptySequence()
         }
     }
 )
@@ -80,19 +80,19 @@ fun numberSaga() = Saga<NumberEvent, NumberCommand>(
 fun evenNumberSaga() = Saga<NumberEvent.EvenNumberEvent?, NumberCommand.OddNumberCommand>(
     react = { numberEvent ->
         when (numberEvent) {
-            is EvenNumberAdded -> listOf(
+            is EvenNumberAdded -> sequenceOf(
                 AddOddNumber(
                     Description("${numberEvent.value.get - 1}"),
                     NumberValue(numberEvent.value.get - 1)
                 )
             )
-            is EvenNumberSubtracted -> listOf(
+            is EvenNumberSubtracted -> sequenceOf(
                 SubtractOddNumber(
                     Description("${numberEvent.value.get - 1}"),
                     NumberValue(numberEvent.value.get - 1)
                 )
             )
-            else -> emptyList()
+            else -> emptySequence()
         }
     }
 )
@@ -107,19 +107,19 @@ fun evenNumberSaga() = Saga<NumberEvent.EvenNumberEvent?, NumberCommand.OddNumbe
 fun oddNumberSaga() = Saga<NumberEvent.OddNumberEvent?, NumberCommand.EvenNumberCommand>(
     react = { numberEvent ->
         when (numberEvent) {
-            is OddNumberAdded -> listOf(
+            is OddNumberAdded -> sequenceOf(
                 AddEvenNumber(
                     Description("${numberEvent.value.get + 1}"),
                     NumberValue(numberEvent.value.get + 1)
                 )
             )
-            is OddNumberSubtracted -> listOf(
+            is OddNumberSubtracted -> sequenceOf(
                 SubtractEvenNumber(
                     Description("${numberEvent.value.get + 1}"),
                     NumberValue(numberEvent.value.get + 1)
                 )
             )
-            else -> emptyList()
+            else -> emptySequence()
         }
     }
 )

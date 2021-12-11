@@ -30,7 +30,7 @@ package com.fraktalio.fmodel.domain
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class _Saga<AR, A>(
-    val react: (AR) -> Iterable<A>
+    val react: (AR) -> Sequence<A>
 ) {
     /**
      * Left map on AR/ActionResult parameter - Contravariant
@@ -49,7 +49,7 @@ data class _Saga<AR, A>(
      * @param f
      */
     inline fun <An> mapOnAction(crossinline f: (A) -> An): _Saga<AR, An> = _Saga(
-        react = { ar -> this.react(ar).map(f) }
+        react = { ar -> this.react(ar).map { f(it) } }
     )
 
 }
