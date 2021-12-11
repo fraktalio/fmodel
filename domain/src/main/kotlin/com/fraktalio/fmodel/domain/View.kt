@@ -36,7 +36,7 @@ package com.fraktalio.fmodel.domain
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class _View<Si, So, E>(
+data class _View<in Si, out So, in E>(
     val evolve: (Si, E) -> So,
     val initialState: So,
 ) {
@@ -74,7 +74,7 @@ data class _View<Si, So, E>(
      * @param f
      */
     inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _View<Sin, So, E> =
-        dimapOnState(f, ::identity)
+        dimapOnState(f) { it }
 
     /**
      * Right map on S/State parameter - Covariant
@@ -83,39 +83,35 @@ data class _View<Si, So, E>(
      * @param f
      */
     inline fun <Son> mapOnState(crossinline f: (So) -> Son): _View<Si, Son, E> =
-        dimapOnState(::identity, f)
-
-    /**
-     * Right apply on S/State parameter - Applicative
-     *
-     * @param Son State output new
-     * @param ff
-     */
-    fun <Son> applyOnState(ff: _View<Si, (So) -> Son, E>): _View<Si, Son, E> = _View(
-        evolve = { si, e -> ff.evolve(si, e).invoke(this.evolve(si, e)) },
-        initialState = ff.initialState.invoke(this.initialState)
-    )
-
-    /**
-     * Right product on S/State parameter - Applicative
-     *
-     * @param Son State output new
-     * @param fb
-     */
-    fun <Son> productOnState(fb: _View<Si, Son, E>): _View<Si, Pair<So, Son>, E> =
-        applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
-
-    /**
-     * Right just on S/State parameter - Applicative
-     *
-     * @param so State output
-     */
-    fun justOnState(so: So): _View<Si, So, E> = _View(
-        evolve = { _, _ -> so },
-        initialState = so
-    )
-
+        dimapOnState({ it }, f)
 }
+
+/**
+ * Apply on S/State parameter - Applicative
+ *
+ * @param Si State input type
+ * @param So State output type
+ * @param E Event type
+ * @param Son State output new type
+ * @param ff
+ */
+fun <Si, So, E, Son> _View<Si, So, E>.applyOnState(ff: _View<Si, (So) -> Son, E>): _View<Si, Son, E> = _View(
+    evolve = { si, e -> ff.evolve(si, e)(this.evolve(si, e)) },
+    initialState = ff.initialState(this.initialState)
+)
+
+/**
+ * Product on S/State parameter - Applicative
+ *
+ * @param Si State input type
+ * @param So State output type
+ * @param E Event type
+ * @param Son State output new type
+ * @param fb
+ */
+fun <Si, So, E, Son> _View<Si, So, E>.productOnState(fb: _View<Si, Son, E>): _View<Si, Pair<So, Son>, E> =
+    applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
+
 
 /**
  * Combines [_View]s into one bigger [_View]
@@ -132,93 +128,19 @@ data class _View<Si, So, E>(
  * @param y second View
  * @return new View of type [_View]<[Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [E_SUPER]>
  */
-inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<in Si, out So, in E?>.combine(
-    y: _View<in Si2, out So2, in E2?>
+inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<Si, So, E?>.combine(
+    y: _View<Si2, So2, E2?>
 ): _View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER> {
-    val extractE1: (E_SUPER) -> E? = {
-        when (it) {
-            is E -> it
-            else -> null
-        }
-    }
-    val extractE2: (E_SUPER) -> E2? = {
-        when (it) {
-            is E2 -> it
-            else -> null
-        }
-    }
-    val extractS1: (Pair<Si, Si2>) -> Si = { pair -> pair.first }
-    val extractS2: (Pair<Si, Si2>) -> Si2 = { pair -> pair.second }
 
     val viewX = this
-        .mapLeftOnEvent(extractE1)
-        .mapLeftOnState(extractS1)
+        .mapLeftOnEvent<E_SUPER> { it as? E }
+        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.first }
 
     val viewY = y
-        .mapLeftOnEvent(extractE2)
-        .mapLeftOnState(extractS2)
+        .mapLeftOnEvent<E_SUPER> { it as? E2 }
+        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.second }
 
-    val viewZ = viewX.productOnState(viewY)
-
-    return _View(
-        evolve = { si, e -> viewZ.evolve(si, e) },
-        initialState = viewZ.initialState
-    )
-}
-
-/**
- * Combines [_View]s into one bigger [_View]
- *
- * Possible to use when:
- * - [E] and [E2] have common superclass [E_SUPER]
- * - [Si] and [Si2] have common superclass [Si_SUPER]
- * - [So] and [So2] have common superclass [So_SUPER]
- *
- * @param Si State input of the first View
- * @param So State output of the first View
- * @param E Event of the first View
- * @param Si2 State input of the second View
- * @param So2 State output of the second View
- * @param E2 Event of the second View
- * @param Si_SUPER super type for [Si] and [Si2]
- * @param So_SUPER super type for [So] and [So2]
- * @param E_SUPER super type for [E] and [E2]
- * @param y second View
- * @return new View of type [_View]< [List]<[Si_SUPER]>, [List]<[So_SUPER]>, [E_SUPER] >
- */
-inline fun <reified Si : Si_SUPER, So : So_SUPER, reified E : E_SUPER, reified Si2 : Si_SUPER, So2 : So_SUPER, reified E2 : E_SUPER, Si_SUPER, So_SUPER, E_SUPER> _View<List<Si>, List<So>, in E?>.combineL(
-    y: _View<List<Si2>, List<So2>, in E2?>
-): _View<List<Si_SUPER>, List<So_SUPER>, E_SUPER> {
-
-    val extractE1: (E_SUPER) -> E? = {
-        when (it) {
-            is E -> it
-            else -> null
-        }
-    }
-    val extractE2: (E_SUPER) -> E2? = {
-        when (it) {
-            is E2 -> it
-            else -> null
-        }
-    }
-    val extractS1: (List<Si_SUPER>) -> List<Si> = { list -> list.filterIsInstance(Si::class.java) }
-    val extractS2: (List<Si_SUPER>) -> List<Si2> = { list -> list.filterIsInstance(Si2::class.java) }
-
-    val viewX = this
-        .mapLeftOnEvent(extractE1)
-        .mapLeftOnState(extractS1)
-
-    val viewY = y
-        .mapLeftOnEvent(extractE2)
-        .mapLeftOnState(extractS2)
-
-    val viewZ = viewX.productOnState(viewY).mapOnState { pair: Pair<List<So>, List<So2>> -> pair.toList().flatten() }
-
-    return _View(
-        evolve = { si, e -> viewZ.evolve(si, e) },
-        initialState = viewZ.initialState
-    )
+    return viewX.productOnState(viewY)
 }
 
 /**

@@ -16,8 +16,11 @@
 
 package com.fraktalio.fmodel.domain
 
-import com.fraktalio.fmodel.domain.examples.numbers.api.*
+import com.fraktalio.fmodel.domain.examples.numbers.api.Description
+import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
+import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.even.query.evenNumberView
 import com.fraktalio.fmodel.domain.examples.numbers.odd.query.oddNumberView
 import org.spekframework.spek2.Spek
@@ -32,31 +35,7 @@ object ViewTest : Spek({
         val evenView by memoized { evenNumberView() }
         val oddView by memoized { oddNumberView() }
         val combinedView by memoized { evenView.combine(oddView) }
-        val combinedViewList by memoized {
-            evenView.dimapOnState(
-                fr = { v -> listOfNotNull(v) },
-                fl = { sin: List<EvenNumberState> -> sin.first() })
-                .combineL(
-                    oddView.dimapOnState(
-                        fr = { v -> listOfNotNull(v) },
-                        fl = { sin: List<OddNumberState> -> sin.first() })
-                )
-        }
-        val combinedViewList2 by memoized {
-            evenView.dimapOnState(
-                fr = { v -> listOfNotNull(v) },
-                fl = { sin: List<EvenNumberState> -> sin.first() })
-                .combineL(
-                    oddView.dimapOnState(
-                        fr = { v -> listOfNotNull(v) },
-                        fl = { sin: List<OddNumberState> -> sin.first() })
-                )
-                .combineL(
-                    evenView.dimapOnState(
-                        fr = { v -> listOfNotNull(v) },
-                        fl = { sin: List<EvenNumberState> -> sin.first() })
-                )
-        }
+
 
         Scenario("Evolve") {
             var result: EvenNumberState? = null
@@ -192,47 +171,6 @@ object ViewTest : Spek({
                         EvenNumberState(Description("Initial state, 2"), NumberValue(2)),
                         OddNumberState(Description("Initial state"), NumberValue(0))
                     ), result
-                )
-            }
-
-        }
-
-        Scenario("Evolve - combine - list") {
-            var result: List<NumberState> = emptyList()
-
-            When("being in current/initial state of type List<NumberState>, and handling event of type NumberEvent") {
-                result = combinedViewList.evolve(
-                    combinedViewList.initialState,
-                    EvenNumberAdded(Description("2"), NumberValue(2))
-                )
-            }
-
-            Then("new state of type List<NumberState> should be constructed/evolved") {
-                assertEquals(
-                    listOf(EvenNumberState(Description("Initial state, 2"), NumberValue(2))).plus(
-                        OddNumberState(Description("Initial state"), NumberValue(0))
-                    ), result
-                )
-            }
-
-        }
-
-        Scenario("Evolve - combine - list2") {
-            var result: List<NumberState> = emptyList()
-
-            When("being in current/initial state of type List<NumberState> and handling event of type NumberEvent") {
-                result = combinedViewList2.evolve(
-                    combinedViewList2.initialState,
-                    EvenNumberAdded(Description("2"), NumberValue(2))
-                )
-            }
-
-            Then("new state of type List<NumberState> should be constructed/evolved") {
-                assertEquals(
-                    listOf(EvenNumberState(Description("Initial state, 2"), NumberValue(2)))
-                        .plus(OddNumberState(Description("Initial state"), NumberValue(0)))
-                        .plus(EvenNumberState(Description("Initial state, 2"), NumberValue(2))),
-                    result
                 )
             }
         }
