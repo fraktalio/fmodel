@@ -17,6 +17,20 @@
 package com.fraktalio.fmodel.domain
 
 /**
+ * An interface of the [_Saga].
+ *
+ * @param AR Action Result type
+ * @param A Action type
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface I_Saga<in AR, out A> {
+    val react: (AR) -> Sequence<A>
+}
+
+typealias ISaga<AR, A> = I_Saga<AR, A>
+
+/**
  * [_Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).
  * It is responsible for mapping different events from aggregates into action results ([AR]) that the [_Saga] then can use to calculate the next actions ([A]) to be mapped to commands of other aggregates.
  *
@@ -30,8 +44,8 @@ package com.fraktalio.fmodel.domain
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class _Saga<in AR, out A>(
-    val react: (AR) -> Sequence<A>
-) {
+    override val react: (AR) -> Sequence<A>
+) : I_Saga<AR, A> {
     /**
      * Left map on AR/ActionResult parameter - Contravariant
      *

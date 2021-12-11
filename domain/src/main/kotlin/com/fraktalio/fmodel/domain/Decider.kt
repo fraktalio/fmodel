@@ -17,6 +17,34 @@
 package com.fraktalio.fmodel.domain
 
 /**
+ * An Interface of the [_Decider].
+ *
+ * @param C Command type - contravariant/in type parameter
+ * @param Si Input_State type - contravariant/in type parameter
+ * @param So Output_State type - covariant/out type parameter
+ * @param Ei Input_Event type - contravariant/in type parameter
+ * @param Eo Output_Event type - covariant/out type parameter
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface I_Decider<in C, in Si, out So, in Ei, out Eo> {
+    val decide: (C, Si) -> Sequence<Eo>
+    val evolve: (Si, Ei) -> So
+    val initialState: So
+}
+
+/**
+ * A convenient typealias for the [I_Decider] interface. It is specializing the five parameters [I_Decider] interface to only three parameters interface [IDecider].
+ *
+ * `Si=So -> S`
+ * `Ei=Eo -> E`
+ * `C -> C`
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+typealias IDecider<C, S, E> = I_Decider<C, S, S, E, E>
+
+/**
  * [_Decider] is a datatype that represents the main decision making algorithm.
  * It has five generic parameters [C], [Si], [So], [Ei], [Eo] , representing the type of the values that [_Decider] may contain or use.
  * [_Decider] can be specialized for any type [C] or [Si] or [So] or [Ei] or [Eo] because these types does not affect its behavior.
@@ -37,10 +65,10 @@ package com.fraktalio.fmodel.domain
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class _Decider<in C, in Si, out So, in Ei, out Eo>(
-    val decide: (C, Si) -> Sequence<Eo>,
-    val evolve: (Si, Ei) -> So,
-    val initialState: So,
-) {
+    override val decide: (C, Si) -> Sequence<Eo>,
+    override val evolve: (Si, Ei) -> So,
+    override val initialState: So,
+) : I_Decider<C, Si, So, Ei, Eo> {
     /**
      * Left map on C/Command parameter - Contravariant
      *
