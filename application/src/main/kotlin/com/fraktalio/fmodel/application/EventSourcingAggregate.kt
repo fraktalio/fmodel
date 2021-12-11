@@ -20,6 +20,9 @@ import arrow.core.Either
 import arrow.core.computations.either
 import com.fraktalio.fmodel.domain.IDecider
 import com.fraktalio.fmodel.domain.ISaga
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Event sourcing aggregate is using/delegating a `decider` of type [IDecider]<[C], [S], [E]> to handle commands and produce events.
@@ -187,4 +190,69 @@ suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C): Sequen
         .computeNewEvents(command)
         .save()
 
+/**
+ * Extension function - Handles the command message of type [C]
+ * This function uses dispatcher from the new context, shifting fetching/saving into the different thread if a new dispatcher is specified, and back to the original dispatcher when it completes.
+ *
+ * @param command Command message of type [C]
+ * @param context The new context to supply a concrete dispatcher / IO is by default
+ * @return [Either] [Error] or [Sequence] of Events of type [E] that are saved
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
 
+suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(
+    command: C,
+    context: CoroutineContext = IO
+): Either<Error, Sequence<E>> {
+
+    suspend fun C.eitherFetchEventsOrFail(): Either<Error.FetchingEventsFailed, Sequence<E>> =
+        Either.catch {
+            withContext(context) { fetchEvents() }
+        }.mapLeft { throwable -> Error.FetchingEventsFailed(throwable) }
+
+    suspend fun E.eitherSaveOrFail(): Either<Error.StoringEventFailed<E>, E> =
+        Either.catch {
+            withContext(context) { save() }
+        }.mapLeft { throwable -> Error.StoringEventFailed(this, throwable) }
+
+    suspend fun Sequence<E>.eitherSaveOrFail(): Either<Error.StoringEventFailed<E>, Sequence<E>> =
+        either<Error.StoringEventFailed<E>, List<E>> {
+            this@eitherSaveOrFail.asIterable().map { it.eitherSaveOrFail().bind() }
+        }.map { it.asSequence() }
+
+    fun Sequence<E>.eitherComputeNewEventsOrFail(command: C): Either<Error, Sequence<E>> =
+        Either.catch {
+            computeNewEvents(command)
+        }.mapLeft { throwable ->
+            Error.CalculatingNewEventsFailed(this.toList(), throwable)
+        }
+
+    // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
+    return either {
+        command
+            .eitherFetchEventsOrFail().bind()
+            .eitherComputeNewEventsOrFail(command).bind()
+            .eitherSaveOrFail().bind()
+    }
+}
+
+/**
+ * Extension function - Handles the command message of type [C] in the new context (`IO` by default)
+ *
+ * This function uses dispatcher from the new context, shifting fetching/saving into the different thread if a new dispatcher is specified, and back to the original dispatcher when it completes.
+ *
+ * @param command Command message of type [C]
+ * @param context The new context to supply a concrete dispatcher / IO is by default
+ * @return [Sequence] of Events of type [E] that are saved, or throws an exception
+ */
+suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C, context: CoroutineContext = IO): Sequence<E> {
+    suspend fun C.fetchEventsAwait(): Sequence<E> = withContext(context) { fetchEvents() }
+    suspend fun Sequence<E>.saveAwait(): Sequence<E> = withContext(context) { save() }
+
+    return command
+        .fetchEventsAwait()
+        .computeNewEvents(command)
+        .saveAwait()
+
+}

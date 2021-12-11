@@ -31,7 +31,9 @@ import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecid
 import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
@@ -56,12 +58,12 @@ object AggregateTest : Spek({
             lateinit var result: Either<Error, Sequence<EvenNumberEvent?>>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runBlocking {
                     result = evenAggregate.handleEither(
                         AddEvenNumber(
                             Description("Add 2"),
                             NumberValue(2)
-                        )
+                        ), Dispatchers.IO
                     )
                 }
             }
