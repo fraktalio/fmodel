@@ -24,12 +24,12 @@ package com.fraktalio.fmodel.domain
  *
  * @param AR Action Result type
  * @param A Action type
- * @property react A pure function/lambda that takes input state of type [AR], and returns the list of actions [Iterable]<[A]>.
+ * @property react A pure function/lambda that takes input state of type [AR], and returns the list of actions [Sequence]<[A]>.
  * @constructor Creates [_Saga]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class _Saga<AR, A>(
+data class _Saga<in AR, out A>(
     val react: (AR) -> Sequence<A>
 ) {
     /**
@@ -70,36 +70,23 @@ data class _Saga<AR, A>(
  * @param y second saga
  * @return new Saga of type `[_Saga]<[AR_SUPER], [A_SUPER]>`
  */
-inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> _Saga<in AR?, out A>.combine(
-    y: _Saga<in AR2?, out A2>
+inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> _Saga<AR?, A>.combine(
+    y: _Saga<AR2?, A2>
 ): _Saga<AR_SUPER, A_SUPER> {
-    val getAR: (AR_SUPER) -> AR? = {
-        when (it) {
-            is AR -> it
-            else -> null
-        }
-    }
-    val getAR2: (AR_SUPER) -> AR2? = {
-        when (it) {
-            is AR2 -> it
-            else -> null
-        }
-    }
-    val getABase: (A) -> A_SUPER = { it }
-    val getA2Base: (A2) -> A_SUPER = { it }
 
     val sagaX = this
-        .mapLeftOnActionResult(getAR)
-        .mapOnAction(getABase)
+        .mapLeftOnActionResult<AR_SUPER> { it as? AR }
+        .mapOnAction<A_SUPER> { it } // As OR/SUM relationship is modeled with inheritance/polymorphism, the 'mapOnAction' function is not needed. It is mapping over the identity function. Used here for the sake of future implementations of `react` functions, and learning purposes.
 
     val sagaY = y
-        .mapLeftOnActionResult(getAR2)
-        .mapOnAction(getA2Base)
+        .mapLeftOnActionResult<AR_SUPER> { it as? AR2 }
+        .mapOnAction<A_SUPER> { it } // As OR/SUM relationship is modeled with inheritance/polymorphism, the 'mapOnAction' function is not needed. It is mapping over the identity function. Used here for the sake of future implementations of `react` functions, and learning purposes.
 
     return _Saga(
         react = { eitherAr -> sagaX.react(eitherAr).plus(sagaY.react(eitherAr)) }
     )
 }
+
 
 /**
  * A typealias for [_Saga]<AR, A>, specializing the [_Saga] to two generic parameters: AR and A

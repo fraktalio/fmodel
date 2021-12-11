@@ -29,7 +29,7 @@ package com.fraktalio.fmodel.domain
  * @param So Output_State type
  * @param Ei Input_Event type
  * @param Eo Output_Event type
- * @property decide A pure function/lambda that takes command of type [C] and input state of type [Si] as parameters, and returns the iterable of output events [Iterable]<[Eo]> as a result
+ * @property decide A pure function/lambda that takes command of type [C] and input state of type [Si] as parameters, and returns the iterable of output events [Sequence]<[Eo]> as a result
  * @property evolve A pure function/lambda that takes input state of type [Si] and input event of type [Ei] as parameters, and returns the output/new state [So]
  * @property initialState A starting point / An initial state of type [So]
  * @constructor Creates [_Decider]
