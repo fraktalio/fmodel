@@ -59,7 +59,7 @@ object AggregateTest : Spek({
 
             When("handling command of type AddEvenNumber") {
                 runBlocking {
-                    result = evenAggregate.handleEither(
+                    result = evenAggregate.handleEitherInContext(
                         AddEvenNumber(
                             Description("Add 2"),
                             NumberValue(2)

@@ -201,7 +201,7 @@ suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C): Sequen
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 
-suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(
+suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEitherInContext(
     command: C,
     context: CoroutineContext = IO
 ): Either<Error, Sequence<E>> {
@@ -246,7 +246,10 @@ suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(
  * @param context The new context to supply a concrete dispatcher / IO is by default
  * @return [Sequence] of Events of type [E] that are saved, or throws an exception
  */
-suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C, context: CoroutineContext = IO): Sequence<E> {
+suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handleInContext(
+    command: C,
+    context: CoroutineContext = IO
+): Sequence<E> {
     suspend fun C.fetchEventsAwait(): Sequence<E> = withContext(context) { fetchEvents() }
     suspend fun Sequence<E>.saveAwait(): Sequence<E> = withContext(context) { save() }
 
