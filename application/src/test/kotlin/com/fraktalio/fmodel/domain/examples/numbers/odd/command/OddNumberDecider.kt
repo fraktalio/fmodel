@@ -34,7 +34,6 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
  */
 fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?> =
     Decider(
-        isTerminal = { s -> s.value.get > 100 },
         initialState = OddNumberState(
             Description(
                 "Initial state"

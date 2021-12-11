@@ -83,36 +83,6 @@ object AggregateTest : Spek({
             }
         }
 
-        Scenario("Error - AggregateIsInTerminalState") {
-            lateinit var result: Either<Error, Iterable<EvenNumberEvent?>>
-
-            Given("events") {
-                runBlockingTest {
-                    result = evenAggregate.handle(
-                        AddEvenNumber(
-                            Description("Add 200"),
-                            NumberValue(200)
-                        )
-                    )
-                }
-            }
-            When("handling command of type AddEvenNumber") {
-                runBlockingTest {
-                    result = evenAggregate.handle(
-                        AddEvenNumber(
-                            Description("Add 2"),
-                            NumberValue(2)
-                        )
-                    )
-                }
-            }
-            Then("expect error") {
-                assertTrue(result is Either.Left && (result as Either.Left<Error>).value is Error.CalculatingNewEventsFailed<*>)
-            }
-        }
-
-
-
         Scenario("Success - All Numbers Aggregate -  Even") {
             lateinit var result: Either<Error, Iterable<NumberEvent?>>
 

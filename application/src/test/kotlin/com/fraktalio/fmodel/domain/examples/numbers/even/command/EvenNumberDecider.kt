@@ -34,7 +34,6 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
  */
 fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumberEvent?> =
     Decider(
-        isTerminal = { s -> s.value.get > 100 },
         initialState = EvenNumberState(
             Description(
                 "Initial state"

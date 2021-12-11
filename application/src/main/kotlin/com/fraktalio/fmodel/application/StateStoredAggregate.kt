@@ -60,13 +60,9 @@ data class StateStoredAggregate<C, S, E>(
                 .saveEither().bind()
         }
 
-    private fun S.validateIfTerminal(): S =
-        if (decider.isTerminal(this)) throw UnsupportedOperationException("Aggregate is in terminal state")
-        else this
-
     private fun S.calculateNewState(command: C): Either<Error, S> =
         Either.catch {
-            val events = decider.decide(command, this.validateIfTerminal())
+            val events = decider.decide(command, this@calculateNewState)
             val newState = events.fold(this, decider.evolve)
             if (saga != null) events.flatMap { saga.react(it) }.forEach { newState.calculateNewState(it) }
             newState

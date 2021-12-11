@@ -62,14 +62,11 @@ data class EventSourcingAggregate<C, S, E>(
                 .saveEither().bind()
         }
 
-    private fun S.validateIfTerminal(): S =
-        if (decider.isTerminal(this)) throw UnsupportedOperationException("Aggregate is in terminal state")
-        else this
 
     private suspend fun Iterable<E>.calculateNewEvents(command: C): Either<Error, Iterable<E>> =
         Either.catch {
             val currentEvents = this@calculateNewEvents
-            val currentState = currentEvents.fold(decider.initialState, decider.evolve).validateIfTerminal()
+            val currentState = currentEvents.fold(decider.initialState, decider.evolve)
             var newEvents = decider.decide(command, currentState)
 
             if (saga != null) newEvents
