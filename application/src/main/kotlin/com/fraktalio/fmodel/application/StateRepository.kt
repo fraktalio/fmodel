@@ -16,8 +16,6 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
-
 /**
  * State repository interface.
  *
@@ -31,15 +29,4 @@ import arrow.core.Either
 interface StateRepository<C, S> {
     suspend fun C.fetchState(): S?
     suspend fun S.save(): S
-
-    suspend fun C.fetchStateEither(): Either<Error.FetchingStateFailed, S?> =
-        Either.catch {
-            fetchState()
-        }.mapLeft { throwable -> Error.FetchingStateFailed(throwable) }
-
-    suspend fun S.saveEither(): Either<Error.StoringStateFailed<S>, S> =
-        Either.catch {
-            this.save()
-        }.mapLeft { throwable -> Error.StoringStateFailed(this, throwable) }
-
 }
