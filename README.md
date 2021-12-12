@@ -15,11 +15,12 @@ the business — together, they constitute the model of the domain.
 This project can be used as a library, or as an inspiration, or both. It provides just enough tactical Domain-Driven
 Design patterns, optimised for Event Sourcing and CQRS.
 
-- The `domain` model library is fully isolated from the application layer and API-related concerns. It represents a pure
-  declaration of the program logic. It is written in [Kotlin](https://kotlinlang.org/) programming language, without
-  additional dependencies.
-- The `application` library orchestrates the execution of the logic by loading state, executing `domain` components and
-  storing new state. It is written in [Kotlin](https://kotlinlang.org/) programming language.
+- The [`domain` model library](https://search.maven.org/artifact/com.fraktalio.fmodel/domain/1.2.0/jar) is fully
+  isolated from the application layer and API-related concerns. It represents a pure declaration of the program logic.
+  It is written in [Kotlin](https://kotlinlang.org/) programming language, without additional dependencies.
+- The [`application` library](https://search.maven.org/artifact/com.fraktalio.fmodel/application/1.2.0/jar) orchestrates
+  the execution of the logic by loading state, executing `domain` components and storing new state. It is written
+  in [Kotlin](https://kotlinlang.org/) programming language and [Arrow](https://arrow-kt.io/) as additional dependency.
 
 The libraries are non-intrusive. You can use only `domain` library and model the orchestration (`application` library)
 on your own. Or, you can simply be inspired by this project :)
