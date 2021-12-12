@@ -18,39 +18,89 @@ package com.fraktalio.fmodel.application
 
 import arrow.core.Either
 import arrow.core.computations.either
-import com.fraktalio.fmodel.domain.Saga
+import com.fraktalio.fmodel.domain.ISaga
 
 /**
- * Saga manager - Stateless process orchestrator
- * It is reacting on Action Results of type [AR] and produces new actions [A] based on them
+ * Saga manager - Stateless process orchestrator.
+ * It is reacting on Action Results of type [AR] and produces new actions [A] based on them.
+ *
+ * [SagaManager] extends [ISaga] and [ActionPublisher] interfaces,
+ * clearly communicating that it is composed out of these two behaviours.
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class SagaManager<AR, A>(
-    private val saga: Saga<AR, A>,
-    private val actionPublisher: ActionPublisher<A>,
-) : ActionPublisher<A> by actionPublisher {
+interface SagaManager<AR, A> : ISaga<AR, A>, ActionPublisher<A> {
 
     /**
-     * Handles the action result of type [AR]
+     * Computes new Actions based on the Action Results.
      *
-     * @param actionResult Action Result represent the outcome of some action you want to handle in some way
-     * @return Either [Error] or [Sequence] of [A]
+     * @return The newly computed [Sequence] of Actions/[A]
      */
-    suspend fun handle(actionResult: AR): Either<Error, Sequence<A>> =
-        // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
+    fun AR.computeNewActions(): Sequence<A> = react(this)
+
+}
+
+/**
+ * Saga Manager factory function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param AR Action Result of type [AR], Action Result is usually an Event
+ * @param A An Action of type [A] to be taken. Action is usually a Command.
+ * @property saga A saga component of type [ISaga]<[AR], [A]>
+ * @property actionPublisher Interface for publishing the Actions of type [A] - dependencies by delegation
+ * @return An object/instance of type [SagaManager]<[AR], [A]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <AR, A> sagaManager(
+    saga: ISaga<AR, A>,
+    actionPublisher: ActionPublisher<A>
+): SagaManager<AR, A> =
+    object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher, ISaga<AR, A> by saga {}
+
+/**
+ * Extension function - Handles the action result of type [AR].
+ *
+ * @param actionResult Action Result represent the outcome of some action you want to handle in some way
+ * @return [Sequence] of Actions of type [A]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+suspend fun <AR, A> SagaManager<AR, A>.handle(actionResult: AR): Sequence<A> =
+    actionResult
+        .computeNewActions()
+        .publish()
+
+/**
+ * Extension function - Handles the action result of type [AR].
+ *
+ * @param actionResult Action Result represent the outcome of some action you want to handle in some way
+ * @return [Either] [Error] or [Sequence] of Actions of type [A]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+suspend fun <AR, A> SagaManager<AR, A>.handleEither(actionResult: AR): Either<Error, Sequence<A>> {
+    suspend fun A.eitherPublishOrFail(): Either<Error.PublishingActionFailed<A>, A> =
+        Either.catch {
+            this.publish()
+        }.mapLeft { throwable -> Error.PublishingActionFailed(this, throwable) }
+
+    suspend fun Sequence<A>.eitherPublishOrFail(): Either<Error.PublishingActionFailed<A>, Sequence<A>> =
         either {
-            actionResult
-                .calculateNewActions().bind()
-                .publishEither().bind()
+            asIterable().map { it.eitherPublishOrFail().bind() }.asSequence()
         }
 
-    private fun AR.calculateNewActions(): Either<Error, Sequence<A>> =
+    fun AR.eitherCalculateNewActionsOrFail(): Either<Error, Sequence<A>> =
         Either.catch {
-            saga.react(this)
+            react(this)
         }.mapLeft { throwable ->
             Error.CalculatingNewActionsFailed(this, throwable)
         }
 
+    return either {
+        actionResult
+            .eitherCalculateNewActionsOrFail().bind()
+            .eitherPublishOrFail().bind()
+    }
 }
-

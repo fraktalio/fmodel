@@ -16,9 +16,6 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
-import arrow.core.computations.either
-
 /**
  * Action publisher interface
  *
@@ -30,14 +27,5 @@ import arrow.core.computations.either
  */
 interface ActionPublisher<A> {
     suspend fun A.publish(): A
-
-    suspend fun A.publishEither(): Either<Error.PublishingActionFailed<A>, A> =
-        Either.catch {
-            this.publish()
-        }.mapLeft { throwable -> Error.PublishingActionFailed(this, throwable) }
-
-    suspend fun Sequence<A>.publishEither(): Either<Error.PublishingActionFailed<A>, Sequence<A>> =
-        either<Error.PublishingActionFailed<A>, List<A>> {
-            this@publishEither.asIterable().map { it.publishEither().bind() }
-        }.map { it.asSequence() }
+    suspend fun Sequence<A>.publish(): Sequence<A> = asIterable().map { it.publish() }.asSequence()
 }
