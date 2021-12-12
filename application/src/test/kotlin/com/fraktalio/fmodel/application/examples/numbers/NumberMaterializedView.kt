@@ -18,6 +18,7 @@ package com.fraktalio.fmodel.application.examples.numbers
 
 import com.fraktalio.fmodel.application.MaterializedView
 import com.fraktalio.fmodel.application.ViewStateRepository
+import com.fraktalio.fmodel.application.materializedView
 import com.fraktalio.fmodel.domain.View
 import com.fraktalio.fmodel.domain.combine
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
@@ -42,7 +43,7 @@ fun numberMaterializedView(
     evenView: View<EvenNumberState?, EvenNumberEvent?>,
     repository: ViewStateRepository<NumberEvent?, Pair<EvenNumberState?, OddNumberState?>>
 ): MaterializedView<Pair<EvenNumberState?, OddNumberState?>, NumberEvent?> =
-    MaterializedView(
+    materializedView(
         view = evenView.combine(oddView),
         viewStateRepository = repository
     )

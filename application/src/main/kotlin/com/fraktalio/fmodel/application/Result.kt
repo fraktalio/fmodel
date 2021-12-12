@@ -36,6 +36,7 @@ sealed class Error : Result() {
     abstract val throwable: Throwable?
 
     data class FetchingStateFailed(override val throwable: Throwable? = null) : Error()
+    data class FetchingViewStateFailed<E>(val event: E, override val throwable: Throwable? = null) : Error()
     data class FetchingEventsFailed(override val throwable: Throwable? = null) : Error()
     data class StoringEventFailed<E>(val event: E, override val throwable: Throwable? = null) : Error()
     data class StoringStateFailed<S>(val state: S, override val throwable: Throwable? = null) : Error()
