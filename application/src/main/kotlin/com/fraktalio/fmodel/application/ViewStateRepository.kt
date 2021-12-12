@@ -16,8 +16,6 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
-
 /**
  * View state repository interface
  *
@@ -29,15 +27,4 @@ import arrow.core.Either
 interface ViewStateRepository<E, S> {
     suspend fun E.fetchState(): S?
     suspend fun S.save(): S
-
-    suspend fun E.fetchStateEither(): Either<Error.FetchingStateFailed, S?> =
-        Either.catch {
-            fetchState()
-        }.mapLeft { throwable -> Error.FetchingStateFailed(throwable) }
-
-    suspend fun S.saveEither(): Either<Error.StoringStateFailed<S>, S> =
-        Either.catch {
-            this.save()
-        }.mapLeft { throwable -> Error.StoringStateFailed(this, throwable) }
-
 }
