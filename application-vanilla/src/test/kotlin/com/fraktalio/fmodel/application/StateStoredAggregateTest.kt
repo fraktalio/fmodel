@@ -32,7 +32,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
 import kotlin.test.assertEquals
@@ -47,17 +47,12 @@ object StateStoredAggregateTest : Spek({
         }
         val evenAggregate by memoized {
             evenNumberStateStoredAggregate(
-                evenNumberDecider(),
-                evenNumberStateRepository()
+                evenNumberDecider(), evenNumberStateRepository()
             )
         }
         val allNumbersAggregate by memoized {
             numberStateStoredAggregate(
-                evenNumberDecider(),
-                oddNumberDecider(),
-                evenNumberSaga(),
-                oddNumberSaga(),
-                numberStateRepository()
+                evenNumberDecider(), oddNumberDecider(), evenNumberSaga(), oddNumberSaga(), numberStateRepository()
             )
         }
 
@@ -65,21 +60,19 @@ object StateStoredAggregateTest : Spek({
             lateinit var result: EvenNumberState
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runTest {
                     (evenNumberStateRepository as EvenNumberStateRepository).deleteAll()
                     result = evenAggregate.handle(
                         AddEvenNumber(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     )
                 }
             }
             Then("expect success") {
-                runBlockingTest {
+                runTest {
                     assertEquals(
-                        EvenNumberState(Description("Add 2"), NumberValue(2)),
-                        result
+                        EvenNumberState(Description("Add 2"), NumberValue(2)), result
                     )
                 }
             }
@@ -89,21 +82,19 @@ object StateStoredAggregateTest : Spek({
             lateinit var result: Pair<EvenNumberState, OddNumberState>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runTest {
                     (numberStateRepository() as NumberStateRepository).deleteAll()
                     result = allNumbersAggregate.handle(
                         AddEvenNumber(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     )
                 }
             }
             Then("expect success") {
-                runBlockingTest {
+                runTest {
                     assertEquals(
-                        EvenNumberState(Description("Add 2"), NumberValue(2)),
-                        result.first
+                        EvenNumberState(Description("Add 2"), NumberValue(2)), result.first
                     )
                 }
             }

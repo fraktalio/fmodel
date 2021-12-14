@@ -33,7 +33,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
 import kotlin.test.assertTrue
@@ -45,17 +45,12 @@ object StateStoredAggregateTest : Spek({
     Feature("Aggregate") {
         val evenAggregate by memoized {
             evenNumberStateStoredAggregate(
-                evenNumberDecider(),
-                evenNumberStateRepository()
+                evenNumberDecider(), evenNumberStateRepository()
             )
         }
         val allNumbersAggregate by memoized {
             numberStateStoredAggregate(
-                evenNumberDecider(),
-                oddNumberDecider(),
-                evenNumberSaga(),
-                oddNumberSaga(),
-                numberStateRepository()
+                evenNumberDecider(), oddNumberDecider(), evenNumberSaga(), oddNumberSaga(), numberStateRepository()
             )
         }
 
@@ -63,18 +58,17 @@ object StateStoredAggregateTest : Spek({
             lateinit var result: Either<Error, EvenNumberState>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runTest {
                     (evenNumberStateRepository() as EvenNumberStateRepository).deleteAll()
                     result = evenAggregate.handleEither(
                         AddEvenNumber(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     )
                 }
             }
             Then("expect success") {
-                runBlockingTest {
+                runTest {
                     assert(result is Either.Right)
                 }
             }
@@ -84,18 +78,17 @@ object StateStoredAggregateTest : Spek({
             lateinit var result: Either<Error, Pair<EvenNumberState, OddNumberState>>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runTest {
                     (numberStateRepository() as NumberStateRepository).deleteAll()
                     result = allNumbersAggregate.handleEither(
                         AddEvenNumber(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     )
                 }
             }
             Then("expect success") {
-                runBlockingTest {
+                runTest {
                     assert(result is Either.Right)
                 }
             }
@@ -106,18 +99,17 @@ object StateStoredAggregateTest : Spek({
             lateinit var result: Either<Error, EvenNumberState>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runTest {
                     (evenNumberStateRepository() as EvenNumberStateRepository).deleteAll()
                     result = evenAggregate.handleEither(
                         AddEvenNumber(
-                            Description("Add 2000"),
-                            NumberValue(2000)
+                            Description("Add 2000"), NumberValue(2000)
                         )
                     )
                 }
             }
             Then("expect error - either Left") {
-                runBlockingTest {
+                runTest {
                     assert(result is Either.Left)
                 }
             }
@@ -127,23 +119,21 @@ object StateStoredAggregateTest : Spek({
             lateinit var result: Either<Error, EvenNumberState>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runTest {
                     (evenNumberStateRepository() as EvenNumberStateRepository).deleteAll()
                     result = evenAggregate.handleEither(
                         AddEvenNumber(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     )
                 }
             }
             Then("expect success") {
-                runBlockingTest {
+                runTest {
                     assertTrue { result.isRight() }
                     assertTrue {
                         result is Either.Right && (result as Either.Right<EvenNumberState>).value == EvenNumberState(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     }
                 }

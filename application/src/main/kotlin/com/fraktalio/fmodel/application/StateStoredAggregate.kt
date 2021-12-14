@@ -21,6 +21,7 @@ import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.flow.onEach
 
 /**
  * State stored aggregate is using/delegating a `decider` of type [IDecider]<[C], [S], [E]> to handle commands and produce new state.
@@ -82,7 +83,7 @@ interface StateStoredOrchestratingAggregate<C, S, E> : ISaga<E, C>, StateStoredA
     override suspend fun S.computeNewState(command: C): S {
         val events = decide(command, this)
         val newState = events.fold(this) { s, e -> evolve(s, e) }
-        events.flatMapConcat { react(it) }.collect { newState.computeNewState(it) }
+        events.flatMapConcat { react(it) }.onEach { newState.computeNewState(it) }.collect()
         return newState
     }
 }

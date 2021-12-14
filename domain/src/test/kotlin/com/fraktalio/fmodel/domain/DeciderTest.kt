@@ -22,10 +22,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEv
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
@@ -44,29 +41,26 @@ object DeciderTest : Spek({
             lateinit var result: Flow<EvenNumberEvent?>
 
             When("being in current/initial state of type EvenNumberState and handling command of type AddEvenNumber") {
-                result = evenDecider
-                    .decide(
-                        AddEvenNumber(
-                            Description("2"),
-                            NumberValue(2)
-                        ), evenDecider.initialState
-                    )
+                result = evenDecider.decide(
+                    AddEvenNumber(
+                        Description("2"), NumberValue(2)
+                    ), evenDecider.initialState
+                )
             }
 
             Then("event of type EvenNumberEvent should be published") {
                 runBlocking {
                     val expected = mutableListOf<EvenNumberEvent?>()
-                    result.take(1).collect {
+                    result.take(1).onEach {
                         expected.add(it)
                         assertEquals(
                             listOf<EvenNumberEvent?>(
                                 EvenNumberAdded(
-                                    Description("2"),
-                                    NumberValue(2)
+                                    Description("2"), NumberValue(2)
                                 )
                             ), expected
                         )
-                    }
+                    }.collect()
                 }
             }
 
@@ -76,13 +70,11 @@ object DeciderTest : Spek({
             lateinit var result: Flow<NumberEvent?>
 
             When("being in current/initial state of type Pair<EvenNumberState, OddNumberState> and handling command of super type NumberCommand") {
-                result = combinedDecider
-                    .decide(
-                        AddEvenNumber(
-                            Description("2"),
-                            NumberValue(2)
-                        ), combinedDecider.initialState
-                    )
+                result = combinedDecider.decide(
+                    AddEvenNumber(
+                        Description("2"), NumberValue(2)
+                    ), combinedDecider.initialState
+                )
             }
 
             Then("event of super type NumberEvent should be published") {
@@ -90,8 +82,7 @@ object DeciderTest : Spek({
                     assertEquals(
                         listOf(
                             EvenNumberAdded(
-                                Description("2"),
-                                NumberValue(2)
+                                Description("2"), NumberValue(2)
                             )
                         ), result.toList()
                     )
@@ -105,14 +96,11 @@ object DeciderTest : Spek({
             lateinit var result: Flow<EvenNumberEvent?>
 
             When("being in current/initial state of type EvenNumberState and handling command of type Int") {
-                result = evenDecider
-                    .mapLeftOnCommand { cn: Int ->
-                        AddEvenNumber(
-                            Description(cn.toString()),
-                            NumberValue(cn)
-                        )
-                    }
-                    .decide(2, evenDecider.initialState)
+                result = evenDecider.mapLeftOnCommand { cn: Int ->
+                    AddEvenNumber(
+                        Description(cn.toString()), NumberValue(cn)
+                    )
+                }.decide(2, evenDecider.initialState)
             }
 
             Then("event of type EvenNumberEvent should be published") {
@@ -120,8 +108,7 @@ object DeciderTest : Spek({
                     assertEquals(
                         listOf(
                             EvenNumberAdded(
-                                Description("2"),
-                                NumberValue(2)
+                                Description("2"), NumberValue(2)
                             )
                         ), result.toList()
                     )
@@ -133,21 +120,17 @@ object DeciderTest : Spek({
             lateinit var result: Flow<Int?>
 
             When("being in current/initial state of type EvenNumberState and handling command of type AddEvenNumber") {
-                result = evenDecider
-                    .dimapOnEvent(
-                        fr = { evenNumberEvent: EvenNumberEvent? -> evenNumberEvent?.value?.get },
+                result =
+                    evenDecider.dimapOnEvent(fr = { evenNumberEvent: EvenNumberEvent? -> evenNumberEvent?.value?.get },
                         fl = { number: Int ->
                             EvenNumberAdded(
                                 Description(
                                     number.toString()
                                 ), NumberValue(number)
                             )
-                        }
-                    )
-                    .decide(
+                        }).decide(
                         AddEvenNumber(
-                            Description("2"),
-                            NumberValue(2)
+                            Description("2"), NumberValue(2)
                         ), evenDecider.initialState
                     )
             }
@@ -163,15 +146,16 @@ object DeciderTest : Spek({
             lateinit var result: Flow<EvenNumberEvent?>
 
             When("being in current/initial state of type Int and handling command of type AddEvenNumber") {
-                result = evenDecider
-                    .dimapOnState(
-                        fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
-                        fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
-                    )
-                    .decide(
+                result =
+                    evenDecider.dimapOnState(fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
+                        fl = { number: Int ->
+                            EvenNumberState(
+                                Description(number.toString()),
+                                NumberValue(number)
+                            )
+                        }).decide(
                         AddEvenNumber(
-                            Description("2"),
-                            NumberValue(2)
+                            Description("2"), NumberValue(2)
                         ), evenDecider.initialState.value.get
                     )
             }
@@ -181,8 +165,7 @@ object DeciderTest : Spek({
                     assertEquals(
                         listOf(
                             EvenNumberAdded(
-                                Description("2"),
-                                NumberValue(2)
+                                Description("2"), NumberValue(2)
                             )
                         ), result.toList()
                     )
@@ -196,14 +179,11 @@ object DeciderTest : Spek({
             When("being in current/initial of type EvenNumberState and handling command of type AddEvenNumber by the product of two deciders") {
                 val decider2 =
                     evenDecider.mapOnState { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
-                result = evenDecider
-                    .productOnState(decider2)
-                    .decide(
-                        AddEvenNumber(
-                            Description("2"),
-                            NumberValue(2)
-                        ), evenDecider.initialState
-                    )
+                result = evenDecider.productOnState(decider2).decide(
+                    AddEvenNumber(
+                        Description("2"), NumberValue(2)
+                    ), evenDecider.initialState
+                )
             }
 
             Then("two events of type EvenNumberEvent should be published") {
@@ -211,12 +191,9 @@ object DeciderTest : Spek({
                     assertEquals(
                         listOf(
                             EvenNumberAdded(
-                                Description("2"),
-                                NumberValue(2)
-                            ),
-                            EvenNumberAdded(
-                                Description("2"),
-                                NumberValue(2)
+                                Description("2"), NumberValue(2)
+                            ), EvenNumberAdded(
+                                Description("2"), NumberValue(2)
                             )
                         ), result.toList()
                     )
@@ -246,8 +223,7 @@ object DeciderTest : Spek({
             When("being in current/initial state of type EvenNumberState and handling event of type EvenNumberEvent") {
                 runBlocking {
                     result = combinedDecider.evolve(
-                        combinedDecider.initialState,
-                        EvenNumberAdded(Description("2"), NumberValue(2))
+                        combinedDecider.initialState, EvenNumberAdded(Description("2"), NumberValue(2))
                     )
                 }
             }
@@ -268,14 +244,11 @@ object DeciderTest : Spek({
 
             When("being in current/initial state of type EvenNumberState and handling event of type EvenNumberEvent") {
                 runBlocking {
-                    result = evenDecider
-                        .mapLeftOnCommand { cn: Int ->
-                            AddEvenNumber(
-                                Description(cn.toString()),
-                                NumberValue(cn)
-                            )
-                        }
-                        .evolve(evenDecider.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
+                    result = evenDecider.mapLeftOnCommand { cn: Int ->
+                        AddEvenNumber(
+                            Description(cn.toString()), NumberValue(cn)
+                        )
+                    }.evolve(evenDecider.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
                 }
             }
 
@@ -290,12 +263,14 @@ object DeciderTest : Spek({
 
             When("being in current/initial state of type EvenNumberState and handling event of type Int") {
                 runBlocking {
-                    result = evenDecider
-                        .dimapOnEvent(
-                            fr = { evenNumberEvent: EvenNumberEvent? -> evenNumberEvent?.value?.get },
-                            fl = { number: Int -> EvenNumberAdded(Description(number.toString()), NumberValue(number)) }
-                        )
-                        .evolve(evenDecider.initialState, 2)
+                    result =
+                        evenDecider.dimapOnEvent(fr = { evenNumberEvent: EvenNumberEvent? -> evenNumberEvent?.value?.get },
+                            fl = { number: Int ->
+                                EvenNumberAdded(
+                                    Description(number.toString()),
+                                    NumberValue(number)
+                                )
+                            }).evolve(evenDecider.initialState, 2)
                 }
             }
 
@@ -306,16 +281,21 @@ object DeciderTest : Spek({
         }
 
         Scenario("Evolve - dimap over State parameter - profunctor") {
-            var result: Int = 0
+            var result = 0
 
             When("being in current/initial state of type Int and handling event of type EvenNumberEvent") {
                 runBlocking {
-                    result = evenDecider
-                        .dimapOnState(
-                            fr = { evenNumberState: EvenNumberState -> evenNumberState.value.get },
-                            fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
+                    result =
+                        evenDecider.dimapOnState(fr = { evenNumberState: EvenNumberState -> evenNumberState.value.get },
+                            fl = { number: Int ->
+                                EvenNumberState(
+                                    Description(number.toString()),
+                                    NumberValue(number)
+                                )
+                            }).evolve(
+                            evenDecider.initialState.value.get,
+                            EvenNumberAdded(Description("2"), NumberValue(2))
                         )
-                        .evolve(evenDecider.initialState.value.get, EvenNumberAdded(Description("2"), NumberValue(2)))
                 }
             }
 
@@ -332,8 +312,7 @@ object DeciderTest : Spek({
                 runBlocking {
                     val decider2 =
                         evenDecider.mapOnState { evenNumberState: EvenNumberState -> evenNumberState.value.get }
-                    result = evenDecider
-                        .productOnState(decider2)
+                    result = evenDecider.productOnState(decider2)
                         .evolve(evenDecider.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
                 }
 
@@ -359,13 +338,11 @@ object DeciderTest : Spek({
 
             Then("it should be in the initial state of type EvenNumberState") {
                 assertEquals(
-                    result, evenDecider
-                        .mapLeftOnCommand { cn: Int ->
-                            AddEvenNumber(
-                                Description(cn.toString()),
-                                NumberValue(cn)
-                            )
-                        }.initialState
+                    result, evenDecider.mapLeftOnCommand { cn: Int ->
+                        AddEvenNumber(
+                            Description(cn.toString()), NumberValue(cn)
+                        )
+                    }.initialState
                 )
             }
         }
@@ -374,11 +351,15 @@ object DeciderTest : Spek({
             val result = EvenNumberState(Description("Initial state"), NumberValue(0))
 
             Then("it should be in the initial state of type EvenNumberState") {
-                assertEquals(result, evenDecider
-                    .dimapOnEvent(
-                        fr = { evenNumberEvent: EvenNumberEvent? -> evenNumberEvent?.value?.get },
-                        fl = { number: Int -> EvenNumberAdded(Description(number.toString()), NumberValue(number)) }
-                    ).initialState
+                assertEquals(
+                    result,
+                    evenDecider.dimapOnEvent(fr = { evenNumberEvent: EvenNumberEvent? -> evenNumberEvent?.value?.get },
+                        fl = { number: Int ->
+                            EvenNumberAdded(
+                                Description(number.toString()),
+                                NumberValue(number)
+                            )
+                        }).initialState
                 )
             }
         }
@@ -387,10 +368,16 @@ object DeciderTest : Spek({
             val result = 0
 
             Then("it should be in the initial state of type EvenNumberState") {
-                assertEquals(result, evenDecider.dimapOnState(
-                    fr = { evenNumberState: EvenNumberState -> evenNumberState.value.get },
-                    fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
-                ).initialState)
+                assertEquals(
+                    result,
+                    evenDecider.dimapOnState(fr = { evenNumberState: EvenNumberState -> evenNumberState.value.get },
+                        fl = { number: Int ->
+                            EvenNumberState(
+                                Description(number.toString()),
+                                NumberValue(number)
+                            )
+                        }).initialState
+                )
             }
         }
 
@@ -409,13 +396,11 @@ object DeciderTest : Spek({
             lateinit var result: Flow<NumberEvent?>
 
             When("being in current/initial state of type Pair<EvenNumberState, OddNumberState> and handling command of super type NumberCommand") {
-                result = combinedDecider
-                    .decide(
-                        AddEvenNumber(
-                            Description("2000"),
-                            NumberValue(2000)
-                        ), combinedDecider.initialState
-                    )
+                result = combinedDecider.decide(
+                    AddEvenNumber(
+                        Description("2000"), NumberValue(2000)
+                    ), combinedDecider.initialState
+                )
             }
 
             Then("event of super type NumberEvent should be published") {

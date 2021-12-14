@@ -31,7 +31,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.even.query.evenNumberView
 import com.fraktalio.fmodel.domain.examples.numbers.odd.query.oddNumberView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
 import kotlin.test.assertTrue
@@ -44,21 +44,18 @@ object MaterializedViewTest : Spek({
         val evenView by memoized { evenNumberMaterializedView(evenNumberView(), evenNumberViewRepository()) }
         val allNumbersView by memoized {
             numberMaterializedView(
-                oddNumberView(),
-                evenNumberView(),
-                numberViewRepository()
+                oddNumberView(), evenNumberView(), numberViewRepository()
             )
         }
         Scenario("Success") {
             lateinit var result: Either<Error, EvenNumberState?>
 
             When("handling event of type EvenNumberAdded") {
-                runBlockingTest {
+                runTest {
                     (evenNumberViewRepository() as EvenNumberViewRepository).deleteAll()
                     result = evenView.handleEither(
                         EvenNumberAdded(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     )
                 }
@@ -73,7 +70,7 @@ object MaterializedViewTest : Spek({
             lateinit var result: Either<Error, EvenNumberState?>
 
             When("handling null") {
-                runBlockingTest {
+                runTest {
                     (evenNumberViewRepository() as EvenNumberViewRepository).deleteAll()
                     result = evenView.handleEither(
                         null
@@ -89,12 +86,11 @@ object MaterializedViewTest : Spek({
             lateinit var result: Either<Error, Pair<EvenNumberState?, OddNumberState?>>
 
             When("handling event of type EvenNumberAdded") {
-                runBlockingTest {
+                runTest {
                     (numberViewRepository() as NumberViewRepository).deleteAll()
                     result = allNumbersView.handleEither(
                         EvenNumberAdded(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     )
                 }

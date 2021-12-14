@@ -22,8 +22,6 @@ import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberMa
 import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.numberMaterializedView
 import com.fraktalio.fmodel.application.examples.numbers.numberViewRepository
-import com.fraktalio.fmodel.application.examples.numbers.odd.query.OddNumberViewRepository
-import com.fraktalio.fmodel.application.examples.numbers.odd.query.oddNumberViewRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
@@ -36,7 +34,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.test.runTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
 import kotlin.test.assertTrue
@@ -49,21 +48,18 @@ object MaterializedViewTest : Spek({
         val evenView by memoized { evenNumberMaterializedView(evenNumberView(), evenNumberViewRepository()) }
         val allNumbersView by memoized {
             numberMaterializedView(
-                oddNumberView(),
-                evenNumberView(),
-                numberViewRepository()
+                oddNumberView(), evenNumberView(), numberViewRepository()
             )
         }
         Scenario("Success") {
             var result: EvenNumberState? = null
 
             When("handling event of type EvenNumberAdded") {
-                runBlockingTest {
+                runTest {
                     (evenNumberViewRepository() as EvenNumberViewRepository).deleteAll()
                     result = evenView.handle(
                         EvenNumberAdded(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     )
                 }
@@ -77,12 +73,11 @@ object MaterializedViewTest : Spek({
             lateinit var result: Pair<EvenNumberState?, OddNumberState?>
 
             When("handling event of type EvenNumberAdded") {
-                runBlockingTest {
+                runTest {
                     (numberViewRepository() as NumberViewRepository).deleteAll()
                     result = allNumbersView.handle(
                         EvenNumberAdded(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     )
                 }
@@ -96,12 +91,11 @@ object MaterializedViewTest : Spek({
             lateinit var result: Pair<EvenNumberState?, OddNumberState?>
 
             When("handling event of type EvenNumberAdded") {
-                runBlockingTest {
+                runTest {
                     (numberViewRepository() as NumberViewRepository).deleteAll()
                     result = allNumbersView.handle(
                         OddNumberAdded(
-                            Description("Add 3"),
-                            NumberValue(3)
+                            Description("Add 3"), NumberValue(3)
                         )
                     )
                 }
@@ -115,23 +109,22 @@ object MaterializedViewTest : Spek({
             lateinit var result: Flow<Pair<EvenNumberState?, OddNumberState?>>
 
             When("handling flow of event(s) of type EvenNumberAdded") {
-                runBlockingTest {
+                runTest {
                     (numberViewRepository() as NumberViewRepository).deleteAll()
                     result = allNumbersView.handle(
                         flowOf(
                             EvenNumberAdded(
-                                Description("Add 2"),
-                                NumberValue(2)
+                                Description("Add 2"), NumberValue(2)
                             )
                         )
                     )
                 }
             }
             Then("expect success") {
-                runBlockingTest {
-                    result.collect {
+                runTest {
+                    result.onEach {
                         assertTrue(it.first?.value?.get == 2)
-                    }
+                    }.collect()
                 }
             }
         }

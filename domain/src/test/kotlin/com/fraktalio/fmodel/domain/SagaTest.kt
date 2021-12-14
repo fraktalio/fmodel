@@ -89,9 +89,9 @@ object SagaTest : Spek({
             var result: Flow<NumberCommand> = emptyFlow()
 
             When("when react on ActionResult/Event of type Int, publish flow of Actions/Commands of type NumberCommand") {
-                result = saga
-                    .mapLeftOnActionResult { aRn: Int -> EvenNumberAdded(Description("$aRn"), NumberValue(aRn)) }
-                    .react(2)
+                result =
+                    saga.mapLeftOnActionResult { aRn: Int -> EvenNumberAdded(Description("$aRn"), NumberValue(aRn)) }
+                        .react(2)
             }
 
             Then("non empty flow of Actions/Commands of type NumberCommand should be published") {
@@ -135,8 +135,7 @@ object SagaTest : Spek({
             var result: Flow<Int> = emptyFlow()
 
             When("when react on ActionResult/Event of type NumberEvent, publish flow of Actions/Commands of type Int") {
-                result = saga
-                    .mapOnAction { numberCommand -> numberCommand.value.get }
+                result = saga.mapOnAction { numberCommand -> numberCommand.value.get }
                     .react(EvenNumberAdded(Description("2"), NumberValue(2)))
             }
 
@@ -158,8 +157,7 @@ object SagaTest : Spek({
             var result: Flow<Int> = emptyFlow()
 
             When("when react on ActionResult/Event of type NumberEvent, publish flow of Actions/Commands of type Int") {
-                result = evenSaga.combine(oddSaga)
-                    .mapOnAction { numberCommand -> numberCommand.value.get }
+                result = evenSaga.combine(oddSaga).mapOnAction { numberCommand -> numberCommand.value.get }
                     .react(EvenNumberAdded(Description("2"), NumberValue(2)))
             }
 

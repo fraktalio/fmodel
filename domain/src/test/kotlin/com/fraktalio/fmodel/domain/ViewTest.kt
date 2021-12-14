@@ -57,14 +57,11 @@ object ViewTest : Spek({
 
             When("being in current/initial state of type EvenNumberState and handling event of type Int") {
                 runBlocking {
-                    result = evenView
-                        .mapLeftOnEvent { number: Int ->
-                            EvenNumberAdded(
-                                Description(number.toString()),
-                                NumberValue(number)
-                            )
-                        }
-                        .evolve(evenView.initialState, 2)
+                    result = evenView.mapLeftOnEvent { number: Int ->
+                        EvenNumberAdded(
+                            Description(number.toString()), NumberValue(number)
+                        )
+                    }.evolve(evenView.initialState, 2)
                 }
             }
 
@@ -80,17 +77,12 @@ object ViewTest : Spek({
             When("being in current/initial state of type Int and handling event of type EvenNumberEvent") {
                 runBlocking {
                     result = evenView.initialState?.value?.let {
-                        evenView
-                            .dimapOnState(
-                                fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
-                                fl = { number: Int ->
-                                    EvenNumberState(
-                                        Description(number.toString()),
-                                        NumberValue(number)
-                                    )
-                                }
-                            )
-                            .evolve(it.get, EvenNumberAdded(Description("2"), NumberValue(2)))
+                        evenView.dimapOnState(fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
+                            fl = { number: Int ->
+                                EvenNumberState(
+                                    Description(number.toString()), NumberValue(number)
+                                )
+                            }).evolve(it.get, EvenNumberAdded(Description("2"), NumberValue(2)))
                     }
                 }
             }
@@ -107,8 +99,7 @@ object ViewTest : Spek({
             When("being in current/initial state, and handling event of type EvenNumberEvent by the product of 2 views") {
                 runBlocking {
                     val view2 = evenView.mapOnState { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
-                    result = evenView
-                        .productOnState(view2)
+                    result = evenView.productOnState(view2)
                         .evolve(evenView.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
                 }
             }
@@ -133,13 +124,11 @@ object ViewTest : Spek({
 
             Then("it should be in the initial state of type EvenNumberState") {
                 assertEquals(
-                    result, evenView
-                        .mapLeftOnEvent { e: Int ->
-                            EvenNumberAdded(
-                                Description(e.toString()),
-                                NumberValue(e)
-                            )
-                        }.initialState
+                    result, evenView.mapLeftOnEvent { e: Int ->
+                        EvenNumberAdded(
+                            Description(e.toString()), NumberValue(e)
+                        )
+                    }.initialState
                 )
             }
         }
@@ -148,11 +137,15 @@ object ViewTest : Spek({
             val result = 0
 
             Then("it should be in the initial state of type Int") {
-                assertEquals(result, evenView
-                    .dimapOnState(
-                        fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
-                        fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) }
-                    ).initialState
+                assertEquals(
+                    result,
+                    evenView.dimapOnState(fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
+                        fl = { number: Int ->
+                            EvenNumberState(
+                                Description(number.toString()),
+                                NumberValue(number)
+                            )
+                        }).initialState
                 )
             }
         }
@@ -174,11 +167,9 @@ object ViewTest : Spek({
 
             When("being in current/initial state of type Pair(EvenNumberState, OddNumberState) and handling event of super type NumberEvent") {
                 runBlocking {
-                    result =
-                        combinedView.evolve(
-                            combinedView.initialState,
-                            EvenNumberAdded(Description("2"), NumberValue(2))
-                        )
+                    result = combinedView.evolve(
+                        combinedView.initialState, EvenNumberAdded(Description("2"), NumberValue(2))
+                    )
                 }
             }
 

@@ -16,7 +16,6 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
 import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberAggregate
 import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberRepository
 import com.fraktalio.fmodel.application.examples.numbers.numberAggregate
@@ -33,10 +32,9 @@ import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.gherkin.Feature
-import java.lang.RuntimeException
 import kotlin.test.assertFails
 import kotlin.test.assertTrue
 
@@ -48,11 +46,7 @@ object AggregateTest : Spek({
         val evenAggregate by memoized { evenNumberAggregate(evenNumberDecider(), evenNumberRepository()) }
         val allNumbersAggregate by memoized {
             numberAggregate(
-                evenNumberDecider(),
-                oddNumberDecider(),
-                evenNumberSaga(),
-                oddNumberSaga(),
-                numberRepository()
+                evenNumberDecider(), oddNumberDecider(), evenNumberSaga(), oddNumberSaga(), numberRepository()
             )
         }
 
@@ -60,20 +54,19 @@ object AggregateTest : Spek({
             lateinit var result: Flow<EvenNumberEvent?>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runTest {
                     result = evenAggregate.handle(
                         AddEvenNumber(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     )
                 }
             }
             Then("expect success") {
-                runBlockingTest {
-                    result.take(1).collect {
+                runTest {
+                    result.take(1).onEach {
                         assert(it is EvenNumberEvent.EvenNumberAdded && it.value.get == 2)
-                    }
+                    }.collect()
                 }
             }
         }
@@ -82,20 +75,19 @@ object AggregateTest : Spek({
             lateinit var result: Flow<NumberEvent?>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runTest {
                     result = allNumbersAggregate.handle(
                         AddEvenNumber(
-                            Description("Add 2"),
-                            NumberValue(2)
+                            Description("Add 2"), NumberValue(2)
                         )
                     )
                 }
             }
             Then("expect success") {
-                runBlockingTest {
-                    result.take(1).collect {
+                runTest {
+                    result.take(1).onEach {
                         assert(it is EvenNumberEvent.EvenNumberAdded && it.value.get == 2)
-                    }
+                    }.collect()
                 }
             }
         }
@@ -103,17 +95,16 @@ object AggregateTest : Spek({
             lateinit var result: Flow<NumberEvent?>
 
             When("handling command of type AddOddNumber") {
-                runBlockingTest {
+                runTest {
                     result = allNumbersAggregate.handle(
                         NumberCommand.OddNumberCommand.AddOddNumber(
-                            Description("Add 1"),
-                            NumberValue(1)
+                            Description("Add 1"), NumberValue(1)
                         )
                     )
                 }
             }
             Then("expect success - saga kicks in, and 2 events are published") {
-                runBlockingTest {
+                runTest {
                     assertTrue { result.toList().size == 2 }
                 }
             }
@@ -124,22 +115,21 @@ object AggregateTest : Spek({
             lateinit var result: Flow<NumberEvent?>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runTest {
                     result = allNumbersAggregate.handle(
                         flowOf(
                             AddEvenNumber(
-                                Description("Add 2"),
-                                NumberValue(2)
+                                Description("Add 2"), NumberValue(2)
                             )
                         )
                     )
                 }
             }
             Then("expect success") {
-                runBlockingTest {
-                    result.take(1).collect {
+                runTest {
+                    result.take(1).onEach {
                         assert(it is EvenNumberEvent.EvenNumberAdded && it.value.get == 2)
-                    }
+                    }.collect()
                 }
             }
         }
@@ -149,17 +139,16 @@ object AggregateTest : Spek({
             lateinit var result: Flow<EvenNumberEvent?>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runTest {
                     result = evenAggregate.handle(
                         AddEvenNumber(
-                            Description("Add 2000"),
-                            NumberValue(2000)
+                            Description("Add 2000"), NumberValue(2000)
                         )
                     )
                 }
             }
             Then("expect exception") {
-                runBlockingTest {
+                runTest {
                     assertFails { result.collect() }
                 }
             }
@@ -168,19 +157,18 @@ object AggregateTest : Spek({
             lateinit var result: Flow<EvenNumberEvent?>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
+                runTest {
                     result = evenAggregate.handle(
                         flowOf(
                             AddEvenNumber(
-                                Description("Add 2000"),
-                                NumberValue(2000)
+                                Description("Add 2000"), NumberValue(2000)
                             )
                         )
                     )
                 }
             }
             Then("expect exception") {
-                runBlockingTest {
+                runTest {
                     assertFails { result.collect() }
                 }
             }
@@ -189,16 +177,14 @@ object AggregateTest : Spek({
             lateinit var result: Flow<EvenNumberEvent?>
 
             When("handling command of type AddEvenNumber") {
-                runBlockingTest {
-                    result = evenAggregate.handle(
-                        flow {
-                            throw RuntimeException("Some exception")
-                        }
-                    )
+                runTest {
+                    result = evenAggregate.handle(flow {
+                        throw RuntimeException("Some exception")
+                    })
                 }
             }
             Then("expect exception") {
-                runBlockingTest {
+                runTest {
                     assertFails { result.collect() }
                 }
             }
