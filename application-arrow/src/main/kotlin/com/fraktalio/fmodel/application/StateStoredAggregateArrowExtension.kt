@@ -37,7 +37,7 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Ei
      * @param command of type [C]
      * @return [Either] the newly computed state of type [S] or [Error]
      */
-    suspend fun S.eitherComputeNewStateOrFail(command: C): Either<Error, S> =
+    suspend fun S?.eitherComputeNewStateOrFail(command: C): Either<Error, S> =
         Either.catch {
             computeNewState(command)
         }.mapLeft { throwable ->
@@ -68,7 +68,7 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Ei
 
     // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
     return either {
-        (command.eitherFetchStateOrFail().bind() ?: initialState)
+        command.eitherFetchStateOrFail().bind()
             .eitherComputeNewStateOrFail(command).bind()
             .eitherSaveOrFail().bind()
     }

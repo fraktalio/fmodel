@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.map
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handle(command: C): S =
-    (command.fetchState() ?: initialState)
+    command.fetchState()
         .computeNewState(command)
         .save()
 

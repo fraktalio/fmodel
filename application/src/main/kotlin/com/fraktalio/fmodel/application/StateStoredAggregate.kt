@@ -48,9 +48,10 @@ interface StateStoredAggregate<C, S, E> : IDecider<C, S, E>, StateRepository<C, 
      * @param command of type [C]
      * @return The newly computed state of type [S]
      */
-    suspend fun S.computeNewState(command: C): S {
-        val events = decide(command, this)
-        return events.fold(this) { s, e -> evolve(s, e) }
+    suspend fun S?.computeNewState(command: C): S {
+        val currentState = this ?: initialState
+        val events = decide(command, currentState)
+        return events.fold(currentState) { s, e -> evolve(s, e) }
     }
 }
 
@@ -80,9 +81,10 @@ interface StateStoredOrchestratingAggregate<C, S, E> : ISaga<E, C>, StateStoredA
      * @param command of type [C]
      * @return The newly computed state of type [S]
      */
-    override suspend fun S.computeNewState(command: C): S {
-        val events = decide(command, this)
-        val newState = events.fold(this) { s, e -> evolve(s, e) }
+    override suspend fun S?.computeNewState(command: C): S {
+        val currentState = this ?: initialState
+        val events = decide(command, currentState)
+        val newState = events.fold(currentState) { s, e -> evolve(s, e) }
         events.flatMapConcat { react(it) }.onEach { newState.computeNewState(it) }.collect()
         return newState
     }
