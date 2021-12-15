@@ -450,19 +450,19 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>2.3.0</version>
+    <version>2.3.1</version>
  </dependency>
 
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-vanilla</artifactId>
-    <version>2.3.0</version>
+    <version>2.3.1</version>
  </dependency>
  
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-arrow</artifactId>
-    <version>2.3.0</version>
+    <version>2.3.1</version>
  </dependency>
 ```
 
