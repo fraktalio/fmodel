@@ -94,11 +94,11 @@ inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_S
 
     val sagaX = this
         .mapLeftOnActionResult<AR_SUPER> { it as? AR }
-        .mapOnAction<A_SUPER> { it } // As OR/SUM relationship is modeled with inheritance/polymorphism, the 'mapOnAction' function is not needed. It is mapping over the identity function. Used here for the sake of future implementations of `decide` functions, and learning purposes.
+        .mapOnAction<A_SUPER> { it } // As OR/SUM relationship is modeled with inheritance/polymorphism, the 'mapOnAction' function is not needed. It is mapping over the identity function. Used here for the sake of future implementations of `saga` functions, and learning purposes.
 
     val sagaY = y
         .mapLeftOnActionResult<AR_SUPER> { it as? AR2 }
-        .mapOnAction<A_SUPER> { it } // As OR/SUM relationship is modeled with inheritance/polymorphism, the 'mapOnAction' function is not needed. It is mapping over the identity function. Used here for the sake of future implementations of `decide` functions, and learning purposes.
+        .mapOnAction<A_SUPER> { it } // As OR/SUM relationship is modeled with inheritance/polymorphism, the 'mapOnAction' function is not needed. It is mapping over the identity function. Used here for the sake of future implementations of `saga` functions, and learning purposes.
 
     return _Saga(
         react = { eitherAr -> flowOf(sagaX.react(eitherAr), (sagaY.react(eitherAr))).flattenConcat() }
