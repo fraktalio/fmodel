@@ -48,10 +48,7 @@
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.arrow-kt</groupId>
-            <artifactId>arrow-core</artifactId>
-        </dependency>
+
         <!-- test -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
