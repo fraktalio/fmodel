@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.map
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 suspend fun <S, E> MaterializedView<S, E>.handle(event: E): S =
-    (event.fetchState() ?: initialState)
+    event.fetchState()
         .computeNewState(event)
         .save()
 

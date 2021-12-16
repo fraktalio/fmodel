@@ -37,7 +37,7 @@ interface MaterializedView<S, E> : IView<S, E>, ViewStateRepository<E, S> {
      * @param event of type [E]
      * @return The newly computed state of type [S]
      */
-    fun S.computeNewState(event: E): S = evolve(this, event)
+    fun S?.computeNewState(event: E): S = evolve(this ?: initialState, event)
 }
 
 /**
