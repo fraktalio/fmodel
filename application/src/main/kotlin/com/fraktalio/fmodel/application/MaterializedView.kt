@@ -40,7 +40,7 @@ interface MaterializedView<S, E> : IView<S, E>, ViewStateRepository<E, S> {
      * @param event of type [E]
      * @return The newly computed state of type [S]
      */
-    fun S.computeNewState(event: E): S = evolve(this, event)
+    fun S?.computeNewState(event: E): S = evolve(this ?: initialState, event)
 }
 
 /**
@@ -71,7 +71,8 @@ fun <S, E> materializedView(
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 suspend fun <S, E> MaterializedView<S, E>.handle(event: E): S =
-    (event.fetchState() ?: initialState)
+    event
+        .fetchState()
         .computeNewState(event)
         .save()
 
@@ -83,7 +84,7 @@ suspend fun <S, E> MaterializedView<S, E>.handleEither(event: E): Either<Error, 
      * @param event of type [E]
      * @return The newly computed state of type [S] or [Error]
      */
-    fun S.eitherComputeNewStateOrFail(event: E): Either<Error, S> =
+    fun S?.eitherComputeNewStateOrFail(event: E): Either<Error, S> =
         Either.catch {
             computeNewState(event)
         }.mapLeft { throwable -> Error.CalculatingNewStateFailed(this, throwable) }
@@ -112,7 +113,8 @@ suspend fun <S, E> MaterializedView<S, E>.handleEither(event: E): Either<Error, 
 
     // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
     return either {
-        (event.eitherFetchStateOrFail().bind() ?: initialState)
+        event
+            .eitherFetchStateOrFail().bind()
             .eitherComputeNewStateOrFail(event).bind()
             .eitherSaveOrFail().bind()
     }

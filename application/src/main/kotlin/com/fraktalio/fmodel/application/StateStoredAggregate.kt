@@ -47,8 +47,8 @@ interface StateStoredAggregate<C, S, E> : IDecider<C, S, E>, StateRepository<C, 
      * @param command of type [C]
      * @return The newly computed state of type [S]
      */
-    suspend fun S.computeNewState(command: C): S = decide(command, this)
-        .fold(this) { s, e -> evolve(s, e) }
+    suspend fun S?.computeNewState(command: C): S = decide(command, this ?: initialState)
+        .fold(this ?: initialState) { s, e -> evolve(s, e) }
 }
 
 /**
@@ -77,9 +77,10 @@ interface StateStoredOrchestratingAggregate<C, S, E> : ISaga<E, C>, StateStoredA
      * @param command of type [C]
      * @return The newly computed state of type [S]
      */
-    override suspend fun S.computeNewState(command: C): S {
-        val events = decide(command, this)
-        val newState = events.fold(this) { s, e -> evolve(s, e) }
+    override suspend fun S?.computeNewState(command: C): S {
+        val currentState = this ?: initialState
+        val events = decide(command, currentState)
+        val newState = events.fold(currentState) { s, e -> evolve(s, e) }
         events.flatMap { react(it) }.forEach { newState.computeNewState(it) }
         return newState
     }
@@ -143,7 +144,8 @@ fun <C, S, E> stateStoredOrchestratingAggregate(
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handle(command: C): S =
-    (command.fetchState() ?: initialState)
+    command
+        .fetchState()
         .computeNewState(command)
         .save()
 
@@ -165,7 +167,7 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Ei
             this.save()
         }.mapLeft { throwable -> Error.StoringStateFailed(this, throwable) }
 
-    suspend fun S.eitherComputeNewStateOrFail(command: C): Either<Error, S> =
+    suspend fun S?.eitherComputeNewStateOrFail(command: C): Either<Error, S> =
         Either.catch {
             computeNewState(command)
         }.mapLeft { throwable ->
@@ -174,7 +176,8 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Ei
 
     // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
     return either {
-        (command.eitherFetchStateOrFail().bind() ?: initialState)
+        command
+            .eitherFetchStateOrFail().bind()
             .eitherComputeNewStateOrFail(command).bind()
             .eitherSaveOrFail().bind()
     }
