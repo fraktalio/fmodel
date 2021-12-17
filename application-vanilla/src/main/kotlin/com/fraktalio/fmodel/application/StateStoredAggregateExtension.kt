@@ -17,17 +17,15 @@
 package com.fraktalio.fmodel.application
 
 /**
- * Event repository/store interface
+ * Extension function - Handles the command message of type [C]
  *
- * @param C Command
- * @param E Event
+ * @param command Command message of type [C]
+ * @return State of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-interface EventRepository<C, E> {
-    suspend fun C.fetchEvents(): Sequence<E>
-    suspend fun E.save(): E
-    suspend fun Sequence<E>.save(): Sequence<E> = asIterable().map { it.save() }.asSequence()
-
-
-}
+suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handle(command: C): S =
+    command
+        .fetchState()
+        .computeNewState(command)
+        .save()

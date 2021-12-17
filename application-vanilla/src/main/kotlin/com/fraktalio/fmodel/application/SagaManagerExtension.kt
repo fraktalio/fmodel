@@ -17,17 +17,14 @@
 package com.fraktalio.fmodel.application
 
 /**
- * Event repository/store interface
+ * Extension function - Handles the action result of type [AR].
  *
- * @param C Command
- * @param E Event
+ * @param actionResult Action Result represent the outcome of some action you want to handle in some way
+ * @return [Sequence] of Actions of type [A]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-interface EventRepository<C, E> {
-    suspend fun C.fetchEvents(): Sequence<E>
-    suspend fun E.save(): E
-    suspend fun Sequence<E>.save(): Sequence<E> = asIterable().map { it.save() }.asSequence()
-
-
-}
+suspend fun <AR, A> SagaManager<AR, A>.handle(actionResult: AR): Sequence<A> =
+    actionResult
+        .computeNewActions()
+        .publish()

@@ -25,19 +25,20 @@
         <version>1.2.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>application</artifactId>
+    <artifactId>application-arrow</artifactId>
     <packaging>jar</packaging>
-    <name>fmodel-application</name>
+    <name>fmodel-application-arrow</name>
     <description>
         Fmodel provides just enough tactical Domain-Driven Design patterns, optimised for Event Sourcing and CQRS.
         The application library orchestrates the execution of the logic by loading state,
-        executing domain components and storing new state.
+        executing domain components and storing new state. It is an Arrow (FP library for Kotlin) flavored
+        implementation.
     </description>
 
     <dependencies>
         <dependency>
             <groupId>com.fraktalio.fmodel</groupId>
-            <artifactId>domain</artifactId>
+            <artifactId>application</artifactId>
             <version>1.2.1-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -47,6 +48,36 @@
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.arrow-kt</groupId>
+            <artifactId>arrow-core</artifactId>
+        </dependency>
+        <!-- test -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spekframework.spek2</groupId>
+            <artifactId>spek-dsl-jvm</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spekframework.spek2</groupId>
+            <artifactId>spek-runner-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

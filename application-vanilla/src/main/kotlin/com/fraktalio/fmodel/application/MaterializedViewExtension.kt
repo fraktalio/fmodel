@@ -17,17 +17,15 @@
 package com.fraktalio.fmodel.application
 
 /**
- * Event repository/store interface
+ * Extension function - Handles the event of type [E]
  *
- * @param C Command
- * @param E Event
+ * @param event Event of type [E] to be handled
+ * @return State of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-interface EventRepository<C, E> {
-    suspend fun C.fetchEvents(): Sequence<E>
-    suspend fun E.save(): E
-    suspend fun Sequence<E>.save(): Sequence<E> = asIterable().map { it.save() }.asSequence()
-
-
-}
+suspend fun <S, E> MaterializedView<S, E>.handle(event: E): S =
+    event
+        .fetchState()
+        .computeNewState(event)
+        .save()

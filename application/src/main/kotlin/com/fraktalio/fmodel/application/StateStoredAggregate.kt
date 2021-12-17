@@ -16,8 +16,6 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
-import arrow.core.computations.either
 import com.fraktalio.fmodel.domain.IDecider
 import com.fraktalio.fmodel.domain.ISaga
 
@@ -133,52 +131,3 @@ fun <C, S, E> stateStoredOrchestratingAggregate(
         StateRepository<C, S> by stateRepository,
         IDecider<C, S, E> by decider,
         ISaga<E, C> by saga {}
-
-
-/**
- * Extension function - Handles the command message of type [C]
- *
- * @param command Command message of type [C]
- * @return State of type [S]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handle(command: C): S =
-    command
-        .fetchState()
-        .computeNewState(command)
-        .save()
-
-/**
- * Handles the command message of type [C]
- *
- * @param command Command message of type [C]
- * @return Either [Error] or [S]/State
- */
-suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Either<Error, S> {
-
-    suspend fun C.eitherFetchStateOrFail(): Either<Error.FetchingStateFailed, S?> =
-        Either.catch {
-            fetchState()
-        }.mapLeft { throwable -> Error.FetchingStateFailed(throwable) }
-
-    suspend fun S.eitherSaveOrFail(): Either<Error.StoringStateFailed<S>, S> =
-        Either.catch {
-            this.save()
-        }.mapLeft { throwable -> Error.StoringStateFailed(this, throwable) }
-
-    suspend fun S?.eitherComputeNewStateOrFail(command: C): Either<Error, S> =
-        Either.catch {
-            computeNewState(command)
-        }.mapLeft { throwable ->
-            Error.CalculatingNewStateFailed(this, throwable)
-        }
-
-    // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
-    return either {
-        command
-            .eitherFetchStateOrFail().bind()
-            .eitherComputeNewStateOrFail(command).bind()
-            .eitherSaveOrFail().bind()
-    }
-}
