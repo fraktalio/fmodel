@@ -49,7 +49,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.6.10</kotlin.version>
-        <kotlin.coroutines.version>1.6.0-RC2</kotlin.coroutines.version>
+        <kotlin.coroutines.version>1.6.0-RC3</kotlin.coroutines.version>
         <kotlin.code.style>official</kotlin.code.style>
         <java.version>11</java.version>
         <arrow.version>1.0.0</arrow.version>
