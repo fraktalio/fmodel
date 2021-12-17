@@ -435,13 +435,19 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
  </dependency>
 
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
-    <artifactId>application</artifactId>
-    <version>1.2.0</version>
+    <artifactId>application-vanilla</artifactId>
+    <version>1.3.0</version>
+ </dependency>
+ 
+  <dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>application-arrow</artifactId>
+    <version>1.3.0</version>
  </dependency>
 ```
 
@@ -460,13 +466,6 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 - [The Blog - Domain modeling](https://fraktalio.com/blog/)
 - [The Demo Source Code](https://github.com/fraktalio/fmodel-demos)
 
-## Deploy to Maven Central
-
-### Manually
-
-```shell
-mvn clean deploy -Dgpg.passphrase="YOUR_PASSPHRASE" -Pci-cd
-```
 
 ## References and further reading
 
