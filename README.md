@@ -18,13 +18,13 @@ Design patterns, optimised for Event Sourcing and CQRS.
 - The [`domain` model library](https://search.maven.org/artifact/com.fraktalio.fmodel/domain/1.3.0/jar) is fully
   isolated from the application layer and API-related concerns. It represents a pure declaration of the program logic.
   It is written in [Kotlin](https://kotlinlang.org/) programming language, without additional dependencies.
-- The [`application` library](https://search.maven.org/artifact/com.fraktalio.fmodel/application/1.3.0/jar) orchestrates
+- The [`application` library](https://search.maven.org/artifact/com.fraktalio.fmodel/application/1.3.1/jar) orchestrates
   the execution of the logic by loading state, executing `domain` components and storing new state. Two flavors (
   extensions of `Application` module) are available:
-    - [`application-vanilla`]((https://search.maven.org/artifact/com.fraktalio.fmodel/application-vanilla/1.3.0/jar)) is
+    - [`application-vanilla`]((https://search.maven.org/artifact/com.fraktalio.fmodel/application-vanilla/1.3.1/jar)) is
       using plain/vanilla Kotlin to implement the application layer in order to load the state, orchestrate the
       execution of the logic and save new state.
-    - [`application-arrow`]((https://search.maven.org/artifact/com.fraktalio.fmodel/application-arrow/1.3.0/jar)) is
+    - [`application-arrow`]((https://search.maven.org/artifact/com.fraktalio.fmodel/application-arrow/1.3.1/jar)) is
       using [Arrow](https://arrow-kt.io/) and Kotlin to implement the application layer in order to load the state,
       orchestrate the execution of the logic and save new state - managing errors much better (using Either).
 
@@ -435,19 +435,19 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
  </dependency>
 
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-vanilla</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
  </dependency>
  
   <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-arrow</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
  </dependency>
 ```
 

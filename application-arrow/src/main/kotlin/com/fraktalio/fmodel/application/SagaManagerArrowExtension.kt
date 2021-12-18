@@ -23,19 +23,6 @@ import arrow.core.computations.either
  * Extension function - Handles the action result of type [AR].
  *
  * @param actionResult Action Result represent the outcome of some action you want to handle in some way
- * @return [Sequence] of Actions of type [A]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-suspend fun <AR, A> SagaManager<AR, A>.handle(actionResult: AR): Sequence<A> =
-    actionResult
-        .computeNewActions()
-        .publish()
-
-/**
- * Extension function - Handles the action result of type [AR].
- *
- * @param actionResult Action Result represent the outcome of some action you want to handle in some way
  * @return [Either] [Error] or [Sequence] of Actions of type [A]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic

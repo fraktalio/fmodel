@@ -59,17 +59,3 @@ suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(command: C): 
             .eitherSaveOrFail().bind()
     }
 }
-
-/**
- * Extension function - Handles the command message of type [C]
- *
- * @param command Command message of type [C]
- * @return [Sequence] of Events of type [E] that are saved, or throws an exception
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-suspend fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C): Sequence<E> =
-    command
-        .fetchEvents()
-        .computeNewEvents(command)
-        .save()

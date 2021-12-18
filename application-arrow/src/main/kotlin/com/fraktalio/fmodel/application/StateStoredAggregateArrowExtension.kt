@@ -20,20 +20,6 @@ import arrow.core.Either
 import arrow.core.computations.either
 
 /**
- * Extension function - Handles the command message of type [C]
- *
- * @param command Command message of type [C]
- * @return State of type [S]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handle(command: C): S =
-    command
-        .fetchState()
-        .computeNewState(command)
-        .save()
-
-/**
  * Handles the command message of type [C]
  *
  * @param command Command message of type [C]

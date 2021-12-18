@@ -19,21 +19,6 @@ package com.fraktalio.fmodel.application
 import arrow.core.Either
 import arrow.core.computations.either
 
-/**
- * Extension function - Handles the event of type [E]
- *
- * @param event Event of type [E] to be handled
- * @return State of type [S]
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-suspend fun <S, E> MaterializedView<S, E>.handle(event: E): S =
-    event
-        .fetchState()
-        .computeNewState(event)
-        .save()
-
-
 suspend fun <S, E> MaterializedView<S, E>.handleEither(event: E): Either<Error, S> {
     /**
      * Inner function - Computes new State based on the Event or fails.
