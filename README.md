@@ -15,7 +15,7 @@ the business — together, they constitute the model of the domain.
 This project can be used as a library, or as an inspiration, or both. It provides just enough tactical Domain-Driven
 Design patterns, optimised for Event Sourcing and CQRS.
 
-- The [`domain` model library](https://search.maven.org/artifact/com.fraktalio.fmodel/domain/1.3.0/jar) is fully
+- The [`domain` model library](https://search.maven.org/artifact/com.fraktalio.fmodel/domain/1.3.1/jar) is fully
   isolated from the application layer and API-related concerns. It represents a pure declaration of the program logic.
   It is written in [Kotlin](https://kotlinlang.org/) programming language, without additional dependencies.
 - The [`application` library](https://search.maven.org/artifact/com.fraktalio.fmodel/application/1.3.1/jar) orchestrates
