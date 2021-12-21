@@ -1,27 +1,11 @@
-/*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.application.examples.numbers.NumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberViewRepository
-import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberMaterializedView
 import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberViewRepository
-import com.fraktalio.fmodel.application.examples.numbers.numberMaterializedView
 import com.fraktalio.fmodel.application.examples.numbers.numberViewRepository
+import com.fraktalio.fmodel.domain.IView
+import com.fraktalio.fmodel.domain.combine
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
@@ -30,106 +14,67 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.even.query.evenNumberView
 import com.fraktalio.fmodel.domain.examples.numbers.odd.query.oddNumberView
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.test.runTest
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.gherkin.Feature
-import kotlin.test.assertTrue
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
 
+/**
+ * DSL - Given
+ */
+private suspend fun <S, E> IView<S, E>.given(repository: ViewStateRepository<E, S>, event: () -> E): S =
+    materializedView(
+        view = this,
+        viewStateRepository = repository
+    ).handle(event())
 
-@ExperimentalCoroutinesApi
-object MaterializedViewTest : Spek({
+/**
+ * DSL - When
+ */
+@Suppress("unused")
+private fun <S, E> IView<S, E>.whenEvent(event: E): E = event
 
-    Feature("MaterializedView") {
-        val evenView by memoized { evenNumberMaterializedView(evenNumberView(), evenNumberViewRepository()) }
-        val allNumbersView by memoized {
-            numberMaterializedView(
-                oddNumberView(), evenNumberView(), numberViewRepository()
-            )
+/**
+ * DSL - Then
+ */
+private infix fun <S> S.thenState(expected: S) = shouldBe(expected)
+
+/**
+ * Materialized View Test
+ */
+class MaterializedViewTest : FunSpec({
+    val evenView = evenNumberView()
+    val oddView = oddNumberView()
+    val combinedView = evenView.combine(oddView)
+    val evenNumberViewRepository = evenNumberViewRepository() as EvenNumberViewRepository
+    val numberViewRepository = numberViewRepository() as NumberViewRepository
+
+    test("Materialized view - even number added") {
+        with(evenView) {
+            evenNumberViewRepository.deleteAll()
+
+            given(evenNumberViewRepository) {
+                whenEvent(EvenNumberAdded(Description("2"), NumberValue(2)))
+            } thenState EvenNumberState(Description("Initial state, 2"), NumberValue(2))
         }
-        Scenario("Success") {
-            var result: EvenNumberState? = null
+    }
 
-            When("handling event of type EvenNumberAdded") {
-                runTest {
-                    (evenNumberViewRepository() as EvenNumberViewRepository).deleteAll()
-                    result = evenView.handle(
-                        EvenNumberAdded(
-                            Description("Add 2"), NumberValue(2)
-                        )
-                    )
-                }
-            }
-            Then("expect success") {
-                assertTrue(result?.value?.get == 2)
-            }
+    test("Combined Materialized view - odd number added") {
+        with(combinedView) {
+            numberViewRepository.deleteAll()
+
+            given(numberViewRepository) {
+                whenEvent(OddNumberAdded(Description("3"), NumberValue(3)))
+            } thenState Pair(null, OddNumberState(Description("0, 3"), NumberValue(3)))
         }
+    }
 
-        Scenario("Success - combined view - even") {
-            lateinit var result: Pair<EvenNumberState?, OddNumberState?>
+    test("Combined Materialized view - even number added") {
+        with(combinedView) {
+            numberViewRepository.deleteAll()
 
-            When("handling event of type EvenNumberAdded") {
-                runTest {
-                    (numberViewRepository() as NumberViewRepository).deleteAll()
-                    result = allNumbersView.handle(
-                        EvenNumberAdded(
-                            Description("Add 2"), NumberValue(2)
-                        )
-                    )
-                }
-            }
-            Then("expect success") {
-                assertTrue(result.first?.value?.get == 2)
-            }
+            given(numberViewRepository) {
+                whenEvent(EvenNumberAdded(Description("4"), NumberValue(4)))
+            } thenState Pair(EvenNumberState(Description("0, 4"), NumberValue(4)), null)
         }
-
-        Scenario("Success - combined view - odd") {
-            lateinit var result: Pair<EvenNumberState?, OddNumberState?>
-
-            When("handling event of type EvenNumberAdded") {
-                runTest {
-                    (numberViewRepository() as NumberViewRepository).deleteAll()
-                    result = allNumbersView.handle(
-                        OddNumberAdded(
-                            Description("Add 3"), NumberValue(3)
-                        )
-                    )
-                }
-            }
-            Then("expect success") {
-                assertTrue(result.second?.value?.get == 3)
-            }
-        }
-
-        Scenario("Success - combined view - flow - even") {
-            lateinit var result: Flow<Pair<EvenNumberState?, OddNumberState?>>
-
-            When("handling flow of event(s) of type EvenNumberAdded") {
-                runTest {
-                    (numberViewRepository() as NumberViewRepository).deleteAll()
-                    result = allNumbersView.handle(
-                        flowOf(
-                            EvenNumberAdded(
-                                Description("Add 2"), NumberValue(2)
-                            )
-                        )
-                    )
-                }
-            }
-            Then("expect success") {
-                runTest {
-                    result.onEach {
-                        assertTrue(it.first?.value?.get == 2)
-                    }.collect()
-                }
-            }
-        }
-
     }
 
 })
-

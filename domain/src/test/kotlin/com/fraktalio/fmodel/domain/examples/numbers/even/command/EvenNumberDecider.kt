@@ -63,11 +63,11 @@ fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumber
         evolve = { s, e ->
             when (e) {
                 is EvenNumberAdded -> EvenNumberState(
-                    e.description,
+                    Description(s.description.get + " + " + e.description.get),
                     NumberValue(s.value.get + e.value.get)
                 )
                 is EvenNumberSubtracted -> EvenNumberState(
-                    e.description,
+                    Description(s.description.get + " - " + e.description.get),
                     NumberValue(s.value.get - e.value.get)
                 )
                 null -> s
