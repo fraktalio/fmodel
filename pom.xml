@@ -54,7 +54,7 @@
         <java.version>11</java.version>
         <arrow.version>1.0.0</arrow.version>
         <spec.version>2.0.17</spec.version>
-        <kotest.version>5.0.1</kotest.version>
+        <kotest.version>5.0.3</kotest.version>
     </properties>
 
     <modules>
