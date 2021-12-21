@@ -1,189 +1,103 @@
-/*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.fraktalio.fmodel.domain
 
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.even.query.evenNumberView
 import com.fraktalio.fmodel.domain.examples.numbers.odd.query.oddNumberView
-import kotlinx.coroutines.runBlocking
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.gherkin.Feature
-import kotlin.test.assertEquals
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
+import kotlin.time.ExperimentalTime
 
+private fun <S, E> IView<S, E>.givenEvents(events: Iterable<E>) =
+    events.fold(initialState) { s, e -> evolve(s, e) }
 
-object ViewTest : Spek({
+private infix fun <S, U : S> S.thenState(expected: U?) = shouldBe(expected)
 
-    Feature("View") {
+@OptIn(ExperimentalTime::class)
+class ViewTest : FunSpec({
+    val evenView = evenNumberView()
+    val oddView = oddNumberView()
 
-        val evenView by memoized { evenNumberView() }
-        val oddView by memoized { oddNumberView() }
-        val combinedView by memoized { evenView.combine(oddView) }
-
-        Scenario("Evolve") {
-            var result: EvenNumberState? = null
-
-            When("being in current/initial state of type EvenNumberState and handling event of type EvenNumberEvent") {
-                runBlocking {
-                    result = evenView.evolve(evenView.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
-                }
-            }
-
-            Then("new state of type EvenNumberState should be constructed/evolved") {
-                assertEquals(EvenNumberState(Description("Initial state, 2"), NumberValue(2)), result)
-            }
-
+    test("View - even number added") {
+        with(evenView) {
+            givenEvents(
+                listOf(EvenNumberAdded(Description("2"), NumberValue(2)))
+            ) thenState EvenNumberState(Description("Initial state + 2"), NumberValue(2))
         }
+    }
 
-        Scenario("Evolve - lef map over Event parameter - functor (contravariant)") {
-            var result: EvenNumberState? = null
-
-            When("being in current/initial state of type EvenNumberState and handling event of type Int") {
-                runBlocking {
-                    result = evenView.mapLeftOnEvent { number: Int ->
-                        EvenNumberAdded(
-                            Description(number.toString()), NumberValue(number)
-                        )
-                    }.evolve(evenView.initialState, 2)
-                }
-            }
-
-            Then("new state of type EvenNumberState should be constructed/evolved") {
-                assertEquals(EvenNumberState(Description("Initial state, 2"), NumberValue(2)), result)
-            }
-
-        }
-
-        Scenario("Evolve - dimap over State parameter - profunctor") {
-            var result: Int? = 0
-
-            When("being in current/initial state of type Int and handling event of type EvenNumberEvent") {
-                runBlocking {
-                    result = evenView.initialState?.value?.let {
-                        evenView.dimapOnState(fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
-                            fl = { number: Int ->
-                                EvenNumberState(
-                                    Description(number.toString()), NumberValue(number)
-                                )
-                            }).evolve(it.get, EvenNumberAdded(Description("2"), NumberValue(2)))
-                    }
-                }
-            }
-
-            Then("new state of type Int should be constructed/evolved") {
-                assertEquals(2, result)
-            }
-
-        }
-
-        Scenario("Evolve - product over State parameter - applicative") {
-            lateinit var result: Pair<EvenNumberState?, Int?>
-
-            When("being in current/initial state, and handling event of type EvenNumberEvent by the product of 2 views") {
-                runBlocking {
-                    val view2 = evenView.mapOnState { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
-                    result = evenView.productOnState(view2)
-                        .evolve(evenView.initialState, EvenNumberAdded(Description("2"), NumberValue(2)))
-                }
-            }
-
-            Then("new state of type Pair<EvenNumberState?, Int?> should be constructed/evolved") {
-                assertEquals(Pair(EvenNumberState(Description("Initial state, 2"), NumberValue(2)), 2), result)
-            }
-        }
-
-        Scenario("initial state") {
-            val result = EvenNumberState(Description("Initial state"), NumberValue(0))
-
-            When("view is created") {}
-
-            Then("it should be in the initial state of type EvenNumberState") {
-                assertEquals(result, evenView.initialState)
-            }
-        }
-
-        Scenario("initial state - left map over Event parameter - functor (contravariant)") {
-            val result = EvenNumberState(Description("Initial state"), NumberValue(0))
-
-            Then("it should be in the initial state of type EvenNumberState") {
-                assertEquals(
-                    result, evenView.mapLeftOnEvent { e: Int ->
-                        EvenNumberAdded(
-                            Description(e.toString()), NumberValue(e)
-                        )
-                    }.initialState
+    test("View - even numbers added") {
+        with(evenView) {
+            givenEvents(
+                listOf(
+                    EvenNumberAdded(Description("2"), NumberValue(2)),
+                    EvenNumberAdded(Description("4"), NumberValue(4))
                 )
-            }
+            ) thenState EvenNumberState(
+                Description("Initial state + 2 + 4"),
+                NumberValue(6)
+            )
         }
+    }
 
-        Scenario("initial state - dimap over State parameter - profunctor") {
-            val result = 0
+    test("Mapped View (left map on Event) - even numbers added") {
+        val mappedEvenView = evenView.mapLeftOnEvent { number: Int ->
+            EvenNumberAdded(
+                Description(number.toString()),
+                NumberValue(number)
+            )
+        }
+        with(mappedEvenView) {
+            givenEvents(listOf(2, 4)) thenState EvenNumberState(
+                Description("Initial state + 2 + 4"),
+                NumberValue(6)
+            )
+        }
+    }
 
-            Then("it should be in the initial state of type Int") {
-                assertEquals(
-                    result,
-                    evenView.dimapOnState(fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
-                        fl = { number: Int ->
-                            EvenNumberState(
-                                Description(number.toString()),
-                                NumberValue(number)
-                            )
-                        }).initialState
+    test("Mapped View (dimap on State) - even numbers added") {
+        val mappedEvenView = evenView.dimapOnState(
+            fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
+            fl = { number: Int? ->
+                if (number != null) EvenNumberState(Description(number.toString()), NumberValue(number)) else null
+            })
+
+        with(mappedEvenView) {
+            givenEvents(
+                listOf(
+                    EvenNumberAdded(Description("2"), NumberValue(2)),
+                    EvenNumberAdded(Description("4"), NumberValue(4))
                 )
-            }
+            ) thenState 6
+
         }
+    }
 
-        Scenario("initial state - product over State parameter - applicative") {
-            val result: Pair<EvenNumberState, Int> =
-                Pair(EvenNumberState(Description("Initial state"), NumberValue(0)), 0)
-
-            Then("it should be in the initial state of type Pair<EvenNumberState, Int>") {
-                val view2 = evenView.mapOnState { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get }
-
-                assertEquals(result, evenView.productOnState(view2).initialState)
-            }
-        }
-
-
-        Scenario("Evolve - combine - pair") {
-            var result: Pair<EvenNumberState?, OddNumberState?> = Pair(null, null)
-
-            When("being in current/initial state of type Pair(EvenNumberState, OddNumberState) and handling event of super type NumberEvent") {
-                runBlocking {
-                    result = combinedView.evolve(
-                        combinedView.initialState, EvenNumberAdded(Description("2"), NumberValue(2))
-                    )
-                }
-            }
-
-            Then("new state of type Pair(EvenNumberState, OddNumberState) should be constructed/evolved") {
-                assertEquals(
-                    Pair(
-                        EvenNumberState(Description("Initial state, 2"), NumberValue(2)),
-                        OddNumberState(Description("Initial state"), NumberValue(0))
-                    ), result
+    test("Mapped View (combine Views) - even and odd numbers added") {
+        val combinedView = evenView.combine(oddView)
+        with(combinedView) {
+            givenEvents(
+                listOf(
+                    EvenNumberAdded(Description("2"), NumberValue(2)),
+                    OddNumberAdded(Description("3"), NumberValue(3)),
+                    EvenNumberAdded(Description("4"), NumberValue(4))
                 )
-            }
-
+            ) thenState Pair(
+                EvenNumberState(
+                    Description("Initial state + 2 + 4"),
+                    NumberValue(6)
+                ),
+                OddNumberState(
+                    Description("Initial state + 3"),
+                    NumberValue(3)
+                )
+            )
         }
-
     }
 })
+
 

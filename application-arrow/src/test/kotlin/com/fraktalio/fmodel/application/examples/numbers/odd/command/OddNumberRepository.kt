@@ -48,6 +48,12 @@ class OddNumberRepository : EventRepository<OddNumberCommand?, OddNumberEvent?> 
         return this
     }
 
+    suspend fun deleteAll() {
+        oddNumberEventStorageMutex.withLock {
+            oddNumberEventStorage = emptyList()
+        }
+    }
+
 }
 
 /**

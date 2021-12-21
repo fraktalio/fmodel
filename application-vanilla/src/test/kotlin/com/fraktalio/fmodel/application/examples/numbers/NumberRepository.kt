@@ -60,6 +60,12 @@ class NumberRepository : EventRepository<NumberCommand?, NumberEvent?> {
         return this
     }
 
+    suspend fun deleteAll() {
+        numberEventStorageMutex.withLock {
+            numberEventStorage = emptyList()
+        }
+    }
+
 
 }
 

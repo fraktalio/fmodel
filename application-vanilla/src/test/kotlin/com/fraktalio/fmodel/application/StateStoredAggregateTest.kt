@@ -1,107 +1,84 @@
-/*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.application.examples.numbers.NumberStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberStateRepository
-import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberStateStoredAggregate
 import com.fraktalio.fmodel.application.examples.numbers.numberStateRepository
-import com.fraktalio.fmodel.application.examples.numbers.numberStateStoredAggregate
+import com.fraktalio.fmodel.domain.IDecider
+import com.fraktalio.fmodel.domain.combine
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecider
-import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
-import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runTest
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.gherkin.Feature
-import kotlin.test.assertEquals
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
 
+/**
+ * DSL - Given
+ */
+private suspend fun <C, S, E> IDecider<C, S, E>.given(repository: StateRepository<C, S>, command: () -> C): S =
+    stateStoredAggregate(
+        decider = this,
+        stateRepository = repository
+    ).handle(command())
 
-@ExperimentalCoroutinesApi
-object StateStoredAggregateTest : Spek({
+/**
+ * DSL - When
+ */
+@Suppress("unused")
+private fun <C, S, E> IDecider<C, S, E>.whenCommand(command: C): C = command
 
-    Feature("Aggregate") {
-        val evenNumberStateRepository by memoized {
-            evenNumberStateRepository()
+/**
+ * DSL - Then
+ */
+private infix fun <S> S.thenState(expected: S) = shouldBe(expected)
+
+/**
+ * State-stored aggregate test
+ */
+class StateStoredAggregateTest : FunSpec({
+    val evenDecider = evenNumberDecider()
+    val oddDecider = oddNumberDecider()
+    val combinedDecider = evenDecider.combine(oddDecider)
+    val evenNumberStateRepository = evenNumberStateRepository() as EvenNumberStateRepository
+    val numberStateRepository = numberStateRepository() as NumberStateRepository
+
+    test("State-stored aggregate - add even number") {
+        with(evenDecider) {
+            evenNumberStateRepository.deleteAll()
+
+            given(evenNumberStateRepository) {
+                whenCommand(AddEvenNumber(Description("2"), NumberValue(2)))
+            } thenState EvenNumberState(Description("2"), NumberValue(2))
         }
-        val evenAggregate by memoized {
-            evenNumberStateStoredAggregate(
-                evenNumberDecider(), evenNumberStateRepository()
-            )
-        }
-        val allNumbersAggregate by memoized {
-            numberStateStoredAggregate(
-                evenNumberDecider(), oddNumberDecider(), evenNumberSaga(), oddNumberSaga(), numberStateRepository()
-            )
-        }
-
-        Scenario("Success") {
-            lateinit var result: EvenNumberState
-
-            When("handling command of type AddEvenNumber") {
-                runTest {
-                    (evenNumberStateRepository as EvenNumberStateRepository).deleteAll()
-                    result = evenAggregate.handle(
-                        AddEvenNumber(
-                            Description("Add 2"), NumberValue(2)
-                        )
-                    )
-                }
-            }
-            Then("expect success") {
-                runTest {
-                    assertEquals(
-                        EvenNumberState(Description("Add 2"), NumberValue(2)), result
-                    )
-                }
-            }
-        }
-
-        Scenario("Success - combined aggregate") {
-            lateinit var result: Pair<EvenNumberState, OddNumberState>
-
-            When("handling command of type AddEvenNumber") {
-                runTest {
-                    (numberStateRepository() as NumberStateRepository).deleteAll()
-                    result = allNumbersAggregate.handle(
-                        AddEvenNumber(
-                            Description("Add 2"), NumberValue(2)
-                        )
-                    )
-                }
-            }
-            Then("expect success") {
-                runTest {
-                    assertEquals(
-                        EvenNumberState(Description("Add 2"), NumberValue(2)), result.first
-                    )
-                }
-            }
-        }
-
-
     }
 
-})
+    test("State-stored aggregate - add even number - exception (large number > 1000)") {
+        shouldThrow<UnsupportedOperationException> {
+            with(evenDecider) {
+                evenNumberStateRepository.deleteAll()
 
+                given(evenNumberStateRepository) {
+                    whenCommand(AddEvenNumber(Description("2000"), NumberValue(2000)))
+                } thenState EvenNumberState(Description("2000"), NumberValue(2000))
+            }
+        }
+    }
+
+    test("Combined State-stored aggregate - add even number") {
+        with(combinedDecider) {
+            evenNumberStateRepository.deleteAll()
+
+            given(numberStateRepository) {
+                whenCommand(AddEvenNumber(Description("2"), NumberValue(2)))
+            } thenState Pair(
+                EvenNumberState(Description("2"), NumberValue(2)),
+                OddNumberState(Description("0"), NumberValue(0))
+            )
+        }
+    }
+})

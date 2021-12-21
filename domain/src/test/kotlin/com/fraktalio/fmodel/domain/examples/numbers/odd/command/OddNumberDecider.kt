@@ -61,11 +61,11 @@ fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEven
         evolve = { s, e ->
             when (e) {
                 is OddNumberAdded -> OddNumberState(
-                    e.description,
+                    Description(s.description.get + " + " + e.description.get),
                     NumberValue(s.value.get + e.value.get)
                 )
                 is OddNumberSubtracted -> OddNumberState(
-                    e.description,
+                    Description(s.description.get + " - " + e.description.get),
                     NumberValue(s.value.get - e.value.get)
                 )
                 null -> s

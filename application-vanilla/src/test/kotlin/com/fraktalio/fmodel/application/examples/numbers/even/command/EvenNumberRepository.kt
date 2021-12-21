@@ -50,6 +50,12 @@ class EvenNumberRepository : EventRepository<EvenNumberCommand?, NumberEvent.Eve
         return this
     }
 
+    suspend fun deleteAll() {
+        evenNumberEventStorageMutex.withLock {
+            evenNumberEventStorage = emptyList()
+        }
+    }
+
 }
 
 /**

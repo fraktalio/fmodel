@@ -49,12 +49,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.6.10</kotlin.version>
-        <kotlin.coroutines.version>1.6.0-RC2</kotlin.coroutines.version>
+        <kotlin.coroutines.version>1.6.0-RC3</kotlin.coroutines.version>
         <kotlin.code.style>official</kotlin.code.style>
         <java.version>11</java.version>
         <arrow.version>1.0.0</arrow.version>
-        <junit.version>4.13.1</junit.version>
         <spec.version>2.0.17</spec.version>
+        <kotest.version>5.0.1</kotest.version>
     </properties>
 
     <modules>
@@ -124,7 +124,26 @@
                 <version>${kotlin.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>io.kotest</groupId>
+                <artifactId>kotest-runner-junit5-jvm</artifactId>
+                <version>${kotest.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.kotest</groupId>
+                <artifactId>kotest-assertions-core-jvm</artifactId>
+                <version>${kotest.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.kotest</groupId>
+                <artifactId>kotest-framework-engine-jvm</artifactId>
+                <version>${kotest.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
+
     </dependencyManagement>
 
     <build>
