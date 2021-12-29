@@ -16,6 +16,7 @@
 
 package com.fraktalio.fmodel.domain
 
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flattenConcat
 import kotlinx.coroutines.flow.flowOf
@@ -168,6 +169,7 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
  *
  * @return new decider of type [_Decider]<[C], [Si], [Son], [Ei], [Eo]>
  */
+@FlowPreview
 fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.applyOnState(
     ff: _Decider<C, Si, (So) -> Son, Ei, Eo>
 ): _Decider<C, Si, Son, Ei, Eo> = _Decider(
@@ -189,6 +191,7 @@ fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.applyOnState(
  *
  * @return new decider of type [_Decider]<[C], [Si], [Pair]<[So], [Son]>, [Ei], [Eo]>
  */
+@FlowPreview
 fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.productOnState(
     fb: _Decider<C, Si, Son, Ei, Eo>
 ): _Decider<C, Si, Pair<So, Son>, Ei, Eo> = applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
@@ -219,6 +222,7 @@ fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.productOnState(
  * @param y second Decider
  * @return [_Decider]<[C_SUPER], [Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [Ei_SUPER], [Eo_SUPER]>
  */
+@FlowPreview
 inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<C?, Si, So, Ei?, Eo>.combine(
     y: _Decider<C2?, Si2, So2, Ei2?, Eo2>
 ): _Decider<C_SUPER, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER> {

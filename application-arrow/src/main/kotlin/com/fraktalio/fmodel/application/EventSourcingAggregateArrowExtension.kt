@@ -17,6 +17,7 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapConcat
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.map
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(command: C): Flow<Either<Error, E>> =
     command
         .fetchEvents()
@@ -48,6 +50,7 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(command: C): Flow<Eit
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(commands: Flow<C>): Flow<Either<Error, E>> =
     commands
         .flatMapConcat { handleEither(it) }
@@ -61,6 +64,7 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(commands: Flow<C>): F
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, E> C.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Either<Error, E>> =
     aggregate.handleEither(this)
 
@@ -72,5 +76,6 @@ fun <C, E> C.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, E> Flow<C>.publishEitherTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Either<Error, E>> =
     aggregate.handleEither(this)

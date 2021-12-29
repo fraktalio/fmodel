@@ -18,6 +18,7 @@ package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.domain.IDecider
 import com.fraktalio.fmodel.domain.ISaga
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.fold
@@ -48,6 +49,7 @@ interface StateStoredAggregate<C, S, E> : IDecider<C, S, E>, StateRepository<C, 
      * @param command of type [C]
      * @return The newly computed state of type [S]
      */
+    @FlowPreview
     suspend fun S?.computeNewState(command: C): S {
         val currentState = this ?: initialState
         val events = decide(command, currentState)
@@ -81,6 +83,7 @@ interface StateStoredOrchestratingAggregate<C, S, E> : ISaga<E, C>, StateStoredA
      * @param command of type [C]
      * @return The newly computed state of type [S]
      */
+    @FlowPreview
     override suspend fun S?.computeNewState(command: C): S {
         val currentState = this ?: initialState
         val events = decide(command, currentState)

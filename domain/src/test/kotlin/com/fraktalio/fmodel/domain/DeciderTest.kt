@@ -11,10 +11,10 @@ import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.toList
-import kotlin.time.ExperimentalTime
 
 private fun <C, S, E> IDecider<C, S, E>.givenEvents(events: Iterable<E>, command: () -> C): Flow<E> {
     val currentState = events.fold(initialState) { s, e -> evolve(s, e) }
@@ -33,7 +33,7 @@ private fun <C, S, E> IDecider<C, S, E>.whenCommand(command: C): C = command
 private suspend infix fun <E> Flow<E>.thenEvents(expected: Iterable<E>) = toList() shouldContainExactly (expected)
 private infix fun <S, U : S> S.thenState(expected: U?) = shouldBe(expected)
 
-@OptIn(ExperimentalTime::class)
+@FlowPreview
 class DeciderTest : FunSpec({
     val evenDecider = evenNumberDecider()
     val oddDecider = oddNumberDecider()

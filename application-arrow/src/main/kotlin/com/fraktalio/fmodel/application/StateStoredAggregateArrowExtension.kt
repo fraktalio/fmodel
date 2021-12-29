@@ -18,6 +18,7 @@ package com.fraktalio.fmodel.application
 
 import arrow.core.Either
 import arrow.core.computations.either
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.map
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Either<Error, S> {
     /**
      * Inner function - Computes new State based on the previous State and the [command] or fails.
@@ -82,6 +84,7 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Ei
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(commands: Flow<C>): Flow<Either<Error, S>> =
     commands
         .map { handleEither(it) }
@@ -95,6 +98,7 @@ fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(commands: Flow<C>): Flo
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 suspend fun <C, S> C.publishEitherTo(aggregate: StateStoredAggregate<C, S, *>): Either<Error, S> =
     aggregate.handleEither(this)
 
@@ -106,5 +110,6 @@ suspend fun <C, S> C.publishEitherTo(aggregate: StateStoredAggregate<C, S, *>): 
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, S> Flow<C>.publishEitherTo(aggregate: StateStoredAggregate<C, S, *>): Flow<Either<Error, S>> =
     aggregate.handleEither(this)

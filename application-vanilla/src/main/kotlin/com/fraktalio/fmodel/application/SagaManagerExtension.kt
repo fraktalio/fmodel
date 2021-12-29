@@ -16,6 +16,7 @@
 
 package com.fraktalio.fmodel.application
 
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
 
@@ -37,6 +38,7 @@ fun <AR, A> SagaManager<AR, A>.handle(actionResult: AR): Flow<A> = actionResult.
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <AR, A> SagaManager<AR, A>.handle(actionResults: Flow<AR>): Flow<A> = actionResults.flatMapConcat { handle(it) }
 
 /**
@@ -57,4 +59,5 @@ fun <AR, A> AR.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <AR, A> Flow<AR>.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager.handle(this)

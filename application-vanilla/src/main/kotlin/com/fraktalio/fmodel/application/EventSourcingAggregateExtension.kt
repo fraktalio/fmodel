@@ -16,6 +16,7 @@
 
 package com.fraktalio.fmodel.application
 
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
 
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.flatMapConcat
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C): Flow<E> =
     command.fetchEvents().computeNewEvents(command).save()
 
@@ -38,6 +40,7 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C): Flow<E> =
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E> = commands.flatMapConcat { handle(it) }
 
 
@@ -49,6 +52,7 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E>
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)
 
 /**
@@ -59,4 +63,5 @@ fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = ag
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)

@@ -16,6 +16,7 @@
 
 package com.fraktalio.fmodel.application
 
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.map
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handle(command: C): S =
     command.fetchState().computeNewState(command).save()
 
@@ -38,6 +40,7 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handle(command: C): S =
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, S, E> StateStoredAggregate<C, S, E>.handle(commands: Flow<C>): Flow<S> = commands.map { handle(it) }
 
 /**
@@ -48,6 +51,7 @@ fun <C, S, E> StateStoredAggregate<C, S, E>.handle(commands: Flow<C>): Flow<S> =
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 suspend fun <C, S> C.publishTo(aggregate: StateStoredAggregate<C, S, *>): S = aggregate.handle(this)
 
 /**
@@ -58,4 +62,5 @@ suspend fun <C, S> C.publishTo(aggregate: StateStoredAggregate<C, S, *>): S = ag
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <C, S> Flow<C>.publishTo(aggregate: StateStoredAggregate<C, S, *>): Flow<S> = aggregate.handle(this)

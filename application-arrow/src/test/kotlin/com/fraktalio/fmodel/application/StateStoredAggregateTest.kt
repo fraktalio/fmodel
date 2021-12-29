@@ -18,10 +18,12 @@ import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.FlowPreview
 
 /**
  * DSL - Given
  */
+@FlowPreview
 private suspend fun <C, S, E> IDecider<C, S, E>.given(
     repository: StateRepository<C, S>,
     command: () -> C
@@ -59,6 +61,7 @@ private infix fun <S> Either<Error, S>.thenError(expected: Error) {
 /**
  * State-stored aggregate test
  */
+@FlowPreview
 class StateStoredAggregateTest : FunSpec({
     val evenDecider = evenNumberDecider()
     val oddDecider = oddNumberDecider()

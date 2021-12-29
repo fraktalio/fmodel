@@ -17,6 +17,7 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapConcat
@@ -45,6 +46,7 @@ fun <AR, A> SagaManager<AR, A>.handleEither(actionResult: AR): Flow<Either<Error
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <AR, A> SagaManager<AR, A>.handleEither(actionResults: Flow<AR>): Flow<Either<Error, A>> =
     actionResults
         .flatMapConcat { handleEither(it) }
@@ -69,6 +71,7 @@ fun <AR, A> AR.publishEitherTo(sagaManager: SagaManager<AR, A>): Flow<Either<Err
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@FlowPreview
 fun <AR, A> Flow<AR>.publishEitherTo(sagaManager: SagaManager<AR, A>): Flow<Either<Error, A>> =
     sagaManager.handleEither(this)
 

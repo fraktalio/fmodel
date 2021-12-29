@@ -18,6 +18,7 @@ package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.domain.IDecider
 import com.fraktalio.fmodel.domain.ISaga
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 
 /**
@@ -39,6 +40,7 @@ import kotlinx.coroutines.flow.*
  */
 interface EventSourcingAggregate<C, S, E> : IDecider<C, S, E>, EventRepository<C, E> {
 
+    @FlowPreview
     fun Flow<E>.computeNewEvents(command: C): Flow<E> = flow {
         val currentState = fold(initialState) { s, e -> evolve(s, e) }
         val resultingEvents = decide(command, currentState)
@@ -72,6 +74,7 @@ interface EventSourcingOrchestratingAggregate<C, S, E> : ISaga<E, C>, EventSourc
      * @param command of type [C]
      * @return The Flow of newly computed events of type [E]
      */
+    @FlowPreview
     override fun Flow<E>.computeNewEvents(command: C): Flow<E> = flow {
         val currentState = fold(initialState) { s, e -> evolve(s, e) }
         var resultingEvents = decide(command, currentState)
