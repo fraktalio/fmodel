@@ -43,6 +43,5 @@ interface ActionPublisher<A> {
      * @receiver [Flow] of Actions of type [A]
      * @return [Flow] of newly published Actions of type [A]
      */
-    fun Flow<A>.publish(): Flow<A> =
-        map { it.publish() }
+    fun Flow<A>.publish(): Flow<A> = map { it.publish() }
 }

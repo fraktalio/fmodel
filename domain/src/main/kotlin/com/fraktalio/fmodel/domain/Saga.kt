@@ -33,7 +33,19 @@ interface I_Saga<in AR, out A> {
     val react: (AR) -> Flow<A>
 }
 
+/**
+ * A convenient typealias for the [I_Saga] interface.
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
 typealias ISaga<AR, A> = I_Saga<AR, A>
+
+/**
+ * A typealias for [_Saga]<AR, A>, specializing the [_Saga] to two generic parameters: AR and A
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+typealias Saga<AR, A> = _Saga<AR, A>
 
 /**
  * [_Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).
@@ -57,9 +69,8 @@ data class _Saga<in AR, out A>(
      * @param ARn ActionResult type new
      * @param f
      */
-    inline fun <ARn> mapLeftOnActionResult(crossinline f: (ARn) -> AR): _Saga<ARn, A> = _Saga(
-        react = { arn -> this.react(f(arn)) }
-    )
+    inline fun <ARn> mapLeftOnActionResult(crossinline f: (ARn) -> AR): _Saga<ARn, A> =
+        _Saga(react = { arn -> react(f(arn)) })
 
     /**
      * Right map on A/Action parameter - Covariant
@@ -67,9 +78,8 @@ data class _Saga<in AR, out A>(
      * @param An
      * @param f
      */
-    inline fun <An> mapOnAction(crossinline f: (A) -> An): _Saga<AR, An> = _Saga(
-        react = { ar -> this.react(ar).map { f(it) } }
-    )
+    inline fun <An> mapOnAction(crossinline f: (A) -> An): _Saga<AR, An> =
+        _Saga(react = { ar -> react(ar).map { f(it) } })
 }
 
 /**
@@ -92,20 +102,10 @@ inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_S
     y: _Saga<AR2?, A2>
 ): _Saga<AR_SUPER, A_SUPER> {
 
-    val sagaX = this
-        .mapLeftOnActionResult<AR_SUPER> { it as? AR }
-        .mapOnAction<A_SUPER> { it } // As OR/SUM relationship is modeled with inheritance/polymorphism, the 'mapOnAction' function is not needed. It is mapping over the identity function. Used here for the sake of future implementations of `saga` functions, and learning purposes.
+    val sagaX = this.mapLeftOnActionResult<AR_SUPER> { it as? AR }.mapOnAction<A_SUPER> { it }
 
-    val sagaY = y
-        .mapLeftOnActionResult<AR_SUPER> { it as? AR2 }
-        .mapOnAction<A_SUPER> { it } // As OR/SUM relationship is modeled with inheritance/polymorphism, the 'mapOnAction' function is not needed. It is mapping over the identity function. Used here for the sake of future implementations of `saga` functions, and learning purposes.
+    val sagaY = y.mapLeftOnActionResult<AR_SUPER> { it as? AR2 }.mapOnAction<A_SUPER> { it }
 
-    return _Saga(
-        react = { eitherAr -> flowOf(sagaX.react(eitherAr), (sagaY.react(eitherAr))).flattenConcat() }
-    )
+    return _Saga(react = { eitherAr -> flowOf(sagaX.react(eitherAr), (sagaY.react(eitherAr))).flattenConcat() })
 }
 
-/**
- * A typealias for [_Saga]<AR, A>, specializing the [_Saga] to two generic parameters: AR and A
- */
-typealias Saga<AR, A> = _Saga<AR, A>

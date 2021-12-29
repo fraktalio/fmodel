@@ -55,5 +55,6 @@ interface SagaManager<AR, A> : ISaga<AR, A>, ActionPublisher<A> {
 fun <AR, A> sagaManager(
     saga: ISaga<AR, A>,
     actionPublisher: ActionPublisher<A>
-): SagaManager<AR, A> =
-    object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher, ISaga<AR, A> by saga {}
+): SagaManager<AR, A> = object : SagaManager<AR, A>,
+    ActionPublisher<A> by actionPublisher,
+    ISaga<AR, A> by saga {}

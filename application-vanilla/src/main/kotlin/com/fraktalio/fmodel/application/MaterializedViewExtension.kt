@@ -27,10 +27,7 @@ import kotlinx.coroutines.flow.map
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-suspend fun <S, E> MaterializedView<S, E>.handle(event: E): S =
-    event.fetchState()
-        .computeNewState(event)
-        .save()
+suspend fun <S, E> MaterializedView<S, E>.handle(event: E): S = event.fetchState().computeNewState(event).save()
 
 /**
  * Extension function - Handles the flow of events of type [E]
@@ -40,8 +37,7 @@ suspend fun <S, E> MaterializedView<S, E>.handle(event: E): S =
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <S, E> MaterializedView<S, E>.handle(events: Flow<E>): Flow<S> =
-    events.map { handle(it) }
+fun <S, E> MaterializedView<S, E>.handle(events: Flow<E>): Flow<S> = events.map { handle(it) }
 
 /**
  * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>

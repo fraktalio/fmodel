@@ -19,8 +19,8 @@ package com.fraktalio.fmodel.domain
 /**
  * An interface of the [_View]
  *
- * @param Si Input_State type
- * @param So Output_State type
+ * @param Si Input State type
+ * @param So Output State type
  * @param E Event type
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
@@ -33,12 +33,16 @@ interface I_View<in Si, out So, in E> {
 /**
  * A convenient typealias for the [I_View] interface. It is specializing the three parameters [I_View] interface to only two parameters interface [IView].
  *
- * `Si=So -> S`
- * `E -> E`
- *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 typealias IView<S, E> = I_View<S, S, E>
+
+/**
+ * A typealias for [_View]<Si, So, E>, specializing the [_View] to two generic parameters: S and E, where Si=S, So=S, E=E
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+typealias View<S, E> = _View<S, S, E>
 
 /**
  * [_View] is a datatype that represents the event handling algorithm,
@@ -51,8 +55,8 @@ typealias IView<S, E> = I_View<S, S, E>
  *
  * [_View] is a pure domain component
  *
- * @param Si Input_State type
- * @param So Output_State type
+ * @param Si Input State type
+ * @param So Output State type
  * @param E Event type
  * @property evolve A pure function/lambda that takes input state of type [Si] and input event of type [E] as parameters, and returns the output/new state [So]
  * @property initialState A starting point / An initial state of type [So]
@@ -70,9 +74,11 @@ data class _View<in Si, out So, in E>(
      * @param En Event new
      * @param f
      */
-    inline fun <En> mapLeftOnEvent(crossinline f: (En) -> E): _View<Si, So, En> = _View(
-        evolve = { si, en -> this.evolve(si, f(en)) },
-        initialState = this.initialState
+    inline fun <En> mapLeftOnEvent(
+        crossinline f: (En) -> E
+    ): _View<Si, So, En> = _View(
+        evolve = { si, en -> evolve(si, f(en)) },
+        initialState = initialState
     )
 
     /**
@@ -84,11 +90,10 @@ data class _View<in Si, out So, in E>(
      * @param fr
      */
     inline fun <Sin, Son> dimapOnState(
-        crossinline fl: (Sin) -> Si,
-        crossinline fr: (So) -> Son
+        crossinline fl: (Sin) -> Si, crossinline fr: (So) -> Son
     ): _View<Sin, Son, E> = _View(
-        evolve = { sin, e -> fr(this.evolve(fl(sin), e)) },
-        initialState = fr(this.initialState)
+        evolve = { sin, e -> fr(evolve(fl(sin), e)) },
+        initialState = fr(initialState)
     )
 
     /**
@@ -97,8 +102,7 @@ data class _View<in Si, out So, in E>(
      * @param Sin State input new
      * @param f
      */
-    inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _View<Sin, So, E> =
-        dimapOnState(f) { it }
+    inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _View<Sin, So, E> = dimapOnState(f) { it }
 
     /**
      * Right map on S/State parameter - Covariant
@@ -106,14 +110,8 @@ data class _View<in Si, out So, in E>(
      * @param Son State output new
      * @param f
      */
-    inline fun <Son> mapOnState(crossinline f: (So) -> Son): _View<Si, Son, E> =
-        dimapOnState({ it }, f)
+    inline fun <Son> mapOnState(crossinline f: (So) -> Son): _View<Si, Son, E> = dimapOnState({ it }, f)
 }
-
-// ### Extension functions ###
-// We could have included these functions inside the _View data type if we had changed _View’s type arguments to be invariant but this would cascade poorly for inference.
-// If we move it to an extension then E, Si, ... are no longer coming from the instance but from the environment in invariant position which is acceptable.
-
 
 /**
  * Apply on S/State parameter - Applicative
@@ -124,9 +122,11 @@ data class _View<in Si, out So, in E>(
  * @param Son State output new type
  * @param ff
  */
-fun <Si, So, E, Son> _View<Si, So, E>.applyOnState(ff: _View<Si, (So) -> Son, E>): _View<Si, Son, E> = _View(
-    evolve = { si, e -> ff.evolve(si, e)(this.evolve(si, e)) },
-    initialState = ff.initialState(this.initialState)
+fun <Si, So, E, Son> _View<Si, So, E>.applyOnState(
+    ff: _View<Si, (So) -> Son, E>
+): _View<Si, Son, E> = _View(
+    evolve = { si, e -> ff.evolve(si, e)(evolve(si, e)) },
+    initialState = ff.initialState(initialState)
 )
 
 /**
@@ -160,18 +160,9 @@ inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER
     y: _View<Si2, So2, E2?>
 ): _View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER> {
 
-    val viewX = this
-        .mapLeftOnEvent<E_SUPER> { it as? E }
-        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.first }
+    val viewX = this.mapLeftOnEvent<E_SUPER> { it as? E }.mapLeftOnState<Pair<Si, Si2>> { pair -> pair.first }
 
-    val viewY = y
-        .mapLeftOnEvent<E_SUPER> { it as? E2 }
-        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.second }
+    val viewY = y.mapLeftOnEvent<E_SUPER> { it as? E2 }.mapLeftOnState<Pair<Si, Si2>> { pair -> pair.second }
 
     return viewX.productOnState(viewY)
 }
-
-/**
- * A typealias for [_View]<Si, So, E>, specializing the [_View] to two generic parameters: S and E, where Si=S, So=S, E=E
- */
-typealias View<S, E> = _View<S, S, E>

@@ -57,4 +57,6 @@ fun <S, E> materializedView(
     view: IView<S, E>,
     viewStateRepository: ViewStateRepository<E, S>,
 ): MaterializedView<S, E> =
-    object : MaterializedView<S, E>, ViewStateRepository<E, S> by viewStateRepository, IView<S, E> by view {}
+    object : MaterializedView<S, E>,
+        ViewStateRepository<E, S> by viewStateRepository,
+        IView<S, E> by view {}

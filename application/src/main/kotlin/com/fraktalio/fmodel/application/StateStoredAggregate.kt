@@ -108,8 +108,7 @@ fun <C, S, E> stateStoredAggregate(
     decider: IDecider<C, S, E>,
     stateRepository: StateRepository<C, S>
 ): StateStoredAggregate<C, S, E> =
-    object :
-        StateStoredAggregate<C, S, E>,
+    object : StateStoredAggregate<C, S, E>,
         StateRepository<C, S> by stateRepository,
         IDecider<C, S, E> by decider {}
 

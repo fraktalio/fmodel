@@ -28,9 +28,7 @@ import kotlinx.coroutines.flow.map
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handle(command: C): S =
-    command.fetchState()
-        .computeNewState(command)
-        .save()
+    command.fetchState().computeNewState(command).save()
 
 /**
  * Extension function - Handles the [Flow] of command messages of type [C]
@@ -40,8 +38,7 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handle(command: C): S =
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <C, S, E> StateStoredAggregate<C, S, E>.handle(commands: Flow<C>): Flow<S> =
-    commands.map { handle(it) }
+fun <C, S, E> StateStoredAggregate<C, S, E>.handle(commands: Flow<C>): Flow<S> = commands.map { handle(it) }
 
 /**
  * Extension function - Publishes the command of type [C] to the state stored aggregate of type  [StateStoredAggregate]<[C], [S], *>

@@ -39,12 +39,11 @@ import kotlinx.coroutines.flow.*
  */
 interface EventSourcingAggregate<C, S, E> : IDecider<C, S, E>, EventRepository<C, E> {
 
-    fun Flow<E>.computeNewEvents(command: C): Flow<E> =
-        flow {
-            val currentState = fold(initialState) { s, e -> evolve(s, e) }
-            val resultingEvents = decide(command, currentState)
-            emitAll(resultingEvents)
-        }
+    fun Flow<E>.computeNewEvents(command: C): Flow<E> = flow {
+        val currentState = fold(initialState) { s, e -> evolve(s, e) }
+        val resultingEvents = decide(command, currentState)
+        emitAll(resultingEvents)
+    }
 }
 
 /**
@@ -73,19 +72,17 @@ interface EventSourcingOrchestratingAggregate<C, S, E> : ISaga<E, C>, EventSourc
      * @param command of type [C]
      * @return The Flow of newly computed events of type [E]
      */
-    override fun Flow<E>.computeNewEvents(command: C): Flow<E> =
-        flow {
-            val currentState = fold(initialState) { s, e -> evolve(s, e) }
-            var resultingEvents = decide(command, currentState)
+    override fun Flow<E>.computeNewEvents(command: C): Flow<E> = flow {
+        val currentState = fold(initialState) { s, e -> evolve(s, e) }
+        var resultingEvents = decide(command, currentState)
 
-            resultingEvents.flatMapConcat { react(it) }.onEach {
-                val newEvents =
-                    flowOf(this@computeNewEvents, resultingEvents).flattenConcat().computeNewEvents(it)
-                resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
-            }.collect()
+        resultingEvents.flatMapConcat { react(it) }.onEach {
+            val newEvents = flowOf(this@computeNewEvents, resultingEvents).flattenConcat().computeNewEvents(it)
+            resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
+        }.collect()
 
-            emitAll(resultingEvents)
-        }
+        emitAll(resultingEvents)
+    }
 }
 
 /**
@@ -106,8 +103,7 @@ fun <C, S, E> eventSourcingAggregate(
     decider: IDecider<C, S, E>,
     eventRepository: EventRepository<C, E>
 ): EventSourcingAggregate<C, S, E> =
-    object :
-        EventSourcingAggregate<C, S, E>,
+    object : EventSourcingAggregate<C, S, E>,
         EventRepository<C, E> by eventRepository,
         IDecider<C, S, E> by decider {}
 
@@ -132,8 +128,7 @@ fun <C, S, E> eventSourcingOrchestratingAggregate(
     eventRepository: EventRepository<C, E>,
     saga: ISaga<E, C>
 ): EventSourcingOrchestratingAggregate<C, S, E> =
-    object :
-        EventSourcingOrchestratingAggregate<C, S, E>,
+    object : EventSourcingOrchestratingAggregate<C, S, E>,
         EventRepository<C, E> by eventRepository,
         IDecider<C, S, E> by decider,
         ISaga<E, C> by saga {}

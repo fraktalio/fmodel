@@ -25,10 +25,10 @@ import kotlinx.coroutines.flow.map
  * An Interface of the [_Decider].
  *
  * @param C Command type - contravariant/in type parameter
- * @param Si Input_State type - contravariant/in type parameter
- * @param So Output_State type - covariant/out type parameter
- * @param Ei Input_Event type - contravariant/in type parameter
- * @param Eo Output_Event type - covariant/out type parameter
+ * @param Si Input State type - contravariant/in type parameter
+ * @param So Output State type - covariant/out type parameter
+ * @param Ei Input Event type - contravariant/in type parameter
+ * @param Eo Output Event type - covariant/out type parameter
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
@@ -41,13 +41,14 @@ interface I_Decider<in C, in Si, out So, in Ei, out Eo> {
 /**
  * A convenient typealias for the [I_Decider] interface. It is specializing the five parameters [I_Decider] interface to only three parameters interface [IDecider].
  *
- * `Si=So -> S`
- * `Ei=Eo -> E`
- * `C -> C`
- *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 typealias IDecider<C, S, E> = I_Decider<C, S, S, E, E>
+
+/**
+ * A typealias for [_Decider]<C, Si, So, Ei, Eo>, specializing the [_Decider] to three generic parameters: C, S and E, where C=C, Si=S, So=S, Ei=E, Eo=E
+ */
+typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
 
 /**
  * [_Decider] is a datatype that represents the main decision-making algorithm.
@@ -58,10 +59,10 @@ typealias IDecider<C, S, E> = I_Decider<C, S, S, E, E>
  * [_Decider] is a pure domain component.
  *
  * @param C Command type - contravariant/in type parameter
- * @param Si Input_State type - contravariant/in type parameter
- * @param So Output_State type - covariant/out type parameter
- * @param Ei Input_Event type - contravariant/in type parameter
- * @param Eo Output_Event type - covariant/out type parameter
+ * @param Si Input State type - contravariant/in type parameter
+ * @param So Output State type - covariant/out type parameter
+ * @param Ei Input Event type - contravariant/in type parameter
+ * @param Eo Output Event type - covariant/out type parameter
  * @property decide A function/lambda that takes command of type [C] and input state of type [Si] as parameters, and returns/emits the flow of output events [Flow]<[Eo]>
  * @property evolve A function/lambda that takes input state of type [Si] and input event of type [Ei] as parameters, and returns the output/new state [So]
  * @property initialState A starting point / An initial state of type [So]
@@ -80,10 +81,12 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
      * @param Cn Command new
      * @param f
      */
-    inline fun <Cn> mapLeftOnCommand(crossinline f: (Cn) -> C): _Decider<Cn, Si, So, Ei, Eo> = _Decider(
-        decide = { cn, si -> this.decide(f(cn), si) },
-        evolve = { si, ei -> this.evolve(si, ei) },
-        initialState = this.initialState
+    inline fun <Cn> mapLeftOnCommand(
+        crossinline f: (Cn) -> C
+    ): _Decider<Cn, Si, So, Ei, Eo> = _Decider(
+        decide = { cn, si -> decide(f(cn), si) },
+        evolve = { si, ei -> evolve(si, ei) },
+        initialState = initialState
     )
 
     /**
@@ -95,12 +98,11 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
      * @param fr
      */
     inline fun <Ein, Eon> dimapOnEvent(
-        crossinline fl: (Ein) -> Ei,
-        crossinline fr: (Eo) -> Eon
+        crossinline fl: (Ein) -> Ei, crossinline fr: (Eo) -> Eon
     ): _Decider<C, Si, So, Ein, Eon> = _Decider(
-        decide = { c, si -> this.decide(c, si).map { fr(it) } },
-        evolve = { si, ein -> this.evolve(si, fl(ein)) },
-        initialState = this.initialState
+        decide = { c, si -> decide(c, si).map { fr(it) } },
+        evolve = { si, ein -> evolve(si, fl(ein)) },
+        initialState = initialState
     )
 
     /**
@@ -109,8 +111,7 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
      * @param Ein Event input new
      * @param f
      */
-    inline fun <Ein> mapLeftOnEvent(crossinline f: (Ein) -> Ei): _Decider<C, Si, So, Ein, Eo> =
-        dimapOnEvent(f) { it }
+    inline fun <Ein> mapLeftOnEvent(crossinline f: (Ein) -> Ei): _Decider<C, Si, So, Ein, Eo> = dimapOnEvent(f) { it }
 
     /**
      * Right map on E/Event parameter - Covariant
@@ -118,8 +119,7 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
      * @param Eon Event output new
      * @param f
      */
-    inline fun <Eon> mapOnEvent(crossinline f: (Eo) -> Eon): _Decider<C, Si, So, Ei, Eon> =
-        dimapOnEvent({ it }, f)
+    inline fun <Eon> mapOnEvent(crossinline f: (Eo) -> Eon): _Decider<C, Si, So, Ei, Eon> = dimapOnEvent({ it }, f)
 
     /**
      * Dimap on S/State parameter - Contravariant on input state (Si) and Covariant on output state (So) = Profunctor
@@ -130,12 +130,11 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
      * @param fr
      */
     inline fun <Sin, Son> dimapOnState(
-        crossinline fl: (Sin) -> Si,
-        crossinline fr: (So) -> Son
+        crossinline fl: (Sin) -> Si, crossinline fr: (So) -> Son
     ): _Decider<C, Sin, Son, Ei, Eo> = _Decider(
-        decide = { c, sin -> this.decide(c, fl(sin)) },
-        evolve = { sin, ei -> fr(this.evolve(fl(sin), ei)) },
-        initialState = fr(this.initialState)
+        decide = { c, sin -> decide(c, fl(sin)) },
+        evolve = { sin, ei -> fr(evolve(fl(sin), ei)) },
+        initialState = fr(initialState)
     )
 
     /**
@@ -144,8 +143,7 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
      * @param Sin State input new
      * @param f
      */
-    inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _Decider<C, Sin, So, Ei, Eo> =
-        dimapOnState(f) { it }
+    inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _Decider<C, Sin, So, Ei, Eo> = dimapOnState(f) { it }
 
     /**
      * Right map on S/State parameter - Covariant
@@ -153,13 +151,8 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
      * @param Son State output new
      * @param f
      */
-    inline fun <Son> mapOnState(crossinline f: (So) -> Son): _Decider<C, Si, Son, Ei, Eo> =
-        dimapOnState({ it }, f)
+    inline fun <Son> mapOnState(crossinline f: (So) -> Son): _Decider<C, Si, Son, Ei, Eo> = dimapOnState({ it }, f)
 }
-
-// ### Extension functions ###
-// We could have included these functions inside the _Decider data type if we had changed Decider’s type arguments to be invariant but this would cascade poorly for inference.
-// If we move it to an extension then C, Si, ... are no longer coming from the instance but from the environment in invariant position which is acceptable.
 
 /**
  * Apply on S/State - Applicative
@@ -175,12 +168,13 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
  *
  * @return new decider of type [_Decider]<[C], [Si], [Son], [Ei], [Eo]>
  */
-fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.applyOnState(ff: _Decider<C, Si, (So) -> Son, Ei, Eo>): _Decider<C, Si, Son, Ei, Eo> =
-    _Decider(
-        decide = { c, si -> flowOf(ff.decide(c, si), this.decide(c, si)).flattenConcat() },
-        evolve = { si, ei -> ff.evolve(si, ei)(this.evolve(si, ei)) },
-        initialState = ff.initialState(this.initialState)
-    )
+fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.applyOnState(
+    ff: _Decider<C, Si, (So) -> Son, Ei, Eo>
+): _Decider<C, Si, Son, Ei, Eo> = _Decider(
+    decide = { c, si -> flowOf(ff.decide(c, si), decide(c, si)).flattenConcat() },
+    evolve = { si, ei -> ff.evolve(si, ei)(evolve(si, ei)) },
+    initialState = ff.initialState(initialState)
+)
 
 /**
  * Product on S/State parameter - Applicative
@@ -195,8 +189,9 @@ fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.applyOnState(ff: _Decid
  *
  * @return new decider of type [_Decider]<[C], [Si], [Pair]<[So], [Son]>, [Ei], [Eo]>
  */
-fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.productOnState(fb: _Decider<C, Si, Son, Ei, Eo>): _Decider<C, Si, Pair<So, Son>, Ei, Eo> =
-    applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
+fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.productOnState(
+    fb: _Decider<C, Si, Son, Ei, Eo>
+): _Decider<C, Si, Pair<So, Son>, Ei, Eo> = applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
 
 
 /**
@@ -228,20 +223,13 @@ inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, r
     y: _Decider<C2?, Si2, So2, Ei2?, Eo2>
 ): _Decider<C_SUPER, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER> {
 
-    val deciderX = this
-        .mapLeftOnCommand<C_SUPER> { it as? C }
-        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.first }
+    val deciderX = this.mapLeftOnCommand<C_SUPER> { it as? C }.mapLeftOnState<Pair<Si, Si2>> { pair -> pair.first }
         .dimapOnEvent<Ei_SUPER, Eo_SUPER>({ it as? Ei }, { it })
 
-    val deciderY = y
-        .mapLeftOnCommand<C_SUPER> { it as? C2 }
-        .mapLeftOnState<Pair<Si, Si2>> { pair -> pair.second }
+    val deciderY = y.mapLeftOnCommand<C_SUPER> { it as? C2 }.mapLeftOnState<Pair<Si, Si2>> { pair -> pair.second }
         .dimapOnEvent<Ei_SUPER, Eo_SUPER>({ it as? Ei2 }, { it })
 
     return deciderX.productOnState(deciderY)
 }
 
-/**
- * A typealias for [_Decider]<C, Si, So, Ei, Eo>, specializing the [_Decider] to three generic parameters: C, S and E, where C=C, Si=S, So=S, Ei=E, Eo=E
- */
-typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
+

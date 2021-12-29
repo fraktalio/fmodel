@@ -28,10 +28,7 @@ import kotlinx.coroutines.flow.flatMapConcat
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C): Flow<E> =
-    command
-        .fetchEvents()
-        .computeNewEvents(command)
-        .save()
+    command.fetchEvents().computeNewEvents(command).save()
 
 /**
  * Extension function - Handles the flow of command messages of type [C]
@@ -41,8 +38,7 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C): Flow<E> =
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E> =
-    commands.flatMapConcat { handle(it) }
+fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E> = commands.flatMapConcat { handle(it) }
 
 
 /**

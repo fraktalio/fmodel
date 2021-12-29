@@ -27,10 +27,7 @@ import kotlinx.coroutines.flow.flatMapConcat
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <AR, A> SagaManager<AR, A>.handle(actionResult: AR): Flow<A> =
-    actionResult
-        .computeNewActions()
-        .publish()
+fun <AR, A> SagaManager<AR, A>.handle(actionResult: AR): Flow<A> = actionResult.computeNewActions().publish()
 
 /**
  * Extension function - Handles the the [Flow] of action results of type [AR].
@@ -40,8 +37,7 @@ fun <AR, A> SagaManager<AR, A>.handle(actionResult: AR): Flow<A> =
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <AR, A> SagaManager<AR, A>.handle(actionResults: Flow<AR>): Flow<A> =
-    actionResults.flatMapConcat { handle(it) }
+fun <AR, A> SagaManager<AR, A>.handle(actionResults: Flow<AR>): Flow<A> = actionResults.flatMapConcat { handle(it) }
 
 /**
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
