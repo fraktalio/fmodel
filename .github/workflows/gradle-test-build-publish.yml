@@ -1,0 +1,85 @@
+name: CI with Gradle - Test, Build and Publish
+
+# Trigger the workflow on push,
+# but only for the main branch
+on:
+  push:
+    branches: [ main ]
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.parallel=false -Dorg.gradle.jvmargs="-Xmx5g -XX:+UseParallelGC -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
+  MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+  MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+  GPG_PRIVATE_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+  GPG_PRIVATE_PASSWORD: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ 'macos-latest', 'ubuntu-latest', 'windows-latest' ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v2.5.0
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - name: Ubuntu build
+        uses: gradle/gradle-build-action@v2.1.0
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          arguments: --full-stacktrace --scan build
+
+      - name: macosX64Test
+        uses: gradle/gradle-build-action@v2.1.0
+        if: matrix.os == 'macos-latest'
+        with:
+          arguments: --full-stacktrace --scan macosX64Test
+
+      - name: mingwX64Test
+        uses: gradle/gradle-build-action@v2.1.0
+        if: matrix.os == 'windows-latest'
+        with:
+          arguments: --full-stacktrace --scan mingwX64Test
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v2.3.1
+        with:
+          name: 'reports-${{ matrix.os }}'
+          path: '**/build/reports/**'
+
+      - name: Stop Gradle daemons
+        run: ./gradlew --stop
+
+
+  publish:
+    needs: build
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v2.5.0
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - name: Publish version
+        uses: gradle/gradle-build-action@v2.1.0
+        with:
+          arguments: --full-stacktrace publish
+
+      - name: Stop Gradle daemons
+        run: ./gradlew --stop

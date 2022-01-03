@@ -1,7 +1,8 @@
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+kotlin-js-store/
 
 ### STS ###
 .apt_generated
@@ -11,12 +12,16 @@ target/
 .settings
 .springBeans
 .sts4-cache
+bin/
+
 
 ### IntelliJ IDEA ###
 .idea
 *.iws
 *.iml
 *.ipr
+out/
+
 
 ### NetBeans ###
 /nbproject/private/
@@ -24,9 +29,6 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
