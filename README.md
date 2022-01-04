@@ -1,8 +1,5 @@
 # **f`(`model`)`** - Functional and Reactive Domain Modeling
 
-![workflow-github](https://github.com/fraktalio/fmodel/actions/workflows/maven-test-build-publish-to-github.yml/badge.svg)
-![workflow-maven-central](https://github.com/fraktalio/fmodel/actions/workflows/maven-test-build-publish-to-maven-central.yml/badge.svg)
-
 When you’re developing an information system to automate the activities of the business, you are modeling the business.
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
 the business — together, they constitute the model of the domain.
@@ -211,8 +208,8 @@ We can now construct event-sourcing or/and state-storing aggregate by using the 
 
 ### Event-sourcing aggregate
 
-[Event sourcing aggregate](application/src/main/kotlin/com/fraktalio/fmodel/application/EventSourcingAggregate.kt) is
-using/delegating a `Decider` to handle commands and produce events. It belongs to the Application layer. In order to
+[Event sourcing aggregate](application/src/commonMain/kotlin/com/fraktalio/fmodel/application/EventSourcingAggregate.kt)
+is using/delegating a `Decider` to handle commands and produce events. It belongs to the Application layer. In order to
 handle the command, aggregate needs to fetch the current state (represented as a list of events)
 via `EventRepository.fetchEvents` function, and then delegate the command to the decider which can produce new events as
 a result. Produced events are then stored via `EventRepository.save` suspending function.
@@ -239,7 +236,7 @@ fun <C, S, E> eventSourcingAggregate(
 
 ### State-stored aggregate
 
-[State stored aggregate](application/src/main/kotlin/com/fraktalio/fmodel/application/StateStoredAggregate.kt) is
+[State stored aggregate](application/src/commonMain/kotlin/com/fraktalio/fmodel/application/StateStoredAggregate.kt) is
 using/delegating a `Decider` to handle commands and produce new state. It belongs to the Application layer. In order to
 handle the command, aggregate needs to fetch the current state via `StateRepository.fetchState` function first, and then
 delegate the command to the decider which can produce new state as a result. New state is then stored
@@ -329,7 +326,7 @@ We can now construct `materialized` view by using this `view`.
 
 ### Materialized View
 
-A [Materialized view](application/src/main/kotlin/com/fraktalio/fmodel/application/MaterializedView.kt) is
+A [Materialized view](application/src/commonMain/kotlin/com/fraktalio/fmodel/application/MaterializedView.kt) is
 using/delegating a `View` to handle events of type `E` and to maintain a state of denormalized projection(s) as a
 result. Essentially, it represents the query/view side of the CQRS pattern. It belongs to the Application layer.
 
@@ -401,7 +398,7 @@ We can now construct `Saga Manager` by using this `saga`.
 
 ### Saga Manager
 
-[Saga manager](application/src/main/kotlin/com/fraktalio/fmodel/application/SagaManager.kt) is a stateless process
+[Saga manager](application/src/commonMain/kotlin/com/fraktalio/fmodel/application/SagaManager.kt) is a stateless process
 orchestrator. It is reacting on Action Results of type `AR` and produces new actions `A` based on them.
 
 Saga manager is using/delegating a `Saga` to react on Action Results of type `AR` and produce new actions `A` which are
