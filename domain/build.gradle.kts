@@ -93,15 +93,11 @@ kotlin {
         repositories {
             maven {
                 name = "ossrh"
-                setUrl { "https://s01.oss.sonatype.org/content/repositories/snapshots" }
-                credentials {
-                    username = System.getenv("MAVEN_USERNAME")
-                    password = System.getenv("MAVEN_PASSWORD")
+                setUrl {
+                    if (version.toString().endsWith("SNAPSHOT"))
+                        "https://s01.oss.sonatype.org/content/repositories/snapshots"
+                    else "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                 }
-            }
-            maven {
-                name = "ossrh"
-                setUrl { "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/" }
                 credentials {
                     username = System.getenv("MAVEN_USERNAME")
                     password = System.getenv("MAVEN_PASSWORD")
