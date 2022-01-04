@@ -4,16 +4,15 @@ When you’re developing an information system to automate the activities of the
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
 the business — together, they constitute the model of the domain.
 
-## Going with the `Flow`, `Iterable` is no more
+## Multiplatform
 
-> This is `main` branch, a home of version 2. It is a `reactive` version of libraries, optimized for streaming.
-
-> The [v1](https://github.com/fraktalio/fmodel/tree/v1) branch does not depend on Kotlin coroutines or Flow within the domain model.
+Support for multiplatform programming is one of Kotlin’s key benefits. It reduces time spent writing and maintaining the
+same code for different platforms while retaining the flexibility and benefits of native programming.
 
 ## `IOR<Library, Inspiration>`
 
-This project can be used as a library, or as an inspiration, or both. It provides just enough tactical Domain-Driven
-Design patterns, optimised for Event Sourcing and CQRS.
+This project can be used as a multiplatform library, or as an inspiration, or both. It provides just enough tactical
+Domain-Driven Design patterns, optimised for Event Sourcing and CQRS.
 
 - The `domain` model library is fully isolated from the application layer and API-related concerns. It represents a pure
   declaration of the program logic. It is written in [Kotlin](https://kotlinlang.org/) programming language, without
@@ -437,19 +436,19 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>2.3.1</version>
+    <version>3.0.0</version>
  </dependency>
 
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-vanilla</artifactId>
-    <version>2.3.1</version>
+    <version>3.0.0</version>
  </dependency>
  
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-arrow</artifactId>
-    <version>2.3.1</version>
+    <version>3.0.0</version>
  </dependency>
 ```
 
