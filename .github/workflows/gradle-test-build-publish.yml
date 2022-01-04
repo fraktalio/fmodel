@@ -79,7 +79,7 @@ jobs:
       - name: Publish version
         uses: gradle/gradle-build-action@v2.1.0
         with:
-          arguments: --full-stacktrace publish
+          arguments: --full-stacktrace publishAllPublicationsToOssrhRepository
 
       - name: Stop Gradle daemons
         run: ./gradlew --stop
