@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  GRADLE_OPTS: -Dorg.gradle.parallel=false -Dorg.gradle.jvmargs="-Xmx5g -XX:+UseParallelGC -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false -Dorg.gradle.jvmargs="-Xmx5g -XX:+UseParallelGC -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
 
 jobs:
   build:
@@ -33,19 +33,19 @@ jobs:
         uses: gradle/gradle-build-action@v2.1.0
         if: matrix.os == 'ubuntu-latest'
         with:
-          arguments: --full-stacktrace --scan build
+          arguments: --full-stacktrace build
 
       - name: macosX64Test
         uses: gradle/gradle-build-action@v2.1.0
         if: matrix.os == 'macos-latest'
         with:
-          arguments: --full-stacktrace --scan macosX64Test
+          arguments: --full-stacktrace macosX64Test
 
       - name: mingwX64Test
         uses: gradle/gradle-build-action@v2.1.0
         if: matrix.os == 'windows-latest'
         with:
-          arguments: --full-stacktrace --scan mingwX64Test
+          arguments: --full-stacktrace mingwX64Test
 
       - name: Upload reports
         uses: actions/upload-artifact@v2.3.1
