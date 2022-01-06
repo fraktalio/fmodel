@@ -52,6 +52,3 @@ jobs:
         with:
           name: 'reports-${{ matrix.os }}'
           path: '**/build/reports/**'
-
-      - name: Stop Gradle daemons
-        run: ./gradlew --stop
