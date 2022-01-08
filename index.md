@@ -1,8 +1,7 @@
-# [fraktalio](https://fraktalio.com/) / **f`(`model`)`** - Functional and Reactive domain modeling
+# [fraktalio](https://fraktalio.com/) / **f`(`model`)`** - Functional and Reactive domain modeling - Multiplatform
 
 
-![workflow-github](https://github.com/fraktalio/fmodel/actions/workflows/maven-test-build-publish-to-github.yml/badge.svg)
-![workflow-maven-central](https://github.com/fraktalio/fmodel/actions/workflows/maven-test-build-publish-to-maven-central.yml/badge.svg)
+![workflow](https://github.com/fraktalio/fmodel/actions/workflows/gradle-test-build-publish.yml/badge.svg)
 
 When you’re developing an information system to automate the activities of the business, you are modeling the business.
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
