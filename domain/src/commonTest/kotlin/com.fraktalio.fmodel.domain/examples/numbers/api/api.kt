@@ -20,10 +20,16 @@ package com.fraktalio.fmodel.domain.examples.numbers.api
 import kotlin.jvm.JvmInline
 
 @JvmInline
-value class Description(val get: String)
+value class Description(val get: String) {
+    operator fun plus(param: Description) = Description("${this.get} + ${param.get}")
+    operator fun minus(param: Description) = Description("${this.get} - ${param.get}")
+}
 
 @JvmInline
-value class NumberValue(val get: Int)
+value class NumberValue(val get: Int) {
+    operator fun plus(param: NumberValue) = NumberValue(this.get + param.get)
+    operator fun minus(param: NumberValue) = NumberValue(this.get - param.get)
+}
 
 
 // ############ Commands ###############

@@ -61,10 +61,8 @@ class ViewTest : FunSpec({
 
     test("Mapped View (dimap on State) - even numbers added") {
         val mappedEvenView = evenView.dimapOnState(
-            fr = { evenNumberState: EvenNumberState? -> evenNumberState?.value?.get },
-            fl = { number: Int? ->
-                if (number != null) EvenNumberState(Description(number.toString()), NumberValue(number)) else null
-            })
+            fr = { evenNumberState: EvenNumberState -> evenNumberState.value.get },
+            fl = { number: Int -> EvenNumberState(Description(number.toString()), NumberValue(number)) })
 
         with(mappedEvenView) {
             givenEvents(

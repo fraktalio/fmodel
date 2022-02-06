@@ -37,39 +37,19 @@ import kotlinx.coroutines.flow.flowOf
  */
 fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumberEvent?> =
     Decider(
-        initialState = EvenNumberState(
-            Description(
-                "Initial state"
-            ), NumberValue(0)
-        ),
-        decide = { c, _ ->
+        initialState = EvenNumberState(Description("Initial state"), NumberValue(0)),
+        decide = { c, s ->
             if (c != null && c.value.get > 1000) flow<EvenNumberEvent> { throw UnsupportedOperationException("Sorry") } else
                 when (c) {
-                    is AddEvenNumber -> flowOf(
-                        EvenNumberAdded(
-                            c.description,
-                            c.value
-                        )
-                    )
-                    is SubtractEvenNumber -> flowOf(
-                        EvenNumberSubtracted(
-                            c.description,
-                            c.value
-                        )
-                    )
+                    is AddEvenNumber -> flowOf(EvenNumberAdded(c.description, c.value + s.value))
+                    is SubtractEvenNumber -> flowOf(EvenNumberSubtracted(c.description, c.value - s.value))
                     null -> emptyFlow()
                 }
         },
         evolve = { s, e ->
             when (e) {
-                is EvenNumberAdded -> EvenNumberState(
-                    Description(s.description.get + " + " + e.description.get),
-                    NumberValue(s.value.get + e.value.get)
-                )
-                is EvenNumberSubtracted -> EvenNumberState(
-                    Description(s.description.get + " - " + e.description.get),
-                    NumberValue(s.value.get - e.value.get)
-                )
+                is EvenNumberAdded -> EvenNumberState(s.description + e.description, e.value)
+                is EvenNumberSubtracted -> EvenNumberState(s.description - e.description, e.value)
                 null -> s
             }
         }

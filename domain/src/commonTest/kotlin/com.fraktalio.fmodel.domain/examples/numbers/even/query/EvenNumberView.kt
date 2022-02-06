@@ -29,23 +29,13 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
  *
  * @return Even number view instance
  */
-fun evenNumberView(): View<EvenNumberState?, EvenNumberEvent?> = View(
-    initialState = EvenNumberState(
-        Description(
-            "Initial state"
-        ), NumberValue(0)
-    ),
-    evolve = { evenNumberState, e ->
-        when {
-            e is EvenNumberAdded && (evenNumberState != null) -> EvenNumberState(
-                Description(evenNumberState.description.get + " + " + e.description.get),
-                NumberValue(evenNumberState.value.get + e.value.get)
-            )
-            e is EvenNumberSubtracted && (evenNumberState != null) -> EvenNumberState(
-                Description(evenNumberState.description.get + " - " + e.description.get),
-                NumberValue(evenNumberState.value.get - e.value.get)
-            )
-            else -> evenNumberState
+fun evenNumberView(): View<EvenNumberState, EvenNumberEvent?> = View(
+    initialState = EvenNumberState(Description("Initial state"), NumberValue(0)),
+    evolve = { s, e ->
+        when (e) {
+            is EvenNumberAdded -> EvenNumberState(s.description + e.description, s.value + e.value)
+            is EvenNumberSubtracted -> EvenNumberState(s.description - e.description, s.value - e.value)
+            null -> s
         }
     }
 )

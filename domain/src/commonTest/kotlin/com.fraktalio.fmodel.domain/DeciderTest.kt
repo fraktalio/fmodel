@@ -1,11 +1,11 @@
 package com.fraktalio.fmodel.domain
 
-import com.fraktalio.fmodel.domain.examples.numbers.api.Description
-import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
+import com.fraktalio.fmodel.domain.examples.numbers.api.*
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.AddOddNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import io.kotest.core.spec.style.FunSpec
@@ -50,9 +50,18 @@ class DeciderTest : FunSpec({
         with(evenDecider) {
             givenEvents(listOf(EvenNumberAdded(Description("2"), NumberValue(2)))) {
                 whenCommand(AddEvenNumber(Description("4"), NumberValue(4)))
-            } thenEvents listOf(EvenNumberAdded(Description("4"), NumberValue(4)))
+            } thenEvents listOf(EvenNumberAdded(Description("4"), NumberValue(6)))
         }
     }
+
+    test("Event-sourced Decider - given previous state, add odd number") {
+        with(oddDecider) {
+            givenEvents(listOf(OddNumberAdded(Description("3"), NumberValue(3)))) {
+                whenCommand(AddOddNumber(Description("1"), NumberValue(1)))
+            } thenEvents listOf(OddNumberAdded(Description("1"), NumberValue(4)))
+        }
+    }
+
 
     test("State-stored Decider - add even number") {
         with(evenDecider) {
@@ -67,6 +76,14 @@ class DeciderTest : FunSpec({
             givenState(EvenNumberState(Description("2"), NumberValue(2))) {
                 whenCommand(AddEvenNumber(Description("4"), NumberValue(4)))
             } thenState EvenNumberState(Description("2 + 4"), NumberValue(6))
+        }
+    }
+
+    test("State-stored Decider - given previous state, add odd number") {
+        with(oddDecider) {
+            givenState(OddNumberState(Description("3"), NumberValue(3))) {
+                whenCommand(AddOddNumber(Description("1"), NumberValue(1)))
+            } thenState OddNumberState(Description("3 + 1"), NumberValue(4))
         }
     }
 
@@ -96,7 +113,7 @@ class DeciderTest : FunSpec({
         with(combinedDecider) {
             givenEvents(listOf(EvenNumberAdded(Description("2"), NumberValue(2)))) {
                 whenCommand(AddEvenNumber(Description("4"), NumberValue(4)))
-            } thenEvents listOf(EvenNumberAdded(Description("4"), NumberValue(4)))
+            } thenEvents listOf(EvenNumberAdded(Description("4"), NumberValue(6)))
         }
     }
 

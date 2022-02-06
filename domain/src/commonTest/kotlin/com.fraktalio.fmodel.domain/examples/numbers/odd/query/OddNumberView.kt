@@ -29,23 +29,13 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
  *
  * @return Odd number view instance
  */
-fun oddNumberView(): View<OddNumberState?, OddNumberEvent?> = View(
-    initialState = OddNumberState(
-        Description(
-            "Initial state"
-        ), NumberValue(0)
-    ),
-    evolve = { oddNumberState, e ->
-        when {
-            e is OddNumberAdded && (oddNumberState != null) -> OddNumberState(
-                Description(oddNumberState.description.get + " + " + e.description.get),
-                NumberValue(oddNumberState.value.get + e.value.get)
-            )
-            e is OddNumberSubtracted && (oddNumberState != null) -> OddNumberState(
-                Description(oddNumberState.description.get + " - " + e.description.get),
-                NumberValue(oddNumberState.value.get - e.value.get)
-            )
-            else -> oddNumberState
+fun oddNumberView(): View<OddNumberState, OddNumberEvent?> = View(
+    initialState = OddNumberState(Description("Initial state"), NumberValue(0)),
+    evolve = { s, e ->
+        when (e) {
+            is OddNumberAdded -> OddNumberState(s.description + e.description, s.value + e.value)
+            is OddNumberSubtracted -> OddNumberState(s.description - e.description, s.value - e.value)
+            null -> s
         }
     }
 )

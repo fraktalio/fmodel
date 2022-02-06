@@ -36,38 +36,18 @@ import kotlinx.coroutines.flow.flowOf
  */
 fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?> =
     Decider(
-        initialState = OddNumberState(
-            Description(
-                "Initial state"
-            ), NumberValue(0)
-        ),
-        decide = { c, _ ->
+        initialState = OddNumberState(Description("Initial state"), NumberValue(0)),
+        decide = { c, s ->
             when (c) {
-                is AddOddNumber -> flowOf(
-                    OddNumberAdded(
-                        c.description,
-                        c.value
-                    )
-                )
-                is SubtractOddNumber -> flowOf(
-                    OddNumberSubtracted(
-                        c.description,
-                        c.value
-                    )
-                )
+                is AddOddNumber -> flowOf(OddNumberAdded(c.description, c.value + s.value))
+                is SubtractOddNumber -> flowOf(OddNumberSubtracted(c.description, c.value + s.value))
                 null -> emptyFlow()
             }
         },
         evolve = { s, e ->
             when (e) {
-                is OddNumberAdded -> OddNumberState(
-                    Description(s.description.get + " + " + e.description.get),
-                    NumberValue(s.value.get + e.value.get)
-                )
-                is OddNumberSubtracted -> OddNumberState(
-                    Description(s.description.get + " - " + e.description.get),
-                    NumberValue(s.value.get - e.value.get)
-                )
+                is OddNumberAdded -> OddNumberState(s.description + e.description, e.value)
+                is OddNumberSubtracted -> OddNumberState(s.description - e.description, e.value)
                 null -> s
             }
         }

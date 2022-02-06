@@ -454,6 +454,12 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 
 ### Examples
 
+Check out the [tests](domain/src/commonTest)
+
+![decider demo implementation](.assets/decider-impl.png)
+
+![decider demo test](.assets/decider-test.png)
+
 - Envision how information system will look like and behave like by modeling the flow of information
     - [event modeling](https://eventmodeling.org/posts/what-is-event-modeling/)
 - The result is a blueprint of the overall solution
