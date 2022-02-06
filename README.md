@@ -454,7 +454,7 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 
 ### Examples
 
-Check out the [tests](domain/src/commonTest)
+Browse the [tests](domain/src/commonTest/kotlin/com/fraktalio/fmodel/domain/DeciderTest.kt)
 
 ![decider demo implementation](.assets/decider-impl.png)
 
