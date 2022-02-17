@@ -1,11 +1,14 @@
 package com.fraktalio.fmodel.domain
 
-import com.fraktalio.fmodel.domain.examples.numbers.api.*
+import com.fraktalio.fmodel.domain.examples.numbers.api.Description
+import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.AddOddNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberAdded
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
+import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecider
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import io.kotest.core.spec.style.FunSpec
