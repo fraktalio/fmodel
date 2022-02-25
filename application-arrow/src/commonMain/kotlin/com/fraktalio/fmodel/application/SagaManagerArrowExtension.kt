@@ -17,6 +17,10 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
+import arrow.core.Either.Left
+import arrow.core.Either.Right
+import com.fraktalio.fmodel.application.Error.ActionResultHandlingFailed
+import com.fraktalio.fmodel.application.Error.ActionResultPublishingFailed
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -35,8 +39,8 @@ fun <AR, A> SagaManager<AR, A>.handleEither(actionResult: AR): Flow<Either<Error
     actionResult
         .computeNewActions()
         .publish()
-        .map { Either.Right(it) }
-        .catch<Either<Error, A>> { emit(Either.Left(Error.ActionResultHandlingFailed(actionResult))) }
+        .map { Right(it) }
+        .catch<Either<Error, A>> { emit(Left(ActionResultHandlingFailed(actionResult))) }
 
 /**
  * Extension function - Handles the the [Flow] of action results of type [AR].
@@ -50,7 +54,7 @@ fun <AR, A> SagaManager<AR, A>.handleEither(actionResult: AR): Flow<Either<Error
 fun <AR, A> SagaManager<AR, A>.handleEither(actionResults: Flow<AR>): Flow<Either<Error, A>> =
     actionResults
         .flatMapConcat { handleEither(it) }
-        .catch { emit(Either.Left(Error.ActionResultPublishingFailed(it))) }
+        .catch { emit(Left(ActionResultPublishingFailed(it))) }
 
 
 /**

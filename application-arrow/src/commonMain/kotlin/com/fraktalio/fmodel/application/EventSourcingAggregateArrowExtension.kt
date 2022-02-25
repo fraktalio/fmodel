@@ -17,6 +17,10 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
+import arrow.core.Either.Left
+import arrow.core.Either.Right
+import com.fraktalio.fmodel.application.Error.CommandHandlingFailed
+import com.fraktalio.fmodel.application.Error.CommandPublishingFailed
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -37,9 +41,9 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(command: C): Flow<Eit
         .fetchEvents()
         .computeNewEvents(command)
         .save()
-        .map { Either.Right(it) }
+        .map { Right(it) }
         .catch<Either<Error, E>> {
-            emit(Either.Left(Error.CommandHandlingFailed(command)))
+            emit(Left(CommandHandlingFailed(command)))
         }
 
 /**
@@ -54,7 +58,7 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(command: C): Flow<Eit
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handleEither(commands: Flow<C>): Flow<Either<Error, E>> =
     commands
         .flatMapConcat { handleEither(it) }
-        .catch { emit(Either.Left(Error.CommandPublishingFailed(it))) }
+        .catch { emit(Left(CommandPublishingFailed(it))) }
 
 /**
  * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>

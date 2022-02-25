@@ -17,7 +17,10 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
+import arrow.core.Either.Companion.catch
+import arrow.core.Either.Left
 import arrow.core.computations.either
+import com.fraktalio.fmodel.application.Error.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -38,9 +41,9 @@ suspend fun <S, E> MaterializedView<S, E>.handleEither(event: E): Either<Error, 
      * @return The newly computed state of type [S] or [Error]
      */
     fun S?.eitherComputeNewStateOrFail(event: E): Either<Error, S> =
-        Either.catch {
+        catch {
             computeNewState(event)
-        }.mapLeft { throwable -> Error.CalculatingNewViewStateFailed(this, event, throwable) }
+        }.mapLeft { throwable -> CalculatingNewViewStateFailed(this, event, throwable) }
 
     /**
      * Inner function - Fetch state - either version
@@ -48,10 +51,10 @@ suspend fun <S, E> MaterializedView<S, E>.handleEither(event: E): Either<Error, 
      * @receiver Event of type [E]
      * @return [Either] [Error] or the State of type [S]?
      */
-    suspend fun E.eitherFetchStateOrFail(): Either<Error.FetchingViewStateFailed<E>, S?> =
-        Either.catch {
+    suspend fun E.eitherFetchStateOrFail(): Either<FetchingViewStateFailed<E>, S?> =
+        catch {
             fetchState()
-        }.mapLeft { throwable -> Error.FetchingViewStateFailed(this, throwable) }
+        }.mapLeft { throwable -> FetchingViewStateFailed(this, throwable) }
 
     /**
      * Inner function - Save state - either version
@@ -59,10 +62,10 @@ suspend fun <S, E> MaterializedView<S, E>.handleEither(event: E): Either<Error, 
      * @receiver State of type [S]
      * @return [Either] [Error] or the newly saved State of type [S]
      */
-    suspend fun S.eitherSaveOrFail(): Either<Error.StoringStateFailed<S>, S> =
-        Either.catch {
+    suspend fun S.eitherSaveOrFail(): Either<StoringStateFailed<S>, S> =
+        catch {
             this.save()
-        }.mapLeft { throwable -> Error.StoringStateFailed(this, throwable) }
+        }.mapLeft { throwable -> StoringStateFailed(this, throwable) }
 
     // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
     return either {
@@ -83,7 +86,7 @@ suspend fun <S, E> MaterializedView<S, E>.handleEither(event: E): Either<Error, 
 fun <S, E> MaterializedView<S, E>.handleEither(events: Flow<E>): Flow<Either<Error, S>> =
     events
         .map { handleEither(it) }
-        .catch { emit(Either.Left(Error.EventPublishingFailed(it))) }
+        .catch { emit(Left(EventPublishingFailed(it))) }
 
 
 /**

@@ -17,7 +17,10 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
+import arrow.core.Either.Companion.catch
+import arrow.core.Either.Left
 import arrow.core.computations.either
+import com.fraktalio.fmodel.application.Error.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -40,10 +43,10 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Ei
      * @return [Either] the newly computed state of type [S] or [Error]
      */
     suspend fun S?.eitherComputeNewStateOrFail(command: C): Either<Error, S> =
-        Either.catch {
+        catch {
             computeNewState(command)
         }.mapLeft { throwable ->
-            Error.CalculatingNewStateFailed(this, command, throwable)
+            CalculatingNewStateFailed(this, command, throwable)
         }
 
     /**
@@ -52,10 +55,10 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Ei
      * @receiver Command of type [C]
      * @return [Either] [Error] or the State of type [S]?
      */
-    suspend fun C.eitherFetchStateOrFail(): Either<Error.FetchingStateFailed<C>, S?> =
-        Either.catch {
+    suspend fun C.eitherFetchStateOrFail(): Either<FetchingStateFailed<C>, S?> =
+        catch {
             fetchState()
-        }.mapLeft { throwable -> Error.FetchingStateFailed(this, throwable) }
+        }.mapLeft { throwable -> FetchingStateFailed(this, throwable) }
 
     /**
      * Inner function - Save state - either version
@@ -63,10 +66,10 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Ei
      * @receiver State of type [S]
      * @return [Either] [Error] or the newly saved State of type [S]
      */
-    suspend fun S.eitherSaveOrFail(): Either<Error.StoringStateFailed<S>, S> =
-        Either.catch {
+    suspend fun S.eitherSaveOrFail(): Either<StoringStateFailed<S>, S> =
+        catch {
             save()
-        }.mapLeft { throwable -> Error.StoringStateFailed(this, throwable) }
+        }.mapLeft { throwable -> StoringStateFailed(this, throwable) }
 
     // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
     return either {
@@ -88,7 +91,7 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Ei
 fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(commands: Flow<C>): Flow<Either<Error, S>> =
     commands
         .map { handleEither(it) }
-        .catch { emit(Either.Left(Error.CommandPublishingFailed(it))) }
+        .catch { emit(Left(CommandPublishingFailed(it))) }
 
 /**
  * Extension function - Publishes the command of type [C] to the state stored aggregate of type  [StateStoredAggregate]<[C], [S], *>
