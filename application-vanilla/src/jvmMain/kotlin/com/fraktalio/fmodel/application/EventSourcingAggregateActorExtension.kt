@@ -38,9 +38,8 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handleConcurrently(
     partitionKey: (C) -> Int
 ): Flow<E> = channelFlow {
     val actors: List<SendChannel<C>> = (1..numberOfActors).map {
-        commandActor(channel, actorsCapacity, actorsStart, actorsContext) { command, channel ->
-            handle(command).collect { channel.send(it) }
-        }
+        commandActor(channel, actorsCapacity, actorsStart, actorsContext) { handle(it) }
+
     }
     commands
         .onCompletion {
@@ -85,8 +84,8 @@ fun <C, E> Flow<C>.publishConcurrentlyTo(
 /**
  * Command Actor - Event Sourced Aggregate
  *
- * @param fanInChannel A reference to the channel this coroutine/actor sends elements/events to
- * @param handle A function that handles command and sends responses/events to [fanInChannel]
+ * @param fanInChannel A reference to the channel this coroutine/actor sends events to
+ * @param handle A function that handles command and returns new events.
  * @receiver CoroutineScope
  */
 @ObsoleteCoroutinesApi
@@ -95,9 +94,9 @@ private fun <C, E> CoroutineScope.commandActor(
     capacity: Int = Channel.RENDEZVOUS,
     start: CoroutineStart = CoroutineStart.DEFAULT,
     context: CoroutineContext = EmptyCoroutineContext,
-    handle: suspend (C, SendChannel<E>) -> Unit
+    handle: (C) -> Flow<E>
 ) = actor<C>(context, capacity, start) {
     for (msg in channel) {
-        handle(msg, fanInChannel)
+        handle(msg).collect { fanInChannel.send(it) }
     }
 }

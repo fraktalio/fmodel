@@ -53,9 +53,7 @@ fun <AR, A> SagaManager<AR, A>.handleConcurrently(
     partitionKey: (AR) -> Int
 ): Flow<A> = channelFlow {
     val actors: List<SendChannel<AR>> = (1..numberOfActors).map {
-        sagaActor(channel, actorsCapacity, actorsStart, actorsContext) { actionResult, channel ->
-            handle(actionResult).collect { channel.send(it) }
-        }
+        sagaActor(channel, actorsCapacity, actorsStart, actorsContext) { handle(it) }
     }
     actionResults
         .onCompletion {
@@ -102,8 +100,8 @@ fun <AR, A> Flow<AR>.publishConcurrentlyTo(
 /**
  * Saga Actor
  *
- * @param fanInChannel A reference to the channel this coroutine/actor sends elements/actions to
- * @param handle A function that handles action-result and sends responses/actions to [fanInChannel]
+ * @param fanInChannel A reference to the channel this coroutine/actor sends actions to
+ * @param handle A function that handles action-result and returns actions.
  * @receiver CoroutineScope
  */
 @ObsoleteCoroutinesApi
@@ -112,9 +110,9 @@ private fun <AR, A> CoroutineScope.sagaActor(
     capacity: Int = Channel.RENDEZVOUS,
     start: CoroutineStart = CoroutineStart.DEFAULT,
     context: CoroutineContext = EmptyCoroutineContext,
-    handle: suspend (AR, SendChannel<A>) -> Unit
+    handle: (AR) -> Flow<A>
 ) = actor<AR>(context, capacity, start) {
     for (msg in channel) {
-        handle(msg, fanInChannel)
+        handle(msg).collect { fanInChannel.send(it) }
     }
 }

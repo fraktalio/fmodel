@@ -53,9 +53,7 @@ fun <C, S, E> StateStoredAggregate<C, S, E>.handleConcurrently(
     partitionKey: (C) -> Int
 ): Flow<S> = channelFlow {
     val actors: List<SendChannel<C>> = (1..numberOfActors).map {
-        commandActor(channel, actorsCapacity, actorsStart, actorsContext) { command, channel ->
-            channel.send(handle(command))
-        }
+        commandActor(channel, actorsCapacity, actorsStart, actorsContext) { handle(it) }
     }
     commands
         .onCompletion {
@@ -98,8 +96,8 @@ fun <C, S> Flow<C>.publishConcurrentlyTo(
 /**
  * Command Actor - State Stored Aggregate
  *
- * @param fanInChannel A reference to the channel this coroutine/actor sends elements/state to
- * @param handle A function that handles commands and sends responses/state to [fanInChannel]
+ * @param fanInChannel A reference to the channel this coroutine/actor sends state to
+ * @param handle A function that handles commands and returns new state.
  * @receiver CoroutineScope
  */
 @ObsoleteCoroutinesApi
@@ -108,9 +106,9 @@ private fun <C, S> CoroutineScope.commandActor(
     capacity: Int = Channel.RENDEZVOUS,
     start: CoroutineStart = CoroutineStart.DEFAULT,
     context: CoroutineContext = EmptyCoroutineContext,
-    handle: suspend (C, SendChannel<S>) -> Unit
+    handle: suspend (C) -> S
 ) = actor<C>(context, capacity, start) {
     for (msg in channel) {
-        handle(msg, fanInChannel)
+        fanInChannel.send(handle(msg))
     }
 }

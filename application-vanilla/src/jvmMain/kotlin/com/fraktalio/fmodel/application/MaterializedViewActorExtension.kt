@@ -54,9 +54,7 @@ fun <S, E> MaterializedView<S, E>.handleConcurrently(
     partitionKey: (E) -> Int
 ): Flow<S> = channelFlow {
     val actors: List<SendChannel<E>> = (1..numberOfActors).map {
-        eventActor(channel, actorsCapacity, actorsStart, actorsContext) { event, channel ->
-            channel.send(handle(event))
-        }
+        eventActor(channel, actorsCapacity, actorsStart, actorsContext) { handle(it) }
     }
     events
         .onCompletion {
@@ -106,8 +104,8 @@ fun <S, E> Flow<E>.publishConcurrentlyTo(
 /**
  * Event Actor - Materialized View
  *
- * @param fanInChannel A reference to the channel this coroutine/actor sends elements/state to
- * @param handle A function that handles events and sends responses/state to [fanInChannel]
+ * @param fanInChannel A reference to the channel this coroutine/actor sends state to
+ * @param handle A function that handles events and returns new state.
  * @receiver CoroutineScope
  */
 @ObsoleteCoroutinesApi
@@ -116,9 +114,9 @@ private fun <E, S> CoroutineScope.eventActor(
     capacity: Int = Channel.RENDEZVOUS,
     start: CoroutineStart = CoroutineStart.DEFAULT,
     context: CoroutineContext = EmptyCoroutineContext,
-    handle: suspend (E, SendChannel<S>) -> Unit
+    handle: suspend (E) -> S
 ) = actor<E>(context, capacity, start) {
     for (msg in channel) {
-        handle(msg, fanInChannel)
+        fanInChannel.send(handle(msg))
     }
 }
