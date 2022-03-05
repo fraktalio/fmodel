@@ -420,6 +420,18 @@ fun <AR, A> sagaManager(
     object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher, ISaga<AR, A> by saga {}
 ```
 
+### Experimental features
+
+#### Actors (only on [JVM](https://github.com/fraktalio/fmodel/tree/main/application-vanilla/src/jvmMain/kotlin/com/fraktalio/fmodel/application))
+
+Coroutines can be executed parallelly. It presents all the usual parallelism problems. The main problem being
+synchronization of access to shared mutable
+state. [Actors](https://kotlinlang.org/docs/shared-mutable-state-and-concurrency.html#actors) to the rescue!
+
+![kotlin actors](.assets/kotlin-actors.png)
+
+> [Actors](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/actor.html) are marked as @ObsoleteCoroutinesApi by Kotlin at the moment.
+
 ## Kotlin
 
 *"Kotlin has both object-oriented and functional constructs. You can use it in both OO and FP styles, or mix elements of
