@@ -430,6 +430,22 @@ state. [Actors](https://kotlinlang.org/docs/shared-mutable-state-and-concurrency
 
 ![kotlin actors](.assets/kotlin-actors.png)
 
+[Dive into the implementation ...](https://github.com/fraktalio/fmodel/tree/main/application-vanilla/src/jvmMain/kotlin/com/fraktalio/fmodel/application)
+
+```kotlin
+private fun <C, E> CoroutineScope.commandActor(
+    fanInChannel: SendChannel<E>,
+    capacity: Int = Channel.RENDEZVOUS,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    context: CoroutineContext = EmptyCoroutineContext,
+    handle: (C) -> Flow<E>
+) = actor<C>(context, capacity, start) {
+    for (msg in channel) {
+        handle(msg).collect { fanInChannel.send(it) }
+    }
+}
+```
+
 > [Actors](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/actor.html) are marked as @ObsoleteCoroutinesApi by Kotlin at the moment.
 
 ## Kotlin
