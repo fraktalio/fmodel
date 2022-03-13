@@ -25,6 +25,12 @@ Design patterns, optimised for Event Sourcing and CQRS.
     - `application-arrow` is using [Arrow](https://arrow-kt.io/) and Kotlin to implement the application layer in order
       to load the state, orchestrate the execution of the logic and save new state - managing errors much better (using
       Either).
+      
+![onion architecture image](https://github.com/fraktalio/fmodel/raw/main/.assets/onion.png)
+      
+The libraries are non-intrusive, and you can select any flavor, or choose both (`vanila` and `arrow`). You can use
+only `domain` library and model the orchestration (`application` library) on your own. Or, you can simply be inspired by
+this project :)
 
 ## Table of Contents
 
@@ -122,8 +128,16 @@ data class Decider<C, S, E>(
 ```
 
 `Decider` is the most important datatype, but it is not the only one. There are others:
+ 
+ - Domain layer
+   - Decider
+   - View
+   - Saga
+- Application layer (orchstrates the execution of the logic + effects)
+   - Event-sourcing aggregate and State-stored aggregate (*uses the Decider*)
+   - Materialized View (*uses the View*)
+   - SagaManager (*uses the Saga*)
 
-![onion architecture image](https://github.com/fraktalio/fmodel/raw/main/.assets/onion.png)
 
 ## Decider
 
