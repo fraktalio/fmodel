@@ -99,8 +99,7 @@ Both types of systems can be designed by using only these two functions and thre
 There is more to it! You can switch from one system type to another or have both flavors included within your systems
 landscape.
 
-<details>
-  <summary> A proof </summary>
+### A proof:
 
 We can fold/recreate the new state out of the flow of events by using `evolve` function `(S, E) -> S` and providing the
 initialState of type S as a starting point.
@@ -117,9 +116,6 @@ We can now use this function `(Flow<E>) -> S` to:
 - or to map our `decide` function (`(C, S) -> Flow<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored
   system**
   
-  
-</details>
-
  
 We can verify that we can design any information system (event-sourced or/and state-stored) in this way by using these
 two functions wrapped in a datatype class (algebraic data structure), which is generalized with three generic
