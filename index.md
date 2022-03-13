@@ -106,8 +106,7 @@ Essentially, this `fold` is a function that is mapping a flow of Events to the S
 
 We can now use this function `(Flow<E>) -> S` to:
 
-- contra-map our `decide` function (`(C, S) -> Flow<E>`) over `S` type to: `(C, Flow<E>) -> Flow<E>`  - **
-  this is an event-sourced system**
+- contra-map our `decide` function (`(C, S) -> Flow<E>`) over `S` type to: `(C, Flow<E>) -> Flow<E>`  - **this is an event-sourced system**
 - or to map our `decide` function (`(C, S) -> Flow<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored
   system**
 
