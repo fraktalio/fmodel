@@ -117,8 +117,10 @@ We can now use this function `(Flow<E>) -> S` to:
 - or to map our `decide` function (`(C, S) -> Flow<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored
   system**
   
- </details>
+  
+</details>
 
+ 
 We can verify that we can design any information system (event-sourced or/and state-stored) in this way by using these
 two functions wrapped in a datatype class (algebraic data structure), which is generalized with three generic
 parameters:
