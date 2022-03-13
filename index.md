@@ -97,9 +97,10 @@ Both types of systems can be designed by using only these two functions and thre
 ![event sourced vs state stored](https://github.com/fraktalio/fmodel/raw/main/.assets/es-ss-system.png)
 
 There is more to it! You can switch from one system type to another or have both flavors included within your systems
-landscape.  
+landscape.
 
-### A proof:
+<details>
+  <summary> A proof </summary>
 
 We can fold/recreate the new state out of the flow of events by using `evolve` function `(S, E) -> S` and providing the
 initialState of type S as a starting point.
@@ -115,6 +116,8 @@ We can now use this function `(Flow<E>) -> S` to:
 - contra-map our `decide` function (`(C, S) -> Flow<E>`) over `S` type to: `(C, Flow<E>) -> Flow<E>`  - **this is an event-sourced system**
 - or to map our `decide` function (`(C, S) -> Flow<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored
   system**
+  
+ </details>
 
 We can verify that we can design any information system (event-sourced or/and state-stored) in this way by using these
 two functions wrapped in a datatype class (algebraic data structure), which is generalized with three generic
