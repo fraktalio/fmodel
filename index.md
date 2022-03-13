@@ -433,6 +433,27 @@ fun <AR, A> sagaManager(
     object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher, ISaga<AR, A> by saga {}
 ```
 
+### Experimental features
+
+#### Actors (only on [JVM](https://github.com/fraktalio/fmodel/tree/main/application-vanilla/src/jvmMain/kotlin/com/fraktalio/fmodel/application))
+
+Coroutines can be executed parallelly. It presents all the usual parallelism problems. The main problem being
+synchronization of access to shared mutable
+state. [Actors](https://kotlinlang.org/docs/shared-mutable-state-and-concurrency.html#actors) to the rescue!
+
+Application layer components are handling the messages, delegating the computation to domain components and storing the new state (shared and mutable).
+The handling process can be executed concurrently.
+
+
+![kotlin actors](https://github.com/fraktalio/fmodel/raw/main/.assets/kotlin-actors.png)
+
+[Dive into the implementation ...](https://github.com/fraktalio/fmodel/tree/main/application-vanilla/src/jvmMain/kotlin/com/fraktalio/fmodel/application)
+
+
+
+> [Actors](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/actor.html) are marked as @ObsoleteCoroutinesApi by Kotlin at the moment.
+
+
 ## Kotlin
 
 *"Kotlin has both object-oriented and functional constructs. You can use it in both OO and FP styles, or mix elements of
@@ -449,19 +470,19 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>2.3.1</version>
+    <version>3.0.0</version>
  </dependency>
 
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-vanilla</artifactId>
-    <version>2.3.1</version>
+    <version>3.0.0</version>
  </dependency>
  
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-arrow</artifactId>
-    <version>2.3.1</version>
+    <version>3.0.0</version>
  </dependency>
 ```
 
