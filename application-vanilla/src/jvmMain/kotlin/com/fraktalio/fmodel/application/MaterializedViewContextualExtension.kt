@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.map
  * Computes new State based on the previous State and the Event.
  */
 context (IView<S, E>, E)
-        internal fun <S, E> S?.computeNewState(): S = evolve(this ?: initialState, this@E)
+internal fun <S, E> S?.computeNewState(): S = evolve(this ?: initialState, this@E)
 
 
 /**
@@ -20,7 +20,7 @@ context (IView<S, E>, E)
  * @receiver event of type E to be handled
  */
 context (IView<S, E>, ViewStateRepository<E, S>)
-        suspend fun <S, E> E.handle(): S = fetchState().computeNewState().save()
+suspend fun <S, E> E.handle(): S = fetchState().computeNewState().save()
 
 /**
  * Handle event - Materialized View
@@ -30,7 +30,7 @@ context (IView<S, E>, ViewStateRepository<E, S>)
  * Alternative function to `context (IView<S, E>, ViewStateRepository<E, S>) E.handle()`, which combines multiple contexts ([IView], [ViewStateRepository]) into a single meaningful interface/context [MaterializedView]
  */
 context (MaterializedView<S, E>)
-        suspend fun <S, E> E.handleIt(): S = fetchState().computeNewState(this).save()
+suspend fun <S, E> E.handleIt(): S = fetchState().computeNewState(this).save()
 
 
 /**

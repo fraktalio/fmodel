@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.flatMapConcat
  * Computes new State based on the previous State and the Event.
  */
 context (ISaga<AR, A>, ActionPublisher<A>)
-        internal fun <AR, A> AR.computeNewActions(): Flow<A> = react(this)
+internal fun <AR, A> AR.computeNewActions(): Flow<A> = react(this)
 
 /**
  * Handle event / action result - Saga Manager
@@ -39,7 +39,7 @@ fun <AR, A> AR.handleIt(): Flow<A> = computeNewActions().publish()
  * @receiver events/actions result of type Flow<AR> to be handled
  */
 context (ISaga<AR, A>, ActionPublisher<A>)
-        @FlowPreview
+@FlowPreview
 fun <AR, A> Flow<AR>.handle(): Flow<A> = flatMapConcat { it.handle() }
 
 /**
@@ -50,5 +50,5 @@ fun <AR, A> Flow<AR>.handle(): Flow<A> = flatMapConcat { it.handle() }
  * Alternative function to `context (ISaga<AR, A>, ActionPublisher<A>) Flow<AR>.handle()`, which combines multiple contexts ([ISaga], [ActionPublisher]) into a single meaningful interface/context [SagaManager]
  */
 context (SagaManager<AR, A>)
-        @FlowPreview
+@FlowPreview
 fun <AR, A> Flow<AR>.handleIt(): Flow<A> = flatMapConcat { it.handleIt() }

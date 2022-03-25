@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.*
  * Computes new Events based on the previous Events and the Command.
  */
 context (IDecider<C, S, E>, C)
-        internal fun <C, S, E> Flow<E>.computeNewEvents(): Flow<E> = flow {
+internal fun <C, S, E> Flow<E>.computeNewEvents(): Flow<E> = flow {
     val currentState = fold(initialState) { s, e -> evolve(s, e) }
     val resultingEvents = decide(this@C, currentState)
     emitAll(resultingEvents)
@@ -22,8 +22,8 @@ context (IDecider<C, S, E>, C)
  * Saga might react on Events and send new Commands to the Decider.
  */
 context (IDecider<C, S, E>, ISaga<E, C>, C)
-        @FlowPreview
-        internal fun <C, S, E> Flow<E>.computeNewEvents(): Flow<E> = flow {
+@FlowPreview
+internal fun <C, S, E> Flow<E>.computeNewEvents(): Flow<E> = flow {
     val currentState = fold(initialState) { s, e -> evolve(s, e) }
     var resultingEvents = decide(this@C, currentState)
 
@@ -53,7 +53,7 @@ fun <C, S, E> C.handle(): Flow<E> = fetchEvents().computeNewEvents().save()
  * Alternative function to `context (IDecider<C, S, E>, EventRepository<C, E>) C.handle()`, which combines multiple contexts ([IDecider], [EventRepository]) into a single meaningful interface/context [EventSourcingAggregate]
  */
 context (EventSourcingAggregate<C, S, E>)
-        @FlowPreview
+@FlowPreview
 fun <C, S, E> C.handleIt(): Flow<E> = fetchEvents().computeNewEvents(this).save()
 
 /**
@@ -64,7 +64,7 @@ fun <C, S, E> C.handleIt(): Flow<E> = fetchEvents().computeNewEvents(this).save(
  * @receiver command of type C to be handled
  */
 context (IDecider<C, S, E>, ISaga<E, C>, EventRepository<C, E>)
-        @FlowPreview
+@FlowPreview
 fun <C, S, E> C.handle(): Flow<E> = fetchEvents().computeNewEvents().save()
 
 /**
@@ -75,7 +75,7 @@ fun <C, S, E> C.handle(): Flow<E> = fetchEvents().computeNewEvents().save()
  * Alternative function to `context (IDecider<C, S, E>, ISaga<E, C>, EventRepository<C, E>) C.handle()`, which combines multiple contexts ([IDecider], [ISaga], [EventRepository]) into a single meaningful interface/context [EventSourcingOrchestratingAggregate]
  */
 context (EventSourcingOrchestratingAggregate<C, S, E>)
-        @FlowPreview
+@FlowPreview
 fun <C, S, E> C.handleIt(): Flow<E> = fetchEvents().computeNewEvents(this).save()
 
 
@@ -86,7 +86,7 @@ fun <C, S, E> C.handleIt(): Flow<E> = fetchEvents().computeNewEvents(this).save(
  * @receiver commands of type Flow<C> to be handled
  */
 context (IDecider<C, S, E>, EventRepository<C, E>)
-        @FlowPreview
+@FlowPreview
 fun <C, S, E> Flow<C>.handle(): Flow<E> = flatMapConcat { it.handle() }
 
 /**
@@ -97,7 +97,7 @@ fun <C, S, E> Flow<C>.handle(): Flow<E> = flatMapConcat { it.handle() }
  * Alternative function to `context (IDecider<C, S, E>, EventRepository<C, E>) Flow<C>.handle()`, which combines multiple contexts ([IDecider], [EventRepository]) into a single meaningful interface/context [EventSourcingAggregate]
  */
 context (EventSourcingAggregate<C, S, E>)
-        @FlowPreview
+@FlowPreview
 fun <C, S, E> Flow<C>.handleIt(): Flow<E> = flatMapConcat { it.handleIt() }
 
 /**
@@ -108,7 +108,7 @@ fun <C, S, E> Flow<C>.handleIt(): Flow<E> = flatMapConcat { it.handleIt() }
  * @receiver commands of type Flow<C> to be handled
  */
 context (IDecider<C, S, E>, ISaga<E, C>, EventRepository<C, E>)
-        @FlowPreview
+@FlowPreview
 fun <C, S, E> Flow<C>.handle(): Flow<E> = flatMapConcat { it.handle() }
 
 /**
@@ -119,5 +119,5 @@ fun <C, S, E> Flow<C>.handle(): Flow<E> = flatMapConcat { it.handle() }
  * Alternative function to `context (IDecider<C, S, E>, ISaga<E, C>, EventRepository<C, E>) Flow<C>.handle()`, which combines multiple contexts ([IDecider], [ISaga], [EventRepository]) into a single meaningful interface/context [EventSourcingOrchestratingAggregate]
  */
 context (EventSourcingOrchestratingAggregate<C, S, E>)
-        @FlowPreview
+@FlowPreview
 fun <C, S, E> Flow<C>.handleIt(): Flow<E> = flatMapConcat { it.handleIt() }
