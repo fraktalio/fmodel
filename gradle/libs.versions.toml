@@ -1,6 +1,6 @@
 [versions]
 coroutines = "1.6.0"
-dokka = "1.6.10"
+dokka = "1.6.20"
 kotest = "5.2.3"
 kotlin = "1.6.20"
 arrow = "1.0.1"
