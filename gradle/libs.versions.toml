@@ -3,7 +3,7 @@ coroutines = "1.6.1"
 dokka = "1.6.20"
 kotest = "5.2.3"
 kotlin = "1.6.21"
-arrow = "1.0.1"
+arrow = "1.1.2"
 
 [libraries]
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
