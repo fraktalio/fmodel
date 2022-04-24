@@ -1,6 +1,7 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
+import arrow.core.continuations.Effect
 import com.fraktalio.fmodel.application.examples.numbers.NumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberViewRepository
@@ -22,7 +23,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 /**
  * DSL - Given
  */
-private suspend fun <S, E> IView<S, E>.given(repository: ViewStateRepository<E, S>, event: () -> E): Either<Error, S> =
+private suspend fun <S, E> IView<S, E>.given(repository: ViewStateRepository<E, S>, event: () -> E): Effect<Error, S> =
     materializedView(
         view = this,
         viewStateRepository = repository
@@ -37,10 +38,11 @@ private fun <S, E> IView<S, E>.whenEvent(event: E): E = event
 /**
  * DSL - Then
  */
-private infix fun <S> Either<Error, S>.thenState(expected: S) {
-    val state = when (this) {
-        is Either.Right -> value
-        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${this.value}")
+private suspend infix fun <S> Effect<Error, S>.thenState(expected: S) {
+    val result = this.toEither()
+    val state = when (result) {
+        is Either.Right -> result.value
+        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
     }
     return state shouldBe expected
 }
