@@ -27,7 +27,7 @@ private suspend fun <S, E> IView<S, E>.given(repository: ViewStateRepository<E, 
     materializedView(
         view = this,
         viewStateRepository = repository
-    ).handleEither(event())
+    ).handleWithEffect(event())
 
 /**
  * DSL - When
@@ -39,18 +39,17 @@ private fun <S, E> IView<S, E>.whenEvent(event: E): E = event
  * DSL - Then
  */
 private suspend infix fun <S> Effect<Error, S>.thenState(expected: S) {
-    val result = this.toEither()
-    val state = when (result) {
+    val state = when (val result = this.toEither()) {
         is Either.Right -> result.value
         is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
     }
     return state shouldBe expected
 }
 
-private fun <S> Either<Error, S>.thenError() {
-    val error = when (this) {
-        is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value ${this.value}")
-        is Either.Left -> value
+private suspend fun <S> Effect<Error, S>.thenError() {
+    val error = when (val result = this.toEither()) {
+        is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value ${result.value}")
+        is Either.Left -> result.value
     }
     error.shouldBeInstanceOf<Error>()
 }

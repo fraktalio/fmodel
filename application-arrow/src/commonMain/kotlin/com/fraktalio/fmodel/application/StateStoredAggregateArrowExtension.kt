@@ -16,10 +16,9 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
-import arrow.core.Either.Companion.catch
-import arrow.core.Either.Left
-import arrow.core.computations.either
+import arrow.core.continuations.Effect
+import arrow.core.continuations.effect
+import arrow.core.nonFatalOrThrow
 import com.fraktalio.fmodel.application.Error.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -30,52 +29,62 @@ import kotlinx.coroutines.flow.map
  * Extension function - Handles the command message of type [C]
  *
  * @param command Command message of type [C]
- * @return Either [Error] or State of type [S]
+ * @return [Effect] (either [Error] or State of type [S])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Either<Error, S> {
+suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleWithEffect(command: C): Effect<Error, S> {
     /**
      * Inner function - Computes new State based on the previous State and the [command] or fails.
      *
      * @param command of type [C]
-     * @return [Either] the newly computed state of type [S] or [Error]
+     * @return [Effect] (either the newly computed state of type [S] or [Error])
      */
-    suspend fun S?.eitherComputeNewStateOrFail(command: C): Either<Error, S> =
-        catch {
-            computeNewState(command)
-        }.mapLeft { throwable ->
-            CalculatingNewStateFailed(this, command, throwable)
+    suspend fun S?.computeNewStateWithEffect(command: C): Effect<Error, S> =
+        effect {
+            try {
+                computeNewState(command)
+            } catch (t: Throwable) {
+                shift(CalculatingNewStateFailed(this@computeNewStateWithEffect, command, t.nonFatalOrThrow()))
+            }
         }
 
     /**
      * Inner function - Fetch state - either version
      *
      * @receiver Command of type [C]
-     * @return [Either] [Error] or the State of type [S]?
+     * @return [Effect] (either [Error] or the State of type [S]?)
      */
-    suspend fun C.eitherFetchStateOrFail(): Either<FetchingStateFailed<C>, S?> =
-        catch {
-            fetchState()
-        }.mapLeft { throwable -> FetchingStateFailed(this, throwable) }
+    suspend fun C.fetchStateWithEffect(): Effect<Error, S?> =
+        effect {
+            try {
+                fetchState()
+            } catch (t: Throwable) {
+                shift(FetchingStateFailed(this@fetchStateWithEffect, t.nonFatalOrThrow()))
+            }
+        }
 
     /**
      * Inner function - Save state - either version
      *
      * @receiver State of type [S]
-     * @return [Either] [Error] or the newly saved State of type [S]
+     * @return [Effect] (either [Error] or the newly saved State of type [S])
      */
-    suspend fun S.eitherSaveOrFail(): Either<StoringStateFailed<S>, S> =
-        catch {
-            save()
-        }.mapLeft { throwable -> StoringStateFailed(this, throwable) }
+    suspend fun S.saveWithEffect(): Effect<Error, S> =
+        effect {
+            try {
+                save()
+            } catch (t: Throwable) {
+                shift(StoringStateFailed(this@saveWithEffect, t.nonFatalOrThrow()))
+            }
+        }
 
-    // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
-    return either {
-        command.eitherFetchStateOrFail().bind()
-            .eitherComputeNewStateOrFail(command).bind()
-            .eitherSaveOrFail().bind()
+    return effect {
+        command
+            .fetchStateWithEffect().bind()
+            .computeNewStateWithEffect(command).bind()
+            .saveWithEffect().bind()
     }
 }
 
@@ -83,36 +92,36 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Ei
  * Extension function - Handles the [Flow] of command messages of type [C]
  *
  * @param commands [Flow] of Command messages of type [C]
- * @return [Flow] of [Either] [Error] or State of type [S]
+ * @return [Flow] of [Effect] (either [Error] or State of type [S])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(commands: Flow<C>): Flow<Either<Error, S>> =
+fun <C, S, E> StateStoredAggregate<C, S, E>.handleWithEffect(commands: Flow<C>): Flow<Effect<Error, S>> =
     commands
-        .map { handleEither(it) }
-        .catch { emit(Left(CommandPublishingFailed(it))) }
+        .map { handleWithEffect(it) }
+        .catch { emit(effect { shift(CommandPublishingFailed(it)) }) }
 
 /**
  * Extension function - Publishes the command of type [C] to the state stored aggregate of type  [StateStoredAggregate]<[C], [S], *>
  * @receiver command of type [C]
  * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
- * @return [Either] [Error] or successfully stored State of type [S]
+ * @return [Effect] (either [Error] or successfully stored State of type [S])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-suspend fun <C, S> C.publishEitherTo(aggregate: StateStoredAggregate<C, S, *>): Either<Error, S> =
-    aggregate.handleEither(this)
+suspend fun <C, S> C.publishWithEffect(aggregate: StateStoredAggregate<C, S, *>): Effect<Error, S> =
+    aggregate.handleWithEffect(this)
 
 /**
  * Extension function - Publishes the command of type [C] to the state stored aggregate of type  [StateStoredAggregate]<[C], [S], *>
  * @receiver [Flow] of commands of type [C]
  * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
- * @return the [Flow] of [Either] [Error] or successfully  stored State of type [S]
+ * @return the [Flow] of [Effect] (either [Error] or successfully  stored State of type [S])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-fun <C, S> Flow<C>.publishEitherTo(aggregate: StateStoredAggregate<C, S, *>): Flow<Either<Error, S>> =
-    aggregate.handleEither(this)
+fun <C, S> Flow<C>.publishWithEffect(aggregate: StateStoredAggregate<C, S, *>): Flow<Effect<Error, S>> =
+    aggregate.handleWithEffect(this)

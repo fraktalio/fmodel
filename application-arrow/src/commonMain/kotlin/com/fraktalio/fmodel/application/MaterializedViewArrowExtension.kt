@@ -16,7 +16,6 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
 import arrow.core.continuations.Effect
 import arrow.core.continuations.effect
 import arrow.core.nonFatalOrThrow
@@ -29,23 +28,23 @@ import kotlinx.coroutines.flow.map
  * Extension function - Handles the event of type [E]
  *
  * @param event Event of type [E] to be handled
- * @return [Either] [Error] or State of type [S]
+ * @return [Effect] (either [Error] or State of type [S])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-suspend fun <S, E> MaterializedView<S, E>.handleEither(event: E): Effect<Error, S> {
+suspend fun <S, E> MaterializedView<S, E>.handleWithEffect(event: E): Effect<Error, S> {
     /**
      * Inner function - Computes new State based on the Event or fails.
      *
      * @param event of type [E]
      * @return The newly computed state of type [S] or [Error]
      */
-    fun S?.eitherComputeNewStateOrFail(event: E): Effect<Error, S> =
+    fun S?.computeNewStateWithEffect(event: E): Effect<Error, S> =
         effect {
             try {
                 computeNewState(event)
             } catch (t: Throwable) {
-                shift(CalculatingNewViewStateFailed(this@eitherComputeNewStateOrFail, event, t.nonFatalOrThrow()))
+                shift(CalculatingNewViewStateFailed(this@computeNewStateWithEffect, event, t.nonFatalOrThrow()))
             }
         }
 
@@ -53,14 +52,14 @@ suspend fun <S, E> MaterializedView<S, E>.handleEither(event: E): Effect<Error, 
      * Inner function - Fetch state - either version
      *
      * @receiver Event of type [E]
-     * @return [Either] [Error] or the State of type [S]?
+     * @return [Effect] (either [Error] or the State of type [S]?)
      */
-    suspend fun E.eitherFetchStateOrFail(): Effect<Error, S?> =
+    suspend fun E.fetchStateWithEffect(): Effect<Error, S?> =
         effect {
             try {
                 fetchState()
             } catch (t: Throwable) {
-                shift(FetchingViewStateFailed(this@eitherFetchStateOrFail, t.nonFatalOrThrow()))
+                shift(FetchingViewStateFailed(this@fetchStateWithEffect, t.nonFatalOrThrow()))
             }
         }
 
@@ -68,21 +67,21 @@ suspend fun <S, E> MaterializedView<S, E>.handleEither(event: E): Effect<Error, 
      * Inner function - Save state - either version
      *
      * @receiver State of type [S]
-     * @return [Either] [Error] or the newly saved State of type [S]
+     * @return [Effect] (either [Error] or the newly saved State of type [S])
      */
-    suspend fun S.eitherSaveOrFail(): Effect<Error, S> =
+    suspend fun S.saveWithEffect(): Effect<Error, S> =
         effect {
             try {
-                this@eitherSaveOrFail.save()
+                save()
             } catch (t: Throwable) {
-                shift(StoringStateFailed(this@eitherSaveOrFail, t.nonFatalOrThrow()))
+                shift(StoringStateFailed(this@saveWithEffect, t.nonFatalOrThrow()))
             }
         }
 
     return effect {
-        event.eitherFetchStateOrFail().bind()
-            .eitherComputeNewStateOrFail(event).bind()
-            .eitherSaveOrFail().bind()
+        event.fetchStateWithEffect().bind()
+            .computeNewStateWithEffect(event).bind()
+            .saveWithEffect().bind()
     }
 }
 
@@ -90,13 +89,13 @@ suspend fun <S, E> MaterializedView<S, E>.handleEither(event: E): Effect<Error, 
  * Extension function - Handles the flow of events of type [E]
  *
  * @param events Flow of Events of type [E] to be handled
- * @return [Flow] of [Either] [Error] or State of type [S]
+ * @return [Flow] of [Effect] (either [Error] or State of type [S])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <S, E> MaterializedView<S, E>.handleEither(events: Flow<E>): Flow<Effect<Error, S>> =
+fun <S, E> MaterializedView<S, E>.handleWithEffect(events: Flow<E>): Flow<Effect<Error, S>> =
     events
-        .map { handleEither(it) }
+        .map { handleWithEffect(it) }
         .catch { emit(effect { shift(EventPublishingFailed(it)) }) }
 
 
@@ -104,20 +103,20 @@ fun <S, E> MaterializedView<S, E>.handleEither(events: Flow<E>): Flow<Effect<Err
  * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
  * @receiver event of type [E]
  * @param materializedView of type  [MaterializedView]<[S], [E]>
- * @return [Either] [Error] or the successfully stored State of type [S]
+ * @return [Effect] (either [Error] or the successfully stored State of type [S])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-suspend fun <S, E> E.publishEitherTo(materializedView: MaterializedView<S, E>): Effect<Error, S> =
-    materializedView.handleEither(this)
+suspend fun <S, E> E.publishWithEffect(materializedView: MaterializedView<S, E>): Effect<Error, S> =
+    materializedView.handleWithEffect(this)
 
 /**
  * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
  * @receiver [Flow] of events of type [E]
  * @param materializedView of type  [MaterializedView]<[S], [E]>
- * @return [Flow] of [Either] [Error] or the successfully stored State of type [S]
+ * @return [Flow] of [Effect] (either [Error] or the successfully stored State of type [S])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <S, E> Flow<E>.publishEitherTo(materializedView: MaterializedView<S, E>): Flow<Effect<Error, S>> =
-    materializedView.handleEither(this)
+fun <S, E> Flow<E>.publishWithEffect(materializedView: MaterializedView<S, E>): Flow<Effect<Error, S>> =
+    materializedView.handleWithEffect(this)
