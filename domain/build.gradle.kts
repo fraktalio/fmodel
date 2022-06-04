@@ -49,6 +49,9 @@ kotlin {
     nativeTarget.compilations.all {
         kotlinOptions.verbose = true
     }
+    nativeTarget.binaries.all {
+        freeCompilerArgs += "-Xlazy-ir-for-caches=disable"
+    }
 
     sourceSets {
         val commonMain by getting {

@@ -199,8 +199,10 @@ Notice that `Decider` implements an interface `IDecider` to communicate the cont
 
 - with identity element `Decider<Nothing?, Unit, Nothing?>`
 
-> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
-> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
+> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an
+> identity/empty element.
+> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
+> in parallel.
 
 
 We can now construct event-sourcing or/and state-storing aggregate by using the same `decider`.
@@ -318,8 +320,10 @@ Notice that `View` implements an interface `IView` to communicate the contract.
 - `View<in Si, out So, in E?>.combine(y: View<in Si2, out So2, in E2?>): View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER>`
 - with identity element `View<Unit, Nothing?>`
 
-> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
-> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
+> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an
+> identity/empty element.
+> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
+> in parallel.
 
 We can now construct `materialized` view by using this `view`.
 
@@ -446,7 +450,8 @@ private fun <C, E> CoroutineScope.commandActor(
 }
 ```
 
-> [Actors](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/actor.html) are marked as @ObsoleteCoroutinesApi by Kotlin at the moment.
+> [Actors](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/actor.html)
+> are marked as @ObsoleteCoroutinesApi by Kotlin at the moment.
 
 ## Kotlin
 
