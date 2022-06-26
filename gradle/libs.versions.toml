@@ -1,5 +1,5 @@
 [versions]
-coroutines = "1.6.1"
+coroutines = "1.6.3"
 dokka = "1.6.21"
 kotest = "5.3.0"
 kotlin = "1.6.21"
