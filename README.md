@@ -4,6 +4,8 @@ When you’re developing an information system to automate the activities of the
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
 the business — together, they constitute the model of the domain.
 
+![event-modeling](.assets/event-modeling.png)
+
 ## Multiplatform
 
 Support for multiplatform programming is one of Kotlin’s key benefits. It reduces time spent writing and maintaining the
@@ -487,24 +489,14 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 
 ### Examples
 
-Browse the [tests](domain/src/commonTest/kotlin/com/fraktalio/fmodel/domain/DeciderTest.kt)
-
 ![decider demo implementation](.assets/decider-impl.png)
 
 ![decider demo test](.assets/decider-test.png)
 
-- Envision how information system will look like and behave like by modeling the flow of information
-    - [event modeling](https://eventmodeling.org/posts/what-is-event-modeling/)
-- The result is a blueprint of the overall solution
-
-![event-modeling](.assets/event-modeling.png)
-
-- Translate the blueprint into the [source code](https://github.com/fraktalio/fmodel-demos)
-
-**Valuable resources:**
-
+- Browse the [tests](domain/src/commonTest/kotlin/com/fraktalio/fmodel/domain/DeciderTest.kt)
+- [FModel demos](https://github.com/fraktalio/fmodel-demos)
 - [The Blog - Domain modeling](https://fraktalio.com/blog/)
-- [The Demo Source Code](https://github.com/fraktalio/fmodel-demos)
+
 
 ## Deploy to Maven Central
 
