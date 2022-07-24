@@ -1,6 +1,6 @@
 [versions]
 coroutines = "1.6.4"
-dokka = "1.7.0"
+dokka = "1.7.10"
 kotest = "5.3.2"
 kotestplugin = "5.4.0"
 kotlin = "1.6.21"
