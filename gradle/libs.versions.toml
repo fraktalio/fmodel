@@ -2,6 +2,7 @@
 coroutines = "1.6.4"
 dokka = "1.7.0"
 kotest = "5.3.2"
+kotestplugin = "5.4.0"
 kotlin = "1.6.21"
 arrow = "1.1.2"
 
@@ -14,5 +15,5 @@ arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 
 [plugins]
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-kotest-multiplatform = { id = "io.kotest.multiplatform", version.ref = "kotest" }
+kotest-multiplatform = { id = "io.kotest.multiplatform", version.ref = "kotestplugin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
