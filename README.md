@@ -494,17 +494,10 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 ![decider demo test](.assets/decider-test.png)
 
 - Browse the [tests](domain/src/commonTest/kotlin/com/fraktalio/fmodel/domain/DeciderTest.kt)
-- [FModel demos](https://github.com/fraktalio/fmodel-demos)
-- [The Blog - Domain modeling](https://fraktalio.com/blog/)
+- Learn by example on the [playground](https://fraktalio.com/blog/playground)
+- Read the [blog](https://fraktalio.com/blog/)
+- Check the [demos](https://github.com/fraktalio/fmodel-demos)
 
-
-## Deploy to Maven Central
-
-### Manually
-
-```shell
-mvn clean deploy -Dgpg.passphrase="YOUR_PASSPHRASE" -Pci-cd
-```
 
 ## References and further reading
 
