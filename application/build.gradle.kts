@@ -1,7 +1,6 @@
 @Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     id(libs.plugins.kotlin.multiplatform.get().pluginId)
-    id(libs.plugins.kotest.multiplatform.get().pluginId)
     id(libs.plugins.dokka.get().pluginId)
     id("maven-publish")
     id("signing")
