@@ -41,8 +41,8 @@ fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumber
         decide = { c, s ->
             if (c != null && c.value.get > 1000) flow<EvenNumberEvent> { throw UnsupportedOperationException("Sorry") } else
                 when (c) {
-                    is AddEvenNumber -> flowOf(EvenNumberAdded(c.description, c.value + s.value))
-                    is SubtractEvenNumber -> flowOf(EvenNumberSubtracted(c.description, c.value - s.value))
+                    is AddEvenNumber -> flowOf(EvenNumberAdded(c.description, s.value + c.value))
+                    is SubtractEvenNumber -> flowOf(EvenNumberSubtracted(c.description, s.value - c.value))
                     null -> emptyFlow()
                 }
         },
