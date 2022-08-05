@@ -498,7 +498,6 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 - Read the [blog](https://fraktalio.com/blog/)
 - Check the [demos](https://github.com/fraktalio/fmodel-demos)
 
-
 ## References and further reading
 
 - https://www.youtube.com/watch?v=kgYGMVDHQHs
