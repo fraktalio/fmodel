@@ -29,16 +29,18 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlin.contracts.ExperimentalContracts
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.math.absoluteValue
 
 
 /**
  * Extension function - Handles the flow of events of type [E] by concurrently distributing the load across finite number of actors/handlers
  *
  * @param events Flow of Events of type [E] to be handled
- * @param numberOfActors total number of actors/workers available for distributing the load
+ * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
  * @param actorsCapacity capacity of the actors channel's buffer
  * @param actorsStart actors coroutine start option
  * @param actorsContext additional to [CoroutineScope.coroutineContext] context of the actor coroutines.
+ * @param partitionKey a function that calculates the partition key/routing key of event - events with the same partition key will be handled with the same 'actor' to keep the ordering
  * @return [Flow] of State of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
@@ -63,8 +65,7 @@ fun <S, E> MaterializedView<S, E>.handleConcurrently(
             }
         }
         .collect {
-            val partitionKeyVal = partitionKey(it)
-            val partition = (if (partitionKeyVal < 0) partitionKeyVal * (-1) else partitionKeyVal) % numberOfActors
+            val partition = partitionKey(it).absoluteValue % numberOfActors.coerceAtLeast(1)
             actors[partition].send(it)
         }
 }
@@ -74,10 +75,11 @@ fun <S, E> MaterializedView<S, E>.handleConcurrently(
  *
  * @receiver [Flow] of events of type [E]
  * @param materializedView of type  [MaterializedView]<[S], [E]>
- * @param numberOfActors total number of actors/workers available for distributing the load
+ * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
  * @param actorsCapacity capacity of the actors channel's buffer
  * @param actorsStart actors coroutine start option
  * @param actorsContext additional to [CoroutineScope.coroutineContext] context of the actor coroutines.
+ * @param partitionKey a function that calculates the partition key/routing key of event - events with the same partition key will be handled with the same 'actor' to keep the ordering
  * @return the [Flow] of stored State of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic

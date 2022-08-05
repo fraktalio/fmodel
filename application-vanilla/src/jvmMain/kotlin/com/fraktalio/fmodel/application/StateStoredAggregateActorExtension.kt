@@ -29,15 +29,17 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlin.contracts.ExperimentalContracts
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.math.absoluteValue
 
 /**
  * Extension function - Handles the [Flow] of command messages of type [C] by concurrently distributing the load across finite number of actors/handlers
  *
  * @param commands [Flow] of Command messages of type [C]
- * @param numberOfActors total number of actors/workers available for distributing the load
+ * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
  * @param actorsCapacity capacity of the actors channel's buffer
  * @param actorsStart actors coroutine start option
  * @param actorsContext additional to [CoroutineScope.coroutineContext] context of the actor coroutines.
+ * @param partitionKey a function that calculates the partition key/routing key of command - commands with the same partition key will be handled with the same 'actor' to keep the ordering
  * @return [Flow] of State of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
@@ -62,8 +64,7 @@ fun <C, S, E> StateStoredAggregate<C, S, E>.handleConcurrently(
             }
         }
         .collect {
-            val partitionKeyVal = partitionKey(it)
-            val partition = (if (partitionKeyVal < 0) partitionKeyVal * (-1) else partitionKeyVal) % numberOfActors
+            val partition = partitionKey(it).absoluteValue % numberOfActors.coerceAtLeast(1)
             actors[partition].send(it)
         }
 }
@@ -72,10 +73,11 @@ fun <C, S, E> StateStoredAggregate<C, S, E>.handleConcurrently(
  * Extension function - Publishes the command of type [C] to the state stored aggregate of type  [StateStoredAggregate]<[C], [S], *> by concurrently distributing the load across finite number of actors/handlers
  * @receiver [Flow] of commands of type [C]
  * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
- * @param numberOfActors total number of actors/workers available for distributing the load
+ * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
  * @param actorsCapacity capacity of the actors channel's buffer
  * @param actorsStart actors coroutine start option
  * @param actorsContext additional to [CoroutineScope.coroutineContext] context of the actor coroutines.
+ * @param partitionKey a function that calculates the partition key/routing key of command - commands with the same partition key will be handled with the same 'actor' to keep the ordering
  * @return the [Flow] of State of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
