@@ -7,6 +7,11 @@ When you’re developing an information system to automate the activities of the
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
 the business — together, they constitute the model of the domain.
 
+![event-modeling](https://github.com/fraktalio/fmodel/raw/main/.assets/event-modeling.png)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/U8NzcWV8b4Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
 ## `IOR<Library, Inspiration>`
 
 This project can be used as a library, or as an inspiration, or both. It provides just enough tactical Domain-Driven
@@ -502,22 +507,11 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 
 ### Examples
 
- - Envision how information system will look like and behave like by modeling the flow of information - [event modeling](https://eventmodeling.org/posts/what-is-event-modeling/)
- - The result is a blueprint of the overall solution
-
-![event-modeling](https://github.com/fraktalio/fmodel/raw/main/.assets/event-modeling.png)
-
- - Translate the blueprint into the [source code](https://github.com/fraktalio/fmodel-demos)
-
-[https://github.com/fraktalio/fmodel-demos](https://github.com/fraktalio/fmodel-demos)
-
-**Valuable resources:**
-
-- [The Blog - Domain modeling](https://fraktalio.com/blog/)
-- [The Demo Source Code](https://github.com/fraktalio/fmodel-demos)
+- Learn by example on the [playground](https://fraktalio.com/blog/playground)
+- Read the [blog](https://fraktalio.com/blog/)
+- Check the [demos](https://github.com/fraktalio/fmodel-demos)
 
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/U8NzcWV8b4Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Credits
 
