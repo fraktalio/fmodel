@@ -1,15 +1,16 @@
 # [fraktalio](https://fraktalio.com/) / **f`(`model`)`** - Functional and Reactive domain modeling - Multiplatform
 
 
-![workflow](https://github.com/fraktalio/fmodel/actions/workflows/gradle-test-build-publish.yml/badge.svg)
+![workflow](https://github.com/fraktalio/fmodel/actions/workflows/gradle-test-build-publish.yml/badge.svg) | [playground](https://fraktalio.com/blog/playground) | [blog](https://fraktalio.com/blog/)
 
 When you’re developing an information system to automate the activities of the business, you are modeling the business.
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
 the business — together, they constitute the model of the domain.
 
-![event-modeling](https://github.com/fraktalio/fmodel/raw/main/.assets/event-modeling.png)
-
 <iframe width="560" height="315" src="https://www.youtube.com/embed/U8NzcWV8b4Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
+![event-modeling](https://github.com/fraktalio/fmodel/raw/main/.assets/event-modeling.png)
 
 
 ## `IOR<Library, Inspiration>`
