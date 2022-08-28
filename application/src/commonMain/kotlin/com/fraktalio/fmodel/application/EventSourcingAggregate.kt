@@ -79,8 +79,10 @@ interface EventSourcingOrchestratingAggregate<C, S, E> : ISaga<E, C>, EventSourc
         val currentState = fold(initialState) { s, e -> evolve(s, e) }
         var resultingEvents = decide(command, currentState)
 
-        resultingEvents.flatMapConcat { react(it) }.onEach {
-            val newEvents = flowOf(this@computeNewEvents, resultingEvents).flattenConcat().computeNewEvents(it)
+        resultingEvents.flatMapConcat { react(it) }.onEach { c ->
+            val newEvents =
+                flowOf(this@computeNewEvents.flatMapConcat { c.fetchEvents() }, resultingEvents).flattenConcat()
+                    .computeNewEvents(c)
             resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
         }.collect()
 
