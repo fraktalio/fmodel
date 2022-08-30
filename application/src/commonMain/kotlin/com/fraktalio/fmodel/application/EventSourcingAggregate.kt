@@ -82,7 +82,7 @@ interface EventSourcingOrchestratingAggregate<C, S, E> : ISaga<E, C>, EventSourc
         resultingEvents
             .flatMapConcat { react(it) }
             .onEach { c ->
-                val newEvents = flowOf(this@computeNewEvents, c.fetchEvents(), resultingEvents)
+                val newEvents = flowOf(c.fetchEvents(), resultingEvents)
                     .flattenConcat()
                     .computeNewEvents(c)
                 resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
