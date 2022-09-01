@@ -44,6 +44,7 @@ import kotlin.math.absoluteValue
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ObsoleteCoroutinesApi
 @ExperimentalContracts
 @FlowPreview
 fun <C, S, E> StateStoredAggregate<C, S, E>.handleConcurrently(
@@ -82,6 +83,7 @@ fun <C, S, E> StateStoredAggregate<C, S, E>.handleConcurrently(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ObsoleteCoroutinesApi
 @ExperimentalContracts
 @FlowPreview
 fun <C, S> Flow<C>.publishConcurrentlyTo(

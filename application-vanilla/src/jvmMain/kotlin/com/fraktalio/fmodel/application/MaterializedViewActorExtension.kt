@@ -45,6 +45,7 @@ import kotlin.math.absoluteValue
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ObsoleteCoroutinesApi
 @ExperimentalContracts
 @FlowPreview
 fun <S, E> MaterializedView<S, E>.handleConcurrently(
@@ -84,6 +85,7 @@ fun <S, E> MaterializedView<S, E>.handleConcurrently(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ObsoleteCoroutinesApi
 @FlowPreview
 @ExperimentalContracts
 fun <S, E> Flow<E>.publishConcurrentlyTo(

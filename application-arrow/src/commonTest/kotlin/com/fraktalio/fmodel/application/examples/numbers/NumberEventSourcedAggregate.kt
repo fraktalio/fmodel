@@ -28,6 +28,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberC
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
+import kotlinx.coroutines.FlowPreview
 
 
 /**
@@ -40,6 +41,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
  * @param repository the event-sourcing repository for all (even and odd) numbers
  * @return the event-sourcing aggregate instance for all (even and odd) numbers
  */
+@OptIn(FlowPreview::class)
 fun numberAggregate(
     evenNumberDecider: Decider<EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?>,
     oddNumberDecider: Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?>,

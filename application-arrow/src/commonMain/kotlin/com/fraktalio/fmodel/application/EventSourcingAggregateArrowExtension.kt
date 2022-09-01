@@ -55,7 +55,7 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handleWithEffect(command: C): Flow
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handleWithEffect(commands: Flow<C>): Flow<Effect<Error, E>> =
     commands
         .flatMapConcat { handleWithEffect(it) }
-        .catch { emit(effect { shift(CommandPublishingFailed(it)) }) }
+        .catch { emit(effect { shift(CommandHandlingFailed(it)) }) }
 
 /**
  * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
