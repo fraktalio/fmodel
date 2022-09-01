@@ -13,6 +13,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -21,6 +22,7 @@ import kotlin.contracts.ExperimentalContracts
 /**
  * DSL - Given
  */
+@ObsoleteCoroutinesApi
 @ExperimentalContracts
 @FlowPreview
 private fun <C, S, E> IDecider<C, S, E>.given(
@@ -50,6 +52,7 @@ private suspend infix fun <E> Flow<E>.thenEvents(expected: Collection<E>) = toLi
 /**
  * Event sourced aggregate actor test
  */
+@OptIn(ObsoleteCoroutinesApi::class)
 @ExperimentalContracts
 @FlowPreview
 class EventSourcedAggregateActorTest : FunSpec({

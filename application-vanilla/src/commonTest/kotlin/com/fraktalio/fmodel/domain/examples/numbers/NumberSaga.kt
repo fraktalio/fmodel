@@ -68,7 +68,7 @@ fun numberSaga() = Saga<NumberEvent?, NumberCommand?>(
  * @return even number Saga instance
  */
 fun evenNumberSaga() = Saga<NumberEvent.EvenNumberEvent?, NumberCommand.OddNumberCommand>(
-    react = { numberEvent -> emptyFlow() }
+    react = { emptyFlow() }
 )
 
 /**

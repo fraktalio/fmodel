@@ -44,6 +44,7 @@ import kotlin.math.absoluteValue
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ObsoleteCoroutinesApi
 @ExperimentalContracts
 @FlowPreview
 fun <AR, A> SagaManager<AR, A>.handleConcurrently(
@@ -82,6 +83,7 @@ fun <AR, A> SagaManager<AR, A>.handleConcurrently(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ObsoleteCoroutinesApi
 @ExperimentalContracts
 @FlowPreview
 fun <AR, A> Flow<AR>.publishConcurrentlyTo(

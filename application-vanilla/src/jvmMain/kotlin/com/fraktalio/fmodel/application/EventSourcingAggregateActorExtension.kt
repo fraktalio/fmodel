@@ -28,6 +28,7 @@ import kotlin.math.absoluteValue
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ObsoleteCoroutinesApi
 @ExperimentalContracts
 @FlowPreview
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handleConcurrently(
@@ -68,6 +69,7 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handleConcurrently(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ObsoleteCoroutinesApi
 @ExperimentalContracts
 @FlowPreview
 fun <C, E> Flow<C>.publishConcurrentlyTo(
