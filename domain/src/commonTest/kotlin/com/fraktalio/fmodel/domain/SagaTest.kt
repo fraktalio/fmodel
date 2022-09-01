@@ -37,7 +37,7 @@ class SagaTest : FunSpec({
     }
 
     test("Combined Saga - even number added") {
-        val combinedSaga = evenSaga.combine(oddSaga)
+        val combinedSaga = evenSaga combine oddSaga
         with(combinedSaga) {
             whenActionResult(
                 EvenNumberAdded(Description("2"), NumberValue(2))
@@ -51,7 +51,7 @@ class SagaTest : FunSpec({
     }
 
     test("Combined Saga - odd number added") {
-        val combinedSaga = evenSaga.combine(oddSaga)
+        val combinedSaga = evenSaga combine oddSaga
         with(combinedSaga) {
             whenActionResult(
                 OddNumberAdded(Description("1"), NumberValue(1))

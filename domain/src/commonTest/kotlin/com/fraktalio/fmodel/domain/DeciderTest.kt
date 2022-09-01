@@ -111,7 +111,7 @@ class DeciderTest : FunSpec({
     }
 
     test("Event-sourced Combined Decider - add even number") {
-        val combinedDecider = evenDecider.combine(oddDecider)
+        val combinedDecider = evenDecider combine oddDecider
         with(combinedDecider) {
             givenEvents(emptyList()) {
                 whenCommand(AddEvenNumber(Description("2"), NumberValue(2)))
@@ -120,7 +120,7 @@ class DeciderTest : FunSpec({
     }
 
     test("State-stored Combined Decider - add even number") {
-        val combinedDecider = evenDecider.combine(oddDecider)
+        val combinedDecider = evenDecider combine oddDecider
         with(combinedDecider) {
             givenState(null) {
                 whenCommand(AddEvenNumber(Description("2"), NumberValue(2)))
@@ -132,7 +132,7 @@ class DeciderTest : FunSpec({
     }
 
     test("Event-sourced Combined Decider - given previous state, add even number") {
-        val combinedDecider = evenDecider.combine(oddDecider)
+        val combinedDecider = evenDecider combine oddDecider
         with(combinedDecider) {
             givenEvents(listOf(EvenNumberAdded(Description("2"), NumberValue(2)))) {
                 whenCommand(AddEvenNumber(Description("4"), NumberValue(4)))
@@ -141,7 +141,7 @@ class DeciderTest : FunSpec({
     }
 
     test("State-stored Combined Decider - given previous state, add even number") {
-        val combinedDecider = evenDecider.combine(oddDecider)
+        val combinedDecider = evenDecider combine oddDecider
         with(combinedDecider) {
             givenState(
                 Pair(

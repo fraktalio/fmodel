@@ -76,7 +76,7 @@ class ViewTest : FunSpec({
     }
 
     test("Mapped View (combine Views) - even and odd numbers added") {
-        val combinedView = evenView.combine(oddView)
+        val combinedView = evenView combine oddView
         with(combinedView) {
             givenEvents(
                 listOf(
