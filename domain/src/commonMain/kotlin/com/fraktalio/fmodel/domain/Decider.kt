@@ -223,7 +223,7 @@ fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.productOnState(
  * @return [_Decider]<[C_SUPER], [Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [Ei_SUPER], [Eo_SUPER]>
  */
 @FlowPreview
-inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<C?, Si, So, Ei?, Eo>.combine(
+inline infix fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> _Decider<C?, Si, So, Ei?, Eo>.combine(
     y: _Decider<C2?, Si2, So2, Ei2?, Eo2>
 ): _Decider<C_SUPER, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER> {
 
@@ -235,5 +235,3 @@ inline fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, r
 
     return deciderX.productOnState(deciderY)
 }
-
-

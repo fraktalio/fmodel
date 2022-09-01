@@ -156,7 +156,7 @@ fun <Si, So, E, Son> _View<Si, So, E>.productOnState(fb: _View<Si, Son, E>): _Vi
  * @param y second View
  * @return new View of type [_View]<[Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [E_SUPER]>
  */
-inline fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<Si, So, E?>.combine(
+inline infix fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E_SUPER, E_SUPER> _View<Si, So, E?>.combine(
     y: _View<Si2, So2, E2?>
 ): _View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER> {
 
