@@ -14,55 +14,7 @@ env:
   GPG_PRIVATE_PASSWORD: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ 'macos-latest', 'ubuntu-latest', 'windows-latest' ]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3.0.2
-        with:
-          fetch-depth: 0
-
-      - name: Set up Java
-        uses: actions/setup-java@v3.4.1
-        with:
-          distribution: 'adopt'
-          java-version: '11'
-
-      - name: Test (linux, jvm, js)
-        uses: gradle/gradle-build-action@v2.3.0
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          arguments: --full-stacktrace test
-
-      - name: Test (macos)
-        uses: gradle/gradle-build-action@v2.3.0
-        if: matrix.os == 'macos-latest'
-        with:
-          arguments: --full-stacktrace macosX64Test
-
-      - name: Test (windows)
-        uses: gradle/gradle-build-action@v2.3.0
-        if: matrix.os == 'windows-latest'
-        with:
-          arguments: --full-stacktrace mingwX64Test
-
-      - name: Upload reports
-        uses: actions/upload-artifact@v3.1.0
-        with:
-          name: 'reports-${{ matrix.os }}'
-          path: '**/build/reports/**'
-
-      - name: Stop Gradle daemons
-        run: ./gradlew --stop
-
-
   publish:
-    needs: build
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -85,16 +37,19 @@ jobs:
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'ubuntu-latest'
         with:
-          arguments: --full-stacktrace publishAllPublicationToOssrhRepository
+          arguments: --full-stacktrace test publishAllPublicationToOssrhRepository
 
       - name: Publish MacOS version
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'macos-latest'
         with:
-          arguments: --full-stacktrace publishMacosX64PublicationToOssrhRepository
+          arguments: --full-stacktrace macosX64Test publishMacosX64PublicationToOssrhRepository
 
       - name: Publish Windows version
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'windows-latest'
         with:
-          arguments: --full-stacktrace publishMingwX64PublicationToOssrhRepository
+          arguments: --full-stacktrace mingwX64Test publishMingwX64PublicationToOssrhRepository
+
+      - name: Stop Gradle daemons
+        run: ./gradlew --stop
