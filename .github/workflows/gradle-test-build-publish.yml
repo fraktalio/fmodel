@@ -79,6 +79,7 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '11'
+          check-latest: true
 
       - name: Publish JVM, JS and Linux versions
         uses: gradle/gradle-build-action@v2.3.0
