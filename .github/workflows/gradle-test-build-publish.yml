@@ -84,16 +84,16 @@ jobs:
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'ubuntu-latest'
         with:
-          arguments: --full-stacktrace publishAllPublicationsToOssrhRepository
+          arguments: --full-stacktrace publishAllPublicationToOssrhRepository
 
       - name: Publish MacOS version
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'macos-latest'
         with:
-          arguments: --full-stacktrace publishMacosX64PublicationsToOssrhRepository
+          arguments: --full-stacktrace publishMacosX64PublicationToOssrhRepository
 
       - name: Publish Windows version
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'windows-latest'
         with:
-          arguments: --full-stacktrace publishMingwX64PublicationsToOssrhRepository
+          arguments: --full-stacktrace publishMingwX64PublicationToOssrhRepository

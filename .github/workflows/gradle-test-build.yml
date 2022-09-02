@@ -29,19 +29,19 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
 
-      - name: Ubuntu build
+      - name: Test (linux, jvm, js)
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'ubuntu-latest'
         with:
           arguments: --full-stacktrace build
 
-      - name: macosX64Test
+      - name: Test (macos)
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'macos-latest'
         with:
           arguments: --full-stacktrace macosX64Test
 
-      - name: mingwX64Test
+      - name: Test (windows)
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'windows-latest'
         with:
