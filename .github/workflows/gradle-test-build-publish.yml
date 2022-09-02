@@ -39,11 +39,11 @@ jobs:
         with:
           arguments: --full-stacktrace test publishAllPublicationToOssrhRepository
 
-#      - name: Publish MacOS version
-#        uses: gradle/gradle-build-action@v2.3.0
-#        if: matrix.os == 'macos-latest'
-#        with:
-#          arguments: --full-stacktrace macosX64Test publishMacosX64PublicationToOssrhRepository
+      - name: Publish MacOS version
+        uses: gradle/gradle-build-action@v2.3.0
+        if: matrix.os == 'macos-latest'
+        with:
+          arguments: --full-stacktrace clean macosX64Test publishMacosX64PublicationToOssrhRepository
 
       - name: Publish Windows version
         uses: gradle/gradle-build-action@v2.3.0
