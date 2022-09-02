@@ -37,13 +37,14 @@ jobs:
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'ubuntu-latest'
         with:
-          arguments: --full-stacktrace linuxX64Test publishLinuxX64PublicationToOssrhRepository
+          arguments: --full-stacktrace test publishAllPublicationToOssrhRepository
 
       - name: Publish MacOS version
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'macos-latest'
         with:
-          arguments: --full-stacktrace test publishAllPublicationToOssrhRepository
+          cache-disabled: true
+          arguments: --full-stacktrace macosX64Test publishMacosX64PublicationToOssrhRepository
 
       - name: Publish Windows version
         uses: gradle/gradle-build-action@v2.3.0
