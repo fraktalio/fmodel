@@ -33,19 +33,19 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
 
-      - name: Ubuntu build
+      - name: Test (linux, jvm, js)
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'ubuntu-latest'
         with:
-          arguments: --full-stacktrace build
+          arguments: --full-stacktrace test
 
-      - name: macosX64Test
+      - name: Test (macos)
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'macos-latest'
         with:
           arguments: --full-stacktrace macosX64Test
 
-      - name: mingwX64Test
+      - name: Test (windows)
         uses: gradle/gradle-build-action@v2.3.0
         if: matrix.os == 'windows-latest'
         with:
@@ -63,7 +63,11 @@ jobs:
 
   publish:
     needs: build
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ 'macos-latest', 'ubuntu-latest', 'windows-latest' ]
 
     steps:
       - uses: actions/checkout@v3
@@ -76,7 +80,20 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
 
-      - name: Publish version
+      - name: Publish JVM, JS and Linux versions
         uses: gradle/gradle-build-action@v2.3.0
+        if: matrix.os == 'ubuntu-latest'
         with:
           arguments: --full-stacktrace publishAllPublicationsToOssrhRepository
+
+      - name: Publish MacOS version
+        uses: gradle/gradle-build-action@v2.3.0
+        if: matrix.os == 'macos-latest'
+        with:
+          arguments: --full-stacktrace publishMacosX64PublicationsToOssrhRepository
+
+      - name: Publish Windows version
+        uses: gradle/gradle-build-action@v2.3.0
+        if: matrix.os == 'windows-latest'
+        with:
+          arguments: --full-stacktrace publishMingwX64PublicationsToOssrhRepository
