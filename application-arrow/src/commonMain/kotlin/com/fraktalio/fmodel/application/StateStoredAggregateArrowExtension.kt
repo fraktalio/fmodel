@@ -136,10 +136,10 @@ suspend fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(command: C): Effect
      * @receiver State of type [S]
      * @return [Effect] (either [Error] or the newly saved State of type [S])
      */
-    suspend fun Pair<S, V?>.saveWithEffect(): Effect<Error, Pair<S, V>> =
+    suspend fun S.saveWithEffect(currentStateVersion: V?): Effect<Error, Pair<S, V>> =
         effect {
             try {
-                save()
+                save(currentStateVersion)
             } catch (t: Throwable) {
                 shift(StoringStateFailed(this@saveWithEffect, t.nonFatalOrThrow()))
             }
@@ -149,8 +149,7 @@ suspend fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(command: C): Effect
         val (state, version) = command.fetchStateWithEffect().bind()
         state
             .computeNewStateWithEffect(command).bind()
-            .pairWith(version)
-            .saveWithEffect().bind()
+            .saveWithEffect(version).bind()
     }
 }
 

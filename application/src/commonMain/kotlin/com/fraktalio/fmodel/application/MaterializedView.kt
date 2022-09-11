@@ -59,6 +59,22 @@ interface MaterializedView<S, E> : ViewStateComputation<S, E>, ViewStateReposito
 interface MaterializedLockingView<S, E, V> : ViewStateComputation<S, E>, ViewStateLockingRepository<E, S, V>
 
 /**
+ * Materialized view is using/delegating a `view` / [ViewStateComputation]<[S], [E]> to handle events of type [E] and to maintain a state of projection(s) as a result.
+ *
+ * [MaterializedLockingDeduplicationView] extends [ViewStateComputation] and [ViewStateLockingDeduplicationRepository] interfaces,
+ * clearly communicating that it is composed out of these two behaviours.
+ *
+ * @param S Materialized View state of type [S]
+ * @param E Events of type [E] that are handled by this Materialized View
+ * @param EV Event Version
+ * @param SV State Version
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface MaterializedLockingDeduplicationView<S, E, EV, SV> : ViewStateComputation<S, E>,
+    ViewStateLockingDeduplicationRepository<E, S, EV, SV>
+
+/**
  * Materialized View factory function.
  *
  * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
@@ -99,4 +115,27 @@ fun <S, E, V> materializedLockingView(
 ): MaterializedLockingView<S, E, V> =
     object : MaterializedLockingView<S, E, V>,
         ViewStateLockingRepository<E, S, V> by viewStateRepository,
+        IView<S, E> by view {}
+
+/**
+ * Materialized Locking Deduplication View factory function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param EV Event Version
+ * @param SV State Version
+ * @property view A view component of type [IView]<[S], [E]>
+ * @property viewStateRepository Interface for [S]tate management/persistence - dependencies by delegation
+ * @return An object/instance of type [MaterializedLockingDeduplicationView]<[S], [E], [EV], [SV]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <S, E, EV, SV> materializedLockingDeduplicationView(
+    view: IView<S, E>,
+    viewStateRepository: ViewStateLockingDeduplicationRepository<E, S, EV, SV>,
+): MaterializedLockingDeduplicationView<S, E, EV, SV> =
+    object : MaterializedLockingDeduplicationView<S, E, EV, SV>,
+        ViewStateLockingDeduplicationRepository<E, S, EV, SV> by viewStateRepository,
         IView<S, E> by view {}

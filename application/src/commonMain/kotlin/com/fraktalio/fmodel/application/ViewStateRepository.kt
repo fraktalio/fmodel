@@ -61,12 +61,42 @@ interface ViewStateLockingRepository<E, S, V> {
     suspend fun E.fetchState(): Pair<S?, V?>
 
     /**
+     * Save state
+     *
+     * You can update/save the item/state, but only if the `version` number in the storage has not changed.
+     *
+     * @receiver State/[S] to be saved
+     * @return newly saved State of type [Pair]<[S], [V]>
+     */
+    suspend fun S.save(currentStateVersion: V?): Pair<S, V>
+}
+
+/**
+ * View state locking deduplication repository interface
+ *
+ * @param E Event
+ * @param S State
+ * @param EV Event Version
+ * @param SV State Version
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface ViewStateLockingDeduplicationRepository<E, S, EV, SV> {
+    /**
+     * Fetch state and version
+     *
+     * @receiver Event of type [E]
+     * @return the [Pair] of current State/[S] and current state Version/[SV]
+     */
+    suspend fun E.fetchState(): Pair<S?, SV?>
+
+    /**
      * Save state and version
      *
      * You can update/save the item/state, but only if the `version` number in the storage has not changed.
      *
-     * @receiver [Pair] of current State/[S] and current Version/[V]
-     * @return newly saved State of type [Pair]<[S], [V]>
+     * @receiver State/[S] to be saved
+     * @return newly saved State of type [Pair]<[S], [SV]>
      */
-    suspend fun Pair<S, V?>.save(): Pair<S, V>
+    suspend fun S.save(eventVersion: EV, currentStateVersion: SV?): Pair<S, SV>
 }

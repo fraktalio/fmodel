@@ -47,8 +47,7 @@ suspend fun <C, S, E, V, I> I.handleOptimistically(command: C): Pair<S, V> where
     val (state, version) = command.fetchState()
     return state
         .computeNewState(command)
-        .pairWith(version)
-        .save()
+        .save(version)
 }
 
 /**
@@ -129,5 +128,3 @@ fun <C, S, E, A> Flow<C>.publishTo(aggregate: A): Flow<S> where A : StateComputa
 fun <C, S, E, V, A> Flow<C>.publishOptimisticallyTo(aggregate: A): Flow<Pair<S, V>> where A : StateComputation<C, S, E>,
                                                                                           A : StateLockingRepository<C, S, V> =
     aggregate.handleOptimistically(this)
-
-private fun <S, V> S.pairWith(version: V): Pair<S, V> = Pair(this, version)

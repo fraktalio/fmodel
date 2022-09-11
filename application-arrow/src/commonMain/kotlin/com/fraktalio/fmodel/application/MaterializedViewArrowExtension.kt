@@ -95,10 +95,10 @@ suspend fun <S, E, V, I> I.handleOptimisticallyWithEffect(event: E): Effect<Erro
             }
         }
 
-    suspend fun Pair<S, V?>.saveWithEffect(): Effect<Error, Pair<S, V>> =
+    suspend fun S.saveWithEffect(currentVersion: V?): Effect<Error, Pair<S, V>> =
         effect {
             try {
-                save()
+                save(currentVersion)
             } catch (t: Throwable) {
                 shift(StoringStateFailed(this@saveWithEffect, t.nonFatalOrThrow()))
             }
@@ -108,8 +108,7 @@ suspend fun <S, E, V, I> I.handleOptimisticallyWithEffect(event: E): Effect<Erro
         val (state, version) = event.fetchStateWithEffect().bind()
         state
             .computeNewStateWithEffect(event).bind()
-            .pairWith(version)
-            .saveWithEffect().bind()
+            .saveWithEffect(version).bind()
     }
 }
 
@@ -182,5 +181,3 @@ fun <S, E, M> Flow<E>.publishWithEffect(materializedView: M): Flow<Effect<Error,
  */
 fun <S, E, V, M> Flow<E>.publishOptimisticallyWithEffect(materializedView: M): Flow<Effect<Error, Pair<S, V>>> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
     materializedView.handleOptimisticallyWithEffect(this)
-
-private fun <S, V> S.pairWith(version: V): Pair<S, V> = Pair(this, version)

@@ -41,11 +41,11 @@ class EvenNumberLockingViewRepository : ViewStateLockingRepository<EvenNumberEve
 
     override suspend fun EvenNumberEvent?.fetchState(): Pair<EvenNumberState?, Long?> = evenNumberStateStorage
 
-    override suspend fun Pair<EvenNumberState?, Long?>.save(): Pair<EvenNumberState, Long> {
+    override suspend fun EvenNumberState?.save(currentStateVersion: Long?): Pair<EvenNumberState, Long> {
         //TODO compare the versions and throw an exception if they dont match
-        val (state, version) = this
-        val newState = state ?: EvenNumberState(Description("0"), NumberValue(0))
-        evenNumberStateStorage = if (version != null) Pair(newState, version + 1) else Pair(newState, 0)
+        val newState = this ?: EvenNumberState(Description("0"), NumberValue(0))
+        evenNumberStateStorage =
+            if (currentStateVersion != null) Pair(newState, currentStateVersion + 1) else Pair(newState, 0)
         return evenNumberStateStorage
     }
 }

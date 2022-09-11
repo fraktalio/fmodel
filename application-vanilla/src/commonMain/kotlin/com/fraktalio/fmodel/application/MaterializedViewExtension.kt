@@ -43,8 +43,23 @@ suspend fun <S, E, V, I> I.handleOptimistically(event: E): Pair<S, V> where I : 
     val (state, version) = event.fetchState()
     return state
         .computeNewState(event)
-        .pairWith(version)
-        .save()
+        .save(version)
+}
+
+/**
+ * Extension function - Handles the event of type [E]
+ *
+ * @param eventAndVersion Event of type [Pair]<[E], [EV]> to be handled
+ * @return State of type [Pair]<[S], [SV]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+suspend fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplication(eventAndVersion: Pair<E, EV>): Pair<S, SV> where I : ViewStateComputation<S, E>, I : ViewStateLockingDeduplicationRepository<E, S, EV, SV> {
+    val (event, eventVersion) = eventAndVersion
+    val (state, currentStateVersion) = event.fetchState()
+    return state
+        .computeNewState(event)
+        .save(eventVersion, currentStateVersion)
 }
 
 /**
@@ -70,6 +85,17 @@ fun <S, E, V, I> I.handleOptimistically(events: Flow<E>): Flow<Pair<S, V>> where
     events.map { handleOptimistically(it) }
 
 /**
+ * Extension function - Handles the flow of events of type [E]
+ *
+ * @param eventsAndVersions Flow of Events of type [Pair]<[E], [EV]> to be handled
+ * @return [Flow] of State of type [Pair]<[S], [SV]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplication(eventsAndVersions: Flow<Pair<E, EV>>): Flow<Pair<S, SV>> where I : ViewStateComputation<S, E>, I : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
+    eventsAndVersions.map { handleOptimisticallyWithDeduplication(it) }
+
+/**
  * Extension function - Publishes the event of type [E] to the materialized view
  * @receiver event of type [E]
  * @param materializedView of type [ViewStateComputation]<[S], [E]>, [ViewStateRepository]<[E], [S]>
@@ -84,7 +110,7 @@ suspend fun <S, E, M> E.publishTo(materializedView: M): S where M : ViewStateCom
  * Extension function - Publishes the event of type [E] to the materialized view
  * @receiver event of type [E]
  * @param materializedView of type [ViewStateComputation]<[S], [E]>, [ViewStateLockingRepository]<[E], [S], [V]>
- * @return the stored State of type [S]
+ * @return the stored State of type [Pair]<[S], [V]>
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
@@ -92,10 +118,21 @@ suspend fun <S, E, V, M> E.publishOptimisticallyTo(materializedView: M): Pair<S,
     materializedView.handleOptimistically(this)
 
 /**
+ * Extension function - Publishes the event of type [Pair]<[E], [EV]> to the materialized view
+ * @receiver event of type [Pair]<[E], [EV]>
+ * @param materializedView of type [ViewStateComputation]<[S], [E]>, [ViewStateLockingDeduplicationRepository]<[E], [S], [EV], [SV]>
+ * @return the stored State of type [Pair]<[S], [SV]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+suspend fun <S, E, EV, SV, M> Pair<E, EV>.publishOptimisticallyWithDeduplicationTo(materializedView: M): Pair<S, SV> where M : ViewStateComputation<S, E>, M : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
+    materializedView.handleOptimisticallyWithDeduplication(this)
+
+/**
  * Extension function - Publishes the event of type [E] to the materialized view of type
  * @receiver [Flow] of events of type [E]
  * @param materializedView of type  [ViewStateComputation]<[S], [E]>, [ViewStateRepository]<[E], [S]>
- * @return the stored State of type [S]
+ * @return the [Flow] of stored State of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
@@ -106,11 +143,20 @@ fun <S, E, M> Flow<E>.publishTo(materializedView: M): Flow<S> where M : ViewStat
  * Extension function - Publishes the event of type [E] to the materialized view
  * @receiver [Flow] of events of type [E]
  * @param materializedView of type [ViewStateComputation]<[S], [E]>, [ViewStateLockingRepository]<[E], [S], [V]>
- * @return the stored State of type [S]
+ * @return the [Flow] of stored State of type [Pair]<[S], [V]>
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <S, E, V, M> Flow<E>.publishOptimisticallyTo(materializedView: M): Flow<Pair<S, V>> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
     materializedView.handleOptimistically(this)
 
-private fun <S, V> S.pairWith(version: V): Pair<S, V> = Pair(this, version)
+/**
+ * Extension function - Publishes the event of type [Pair]<[E], [EV]> to the materialized view
+ * @receiver [Flow] of events of type [Pair]<[E], [EV]>
+ * @param materializedView of type [ViewStateComputation]<[S], [E]>, [ViewStateLockingDeduplicationRepository]<[E], [S], [EV], [SV]>
+ * @return the [Flow] of stored State of type [Pair]<[S], [SV]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <S, E, EV, SV, M> Flow<Pair<E, EV>>.publishOptimisticallyWithDeduplicationTo(materializedView: M): Flow<Pair<S, SV>> where M : ViewStateComputation<S, E>, M : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
+    materializedView.handleOptimisticallyWithDeduplication(this)
