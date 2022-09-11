@@ -1,7 +1,9 @@
 package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.application.examples.numbers.NumberViewRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberLockingViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberViewRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberLockingViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.numberViewRepository
 import com.fraktalio.fmodel.domain.IView
@@ -26,6 +28,15 @@ private suspend fun <S, E> IView<S, E>.given(repository: ViewStateRepository<E, 
         viewStateRepository = repository
     ).handle(event())
 
+private suspend fun <S, E, V> IView<S, E>.given(
+    repository: ViewStateLockingRepository<E, S, V>,
+    event: () -> E
+): Pair<S, V> =
+    materializedLockingView(
+        view = this,
+        viewStateRepository = repository
+    ).handleOptimistically(event())
+
 /**
  * DSL - When
  */
@@ -37,6 +48,8 @@ private fun <S, E> IView<S, E>.whenEvent(event: E): E = event
  */
 private infix fun <S> S.thenState(expected: S) = shouldBe(expected)
 
+private infix fun <S, V> Pair<S, V>.thenStateAndVersion(expected: Pair<S, V>) = shouldBe(expected)
+
 /**
  * Materialized View Test
  */
@@ -45,6 +58,7 @@ class MaterializedViewTest : FunSpec({
     val oddView = oddNumberView()
     val combinedView = evenView.combine(oddView)
     val evenNumberViewRepository = evenNumberViewRepository() as EvenNumberViewRepository
+    val evenNumberLockingViewRepository = evenNumberLockingViewRepository() as EvenNumberLockingViewRepository
     val numberViewRepository = numberViewRepository() as NumberViewRepository
 
     test("Materialized view - even number added") {
@@ -54,6 +68,16 @@ class MaterializedViewTest : FunSpec({
             given(evenNumberViewRepository) {
                 whenEvent(EvenNumberAdded(Description("2"), NumberValue(2)))
             } thenState EvenNumberState(Description("Initial state, 2"), NumberValue(2))
+        }
+    }
+
+    test("Locking Materialized view - even number added") {
+        with(evenView) {
+            evenNumberLockingViewRepository.deleteAll()
+
+            given(evenNumberLockingViewRepository) {
+                whenEvent(EvenNumberAdded(Description("2"), NumberValue(2)))
+            } thenStateAndVersion Pair(EvenNumberState(Description("0, 2"), NumberValue(2)), 1)
         }
     }
 

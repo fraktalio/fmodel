@@ -105,7 +105,7 @@ fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> =
     aggregate.handle(this)
 
 @FlowPreview
-fun <C, E, V> C.publishTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
+fun <C, E, V> C.publishOptimisticallyTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)
 
 @FlowPreview
@@ -113,7 +113,7 @@ fun <C, E> C.publishTo(aggregate: EventSourcingOrchestratingAggregate<C, *, E>):
     aggregate.handle(this)
 
 @FlowPreview
-fun <C, E, V> C.publishTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
+fun <C, E, V> C.publishOptimisticallyTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)
 
 
@@ -122,7 +122,7 @@ fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E
     aggregate.handle(this)
 
 @FlowPreview
-fun <C, E, V> Flow<C>.publishTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
+fun <C, E, V> Flow<C>.publishOptimisticallyTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)
 
 @FlowPreview
@@ -130,5 +130,5 @@ fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingOrchestratingAggregate<C, *
     aggregate.handle(this)
 
 @FlowPreview
-fun <C, E, V> Flow<C>.publishTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
+fun <C, E, V> Flow<C>.publishOptimisticallyTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)

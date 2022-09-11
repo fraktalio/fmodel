@@ -17,9 +17,7 @@
 package com.fraktalio.fmodel.application
 
 /**
- * IView state repository interface
- *
- * Used by [MaterializedView]
+ * View state repository interface
  *
  * @param E Event
  * @param S State
@@ -42,4 +40,33 @@ interface ViewStateRepository<E, S> {
      * @return newly saved State of type [S]
      */
     suspend fun S.save(): S
+}
+
+/**
+ * View state locking repository interface
+ *
+ * @param E Event
+ * @param S State
+ * @param V Version
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface ViewStateLockingRepository<E, S, V> {
+    /**
+     * Fetch state and version
+     *
+     * @receiver Event of type [E]
+     * @return the [Pair] of current State/[S] and current Version/[V]
+     */
+    suspend fun E.fetchState(): Pair<S?, V?>
+
+    /**
+     * Save state and version
+     *
+     * You can update/save the item/state, but only if the `version` number in the storage has not changed.
+     *
+     * @receiver [Pair] of current State/[S] and current Version/[V]
+     * @return newly saved State of type [Pair]<[S], [V]>
+     */
+    suspend fun Pair<S, V?>.save(): Pair<S, V>
 }

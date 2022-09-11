@@ -27,7 +27,25 @@ import kotlinx.coroutines.flow.map
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-suspend fun <S, E> MaterializedView<S, E>.handle(event: E): S = event.fetchState().computeNewState(event).save()
+suspend fun <S, E, I> I.handle(event: E): S where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> =
+    event.fetchState().computeNewState(event).save()
+
+
+/**
+ * Extension function - Handles the event of type [E]
+ *
+ * @param event Event of type [E] to be handled
+ * @return State of type [Pair]<[S], [V]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+suspend fun <S, E, V, I> I.handleOptimistically(event: E): Pair<S, V> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> {
+    val (state, version) = event.fetchState()
+    return state
+        .computeNewState(event)
+        .pairWith(version)
+        .save()
+}
 
 /**
  * Extension function - Handles the flow of events of type [E]
@@ -37,24 +55,62 @@ suspend fun <S, E> MaterializedView<S, E>.handle(event: E): S = event.fetchState
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <S, E> MaterializedView<S, E>.handle(events: Flow<E>): Flow<S> = events.map { handle(it) }
+fun <S, E, I> I.handle(events: Flow<E>): Flow<S> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> =
+    events.map { handle(it) }
 
 /**
- * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
+ * Extension function - Handles the flow of events of type [E]
+ *
+ * @param events Flow of Events of type [E] to be handled
+ * @return [Flow] of State of type [Pair]<[S], [V]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <S, E, V, I> I.handleOptimistically(events: Flow<E>): Flow<Pair<S, V>> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> =
+    events.map { handleOptimistically(it) }
+
+/**
+ * Extension function - Publishes the event of type [E] to the materialized view
  * @receiver event of type [E]
- * @param materializedView of type  [MaterializedView]<[S], [E]>
+ * @param materializedView of type [ViewStateComputation]<[S], [E]>, [ViewStateRepository]<[E], [S]>
  * @return the stored State of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-suspend fun <S, E> E.publishTo(materializedView: MaterializedView<S, E>): S = materializedView.handle(this)
+suspend fun <S, E, M> E.publishTo(materializedView: M): S where M : ViewStateComputation<S, E>, M : ViewStateRepository<E, S> =
+    materializedView.handle(this)
 
 /**
- * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]>
- * @receiver [Flow] of events of type [E]
- * @param materializedView of type  [MaterializedView]<[S], [E]>
+ * Extension function - Publishes the event of type [E] to the materialized view
+ * @receiver event of type [E]
+ * @param materializedView of type [ViewStateComputation]<[S], [E]>, [ViewStateLockingRepository]<[E], [S], [V]>
  * @return the stored State of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <S, E> Flow<E>.publishTo(materializedView: MaterializedView<S, E>): Flow<S> = materializedView.handle(this)
+suspend fun <S, E, V, M> E.publishOptimisticallyTo(materializedView: M): Pair<S, V> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
+    materializedView.handleOptimistically(this)
+
+/**
+ * Extension function - Publishes the event of type [E] to the materialized view of type
+ * @receiver [Flow] of events of type [E]
+ * @param materializedView of type  [ViewStateComputation]<[S], [E]>, [ViewStateRepository]<[E], [S]>
+ * @return the stored State of type [S]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <S, E, M> Flow<E>.publishTo(materializedView: M): Flow<S> where M : ViewStateComputation<S, E>, M : ViewStateRepository<E, S> =
+    materializedView.handle(this)
+
+/**
+ * Extension function - Publishes the event of type [E] to the materialized view
+ * @receiver [Flow] of events of type [E]
+ * @param materializedView of type [ViewStateComputation]<[S], [E]>, [ViewStateLockingRepository]<[E], [S], [V]>
+ * @return the stored State of type [S]
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <S, E, V, M> Flow<E>.publishOptimisticallyTo(materializedView: M): Flow<Pair<S, V>> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
+    materializedView.handleOptimistically(this)
+
+private fun <S, V> S.pairWith(version: V): Pair<S, V> = Pair(this, version)
