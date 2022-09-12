@@ -1,10 +1,7 @@
 package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.application.examples.numbers.NumberViewRepository
-import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberLockingViewRepository
-import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberViewRepository
-import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberLockingViewRepository
-import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberViewRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.query.*
 import com.fraktalio.fmodel.application.examples.numbers.numberViewRepository
 import com.fraktalio.fmodel.domain.IView
 import com.fraktalio.fmodel.domain.combine
@@ -37,11 +34,23 @@ private suspend fun <S, E, V> IView<S, E>.given(
         viewStateRepository = repository
     ).handleOptimistically(event())
 
+private suspend fun <S, E, EV, SV> IView<S, E>.given(
+    repository: ViewStateLockingDeduplicationRepository<E, S, EV, SV>,
+    event: () -> Pair<E, EV>
+): Pair<S, SV> =
+    materializedLockingDeduplicationView(
+        view = this,
+        viewStateRepository = repository
+    ).handleOptimisticallyWithDeduplication(event())
+
 /**
  * DSL - When
  */
 @Suppress("unused")
 private fun <S, E> IView<S, E>.whenEvent(event: E): E = event
+
+@Suppress("unused")
+private fun <S, E, EV> IView<S, E>.whenEvent(event: Pair<E, EV>): Pair<E, EV> = event
 
 /**
  * DSL - Then
@@ -60,6 +69,9 @@ class MaterializedViewTest : FunSpec({
     val evenNumberViewRepository = evenNumberViewRepository() as EvenNumberViewRepository
     val evenNumberLockingViewRepository = evenNumberLockingViewRepository() as EvenNumberLockingViewRepository
     val numberViewRepository = numberViewRepository() as NumberViewRepository
+    val evenNumberLockingDeduplicationViewRepository =
+        evenNumberLockingDeduplicationViewRepository() as EvenNumberLockingDeduplicationViewRepository
+
 
     test("Materialized view - even number added") {
         with(evenView) {
@@ -77,6 +89,16 @@ class MaterializedViewTest : FunSpec({
 
             given(evenNumberLockingViewRepository) {
                 whenEvent(EvenNumberAdded(Description("2"), NumberValue(2)))
+            } thenStateAndVersion Pair(EvenNumberState(Description("0, 2"), NumberValue(2)), 1)
+        }
+    }
+
+    test("Locking Deduplication Materialized view - even number added") {
+        with(evenView) {
+            evenNumberLockingDeduplicationViewRepository.deleteAll()
+
+            given(evenNumberLockingDeduplicationViewRepository) {
+                whenEvent(Pair(EvenNumberAdded(Description("2"), NumberValue(2)), 1))
             } thenStateAndVersion Pair(EvenNumberState(Description("0, 2"), NumberValue(2)), 1)
         }
     }
