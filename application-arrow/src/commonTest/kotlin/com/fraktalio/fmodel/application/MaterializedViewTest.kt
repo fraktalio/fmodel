@@ -3,7 +3,9 @@ package com.fraktalio.fmodel.application
 import arrow.core.Either
 import arrow.core.continuations.Effect
 import com.fraktalio.fmodel.application.examples.numbers.NumberViewRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberLockingViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberViewRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberLockingViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.numberViewRepository
 import com.fraktalio.fmodel.domain.IView
@@ -29,6 +31,15 @@ private suspend fun <S, E> IView<S, E>.given(repository: ViewStateRepository<E, 
         viewStateRepository = repository
     ).handleWithEffect(event())
 
+private suspend fun <S, E, V> IView<S, E>.given(
+    repository: ViewStateLockingRepository<E, S, V>,
+    event: () -> E
+): Effect<Error, Pair<S, V>> =
+    materializedLockingView(
+        view = this,
+        viewStateRepository = repository
+    ).handleOptimisticallyWithEffect(event())
+
 /**
  * DSL - When
  */
@@ -46,6 +57,15 @@ private suspend infix fun <S> Effect<Error, S>.thenState(expected: S) {
     return state shouldBe expected
 }
 
+private suspend infix fun <S, V> Effect<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
+    val state = when (val result = this.toEither()) {
+        is Either.Right -> result.value
+        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
+    }
+    return state shouldBe expected
+}
+
+
 private suspend fun <S> Effect<Error, S>.thenError() {
     val error = when (val result = this.toEither()) {
         is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value ${result.value}")
@@ -62,6 +82,7 @@ class MaterializedViewTest : FunSpec({
     val oddView = oddNumberView()
     val combinedView = evenView.combine(oddView)
     val evenNumberViewRepository = evenNumberViewRepository() as EvenNumberViewRepository
+    val evenNumberLockingViewRepository = evenNumberLockingViewRepository() as EvenNumberLockingViewRepository
     val numberViewRepository = numberViewRepository() as NumberViewRepository
 
     test("Materialized view - even number added") {
@@ -71,6 +92,16 @@ class MaterializedViewTest : FunSpec({
             given(evenNumberViewRepository) {
                 whenEvent(EvenNumberAdded(Description("2"), NumberValue(2)))
             } thenState EvenNumberState(Description("Initial state, 2"), NumberValue(2))
+        }
+    }
+
+    test("Locking Materialized view - even number added") {
+        with(evenView) {
+            evenNumberLockingViewRepository.deleteAll()
+
+            given(evenNumberLockingViewRepository) {
+                whenEvent(EvenNumberAdded(Description("2"), NumberValue(2)))
+            } thenStateAndVersion Pair(EvenNumberState(Description("0, 2"), NumberValue(2)), 1)
         }
     }
 

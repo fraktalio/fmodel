@@ -17,8 +17,7 @@
 package com.fraktalio.fmodel.application
 
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.*
 
 /**
  * Extension function - Handles the command message of type [C]
@@ -30,38 +29,106 @@ import kotlinx.coroutines.flow.flatMapConcat
  */
 @FlowPreview
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C): Flow<E> =
-    command.fetchEvents().computeNewEvents(command).save()
+    command
+        .fetchEvents()
+        .computeNewEvents(command)
+        .save()
 
 /**
- * Extension function - Handles the flow of command messages of type [C]
+ * Extension function - Handles the command message of type [C]
  *
- * @param commands [Flow] of Command messages of type [C]
+ * @param command Command message of type [C]
  * @return [Flow] of stored Events of type [E]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E> = commands.flatMapConcat { handle(it) }
-
+fun <C, S, E> EventSourcingOrchestratingAggregate<C, S, E>.handle(command: C): Flow<E> =
+    command
+        .fetchEvents()
+        .computeNewEventsByOrchestrating(command) { it.fetchEvents() }
+        .save()
 
 /**
- * Extension function - Publishes the command of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
- * @receiver command of type [C]
- * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
- * @return the [Flow] of stored Events of type [E]
+ * Extension function - Handles the command message of type [C]
+ *
+ * @param command Command message of type [C]
+ * @return [Flow] of stored Events of type [Pair]<[E], [V]>
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)
+fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimistically(command: C): Flow<Pair<E, V>> = flow {
+    val events = command.fetchEvents()
+    emitAll(
+        events.map { it.first }
+            .computeNewEvents(command)
+            .save(events.lastOrNull())
+    )
+}
 
 /**
- * Extension function - Publishes [Flow] of commands of type [C] to the event sourcing aggregate of type  [EventSourcingAggregate]<[C], *, [E]>
- * @receiver [Flow] of commands of type [C]
- * @param aggregate of type [EventSourcingAggregate]<[C], *, [E]>
- * @return the [Flow] of stored Events of type [E]
+ * Extension function - Handles the command message of type [C]
+ *
+ * @param command Command message of type [C]
+ * @return [Flow] of stored Events of type [Pair]<[E], [V]>
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> = aggregate.handle(this)
+fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOptimistically(command: C): Flow<Pair<E, V>> =
+    command
+        .fetchEvents().map { it.first }
+        .computeNewEventsByOrchestrating(command) { it.fetchEvents().map { pair -> pair.first } }
+        .save(latestVersionProvider)
+
+
+@FlowPreview
+fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E> =
+    commands.flatMapConcat { handle(it) }
+
+@FlowPreview
+fun <C, S, E> EventSourcingOrchestratingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E> =
+    commands.flatMapConcat { handle(it) }
+
+@FlowPreview
+fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimistically(commands: Flow<C>): Flow<Pair<E, V>> =
+    commands.flatMapConcat { handleOptimistically(it) }
+
+@FlowPreview
+fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOptimistically(commands: Flow<C>): Flow<Pair<E, V>> =
+    commands.flatMapConcat { handleOptimistically(it) }
+
+
+@FlowPreview
+fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> =
+    aggregate.handle(this)
+
+@FlowPreview
+fun <C, E, V> C.publishOptimisticallyTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
+    aggregate.handleOptimistically(this)
+
+@FlowPreview
+fun <C, E> C.publishTo(aggregate: EventSourcingOrchestratingAggregate<C, *, E>): Flow<E> =
+    aggregate.handle(this)
+
+@FlowPreview
+fun <C, E, V> C.publishOptimisticallyTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
+    aggregate.handleOptimistically(this)
+
+
+@FlowPreview
+fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> =
+    aggregate.handle(this)
+
+@FlowPreview
+fun <C, E, V> Flow<C>.publishOptimisticallyTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
+    aggregate.handleOptimistically(this)
+
+@FlowPreview
+fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingOrchestratingAggregate<C, *, E>): Flow<E> =
+    aggregate.handle(this)
+
+@FlowPreview
+fun <C, E, V> Flow<C>.publishOptimisticallyTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
+    aggregate.handleOptimistically(this)

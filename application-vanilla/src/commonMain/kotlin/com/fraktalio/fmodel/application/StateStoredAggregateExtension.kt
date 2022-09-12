@@ -29,8 +29,26 @@ import kotlinx.coroutines.flow.map
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handle(command: C): S =
+suspend fun <C, S, E, I> I.handle(command: C): S where I : StateComputation<C, S, E>,
+                                                       I : StateRepository<C, S> =
     command.fetchState().computeNewState(command).save()
+
+/**
+ * Extension function - Handles the command message of type [C] to the locking state stored aggregate, optimistically
+ *
+ * @param command Command message of type [C]
+ * @return State of type [Pair]<[S], [V]>, in which [V] is the type of the Version (optimistic locking)
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@FlowPreview
+suspend fun <C, S, E, V, I> I.handleOptimistically(command: C): Pair<S, V> where I : StateComputation<C, S, E>,
+                                                                                 I : StateLockingRepository<C, S, V> {
+    val (state, version) = command.fetchState()
+    return state
+        .computeNewState(command)
+        .save(version)
+}
 
 /**
  * Extension function - Handles the [Flow] of command messages of type [C]
@@ -41,26 +59,72 @@ suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handle(command: C): S =
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-fun <C, S, E> StateStoredAggregate<C, S, E>.handle(commands: Flow<C>): Flow<S> = commands.map { handle(it) }
+fun <C, S, E, I> I.handle(commands: Flow<C>): Flow<S> where I : StateComputation<C, S, E>,
+                                                            I : StateRepository<C, S> =
+    commands.map { handle(it) }
 
 /**
- * Extension function - Publishes the command of type [C] to the state stored aggregate of type  [StateStoredAggregate]<[C], [S], *>
+ * Extension function - Handles the [Flow] of command messages of type [C] to the locking state stored aggregate, optimistically
+ *
+ * @param commands [Flow] of Command messages of type [C]
+ * @return [Flow] of State of type [Pair]<[S], [V]>, in which [V] is the type of the Version (optimistic locking)
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@FlowPreview
+fun <C, S, E, V, I> I.handleOptimistically(commands: Flow<C>): Flow<Pair<S, V>> where I : StateComputation<C, S, E>,
+                                                                                      I : StateLockingRepository<C, S, V> =
+    commands.map { handleOptimistically(it) }
+
+
+/**
+ * Extension function - Publishes the command of type [C] to the state stored aggregate
  * @receiver command of type [C]
- * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
+ * @param aggregate of type [StateComputation]<[C], [S], [E]>, [StateRepository]<[C], [S]>
  * @return the stored State of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-suspend fun <C, S> C.publishTo(aggregate: StateStoredAggregate<C, S, *>): S = aggregate.handle(this)
+suspend fun <C, S, E, A> C.publishTo(aggregate: A): S where A : StateComputation<C, S, E>,
+                                                            A : StateRepository<C, S> =
+    aggregate.handle(this)
 
 /**
- * Extension function - Publishes the command of type [C] to the state stored aggregate of type  [StateStoredAggregate]<[C], [S], *>
+ * Extension function - Publishes the command of type [C] to the locking state stored aggregate, optimistically
+ * @receiver command of type [C]
+ * @param aggregate of type [StateComputation]<[C], [S], [E]>, [StateLockingRepository]<[C], [S] ,[V]>
+ * @return the stored State of type [Pair]<[S], [V]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@FlowPreview
+suspend fun <C, S, E, V, A> C.publishOptimisticallyTo(aggregate: A): Pair<S, V> where A : StateComputation<C, S, E>,
+                                                                                      A : StateLockingRepository<C, S, V> =
+    aggregate.handleOptimistically(this)
+
+/**
+ * Extension function - Publishes the command of type [C] to the state stored aggregate
  * @receiver [Flow] of commands of type [C]
- * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
+ * @param aggregate of type [StateComputation]<[C], [S], [E]>, [StateRepository]<[C], [S]>
  * @return the [Flow] of State of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-fun <C, S> Flow<C>.publishTo(aggregate: StateStoredAggregate<C, S, *>): Flow<S> = aggregate.handle(this)
+fun <C, S, E, A> Flow<C>.publishTo(aggregate: A): Flow<S> where A : StateComputation<C, S, E>,
+                                                                A : StateRepository<C, S> =
+    aggregate.handle(this)
+
+/**
+ * Extension function - Publishes the command of type [C] to the locking state stored aggregate, optimistically
+ * @receiver [Flow] of commands of type [C]
+ * @param aggregate of type [StateComputation]<[C], [S], [E]>, [StateLockingRepository]<[C], [S] ,[V]>
+ * @return the [Flow] of State of type [Pair]<[S], [V]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@FlowPreview
+fun <C, S, E, V, A> Flow<C>.publishOptimisticallyTo(aggregate: A): Flow<Pair<S, V>> where A : StateComputation<C, S, E>,
+                                                                                          A : StateLockingRepository<C, S, V> =
+    aggregate.handleOptimistically(this)

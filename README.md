@@ -265,6 +265,12 @@ fun <C, S, E> stateStoredAggregate(
         IDecider<C, S, E> by decider {}
 ```
 
+*The logic is orchestrated on the application layer. The components/functions are composed in different ways to support variety of requirements.*
+
+![aggregates-application-layer](.assets/aggregates.png)
+
+Check, [application-vanilla](application-vanilla) and [application-arrow](application-arrow) modules/libraries for scenarios that are offered out of the box.  
+
 ## View
 
 `_View`  is a datatype that represents the event handling algorithm, responsible for translating the events into
@@ -354,6 +360,12 @@ fun <S, E> materializedView(
     object : MaterializedView<S, E>, ViewStateRepository<E, S> by viewStateRepository, IView<S, E> by view {}
 ```
 
+*The logic is orchestrated on the application layer. The components/functions are composed in different ways to support variety of requirements.*
+
+![materialized-views-application-layer](.assets/mviews.png)
+
+Check, [application-vanilla](application-vanilla) and [application-arrow](application-arrow) modules/libraries for scenarios that are offered out of the box.
+
 ## Saga
 
 `_Saga` is a datatype that represents the central point of control, deciding what to execute next (`A`). It is
@@ -400,6 +412,7 @@ Notice that `Saga` implements an interface `ISaga` to communicate the contract.
 - with identity element `Saga<Nothing?, Nothing?>`
 
 We can now construct `Saga Manager` by using this `saga`.
+
 
 ### Saga Manager
 
