@@ -72,6 +72,7 @@ interface StateLockingRepository<C, S, V> {
      * You can update/save the item/state, but only if the `version` number in the storage has not changed.
      *
      * @receiver State/[S]
+     * @param currentStateVersion The current version of the state
      * @return newly saved State of type [Pair]<[S], [V]>
      */
     suspend fun S.save(currentStateVersion: V?): Pair<S, V>
