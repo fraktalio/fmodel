@@ -17,7 +17,34 @@
 package com.fraktalio.fmodel.application
 
 /**
+ * State repository interface.
+ *
+ * @param C Command
+ * @param S State
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface StateRepository<C, S> {
+    /**
+     * Fetch state
+     *
+     * @receiver Command of type [C]
+     * @return the State of type [S] or null
+     */
+    suspend fun C.fetchState(): S?
+
+    /**
+     * Save state
+     *
+     * @receiver State of type [S]
+     * @return newly saved State of type [S]
+     */
+    suspend fun S.save(): S
+}
+
+/**
  * State Locking repository interface.
+ *
  * Explicitly enables `optimistic locking` mechanism.
  *
  * If you fetch an item/state from a storage, the application records the `version` number of that item.
@@ -48,30 +75,4 @@ interface StateLockingRepository<C, S, V> {
      * @return newly saved State of type [Pair]<[S], [V]>
      */
     suspend fun S.save(currentStateVersion: V?): Pair<S, V>
-}
-
-/**
- * State repository interface.
- *
- * @param C Command
- * @param S State
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-interface StateRepository<C, S> {
-    /**
-     * Fetch state
-     *
-     * @receiver Command of type [C]
-     * @return the State of type [S] or null
-     */
-    suspend fun C.fetchState(): S?
-
-    /**
-     * Save state
-     *
-     * @receiver State of type [S]
-     * @return newly saved State of type [S]
-     */
-    suspend fun S.save(): S
 }

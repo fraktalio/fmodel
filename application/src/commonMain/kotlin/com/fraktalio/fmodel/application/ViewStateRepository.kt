@@ -45,6 +45,12 @@ interface ViewStateRepository<E, S> {
 /**
  * View state locking repository interface
  *
+ * Explicitly enables `optimistic locking` mechanism.
+ *
+ * If you fetch an item/state from a storage, the application records the `version` number of that item.
+ * You can update/save the item/state, but only if the `version` number in the storage has not changed.
+ * If there is a `version` mismatch, it means that someone else has modified the item/state before you did.
+ *
  * @param E Event
  * @param S State
  * @param V Version
@@ -66,6 +72,7 @@ interface ViewStateLockingRepository<E, S, V> {
      * You can update/save the item/state, but only if the `version` number in the storage has not changed.
      *
      * @receiver State/[S] to be saved
+     * @param currentStateVersion Current State version of type [V]?
      * @return newly saved State of type [Pair]<[S], [V]>
      */
     suspend fun S.save(currentStateVersion: V?): Pair<S, V>
@@ -73,6 +80,15 @@ interface ViewStateLockingRepository<E, S, V> {
 
 /**
  * View state locking deduplication repository interface
+ *
+ * Explicitly enables `optimistic locking` mechanism.
+ *
+ * If you fetch an item/state from a storage, the application records the `version` number of that item.
+ * You can update/save the item/state, but only if the `version` number in the storage has not changed.
+ * If there is a `version` mismatch, it means that someone else has modified the item/state before you did.
+ *
+ * Use Event Version to implement `deduplication` and `optimistic locking` together.
+ * 'At Least Once` delivery guaranty is a reality in distributed systems, and you can consider `deduplication` or `idempotency`
  *
  * @param E Event
  * @param S State
@@ -93,9 +109,13 @@ interface ViewStateLockingDeduplicationRepository<E, S, EV, SV> {
     /**
      * Save state and version
      *
-     * You can update/save the item/state, but only if the `version` number in the storage has not changed.
+     * You can update/save the item/state,
+     * but only if the `version` number in the storage has not changed,
+     * or you have not seen the `eventVersion` so far.
      *
      * @receiver State/[S] to be saved
+     * @param eventVersion Event version
+     * @param currentStateVersion Current State version of type [SV]?
      * @return newly saved State of type [Pair]<[S], [SV]>
      */
     suspend fun S.save(eventVersion: EV, currentStateVersion: SV?): Pair<S, SV>
