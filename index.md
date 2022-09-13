@@ -285,6 +285,9 @@ fun <C, S, E> stateStoredAggregate(
         IDecider<C, S, E> by decider {}
 ```
 
+*The logic is orchestrated on the application layer. The components/functions are composed in different ways to support variety of requirements.*
+
+![aggregates-application-layer](https://github.com/fraktalio/fmodel/raw/main/.assets/aggregates.png)
 
 ## View
 
@@ -376,6 +379,10 @@ fun <S, E> materializedView(
 ): MaterializedView<S, E> =
     object : MaterializedView<S, E>, ViewStateRepository<E, S> by viewStateRepository, IView<S, E> by view {}
 ```
+
+*The logic is orchestrated on the application layer. The components/functions are composed in different ways to support variety of requirements.*
+
+![materialized-views-application-layer](https://github.com/fraktalio/fmodel/raw/main/.assets/mviews.png)
 
 ## Saga
 
