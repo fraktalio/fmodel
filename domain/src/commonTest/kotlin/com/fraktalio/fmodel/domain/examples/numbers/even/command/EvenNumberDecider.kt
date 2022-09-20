@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
+ * Copyright (c) 2022 Fraktalio D.O.O. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,8 @@ fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumber
         decide = { c, s ->
             if (c != null && c.value.get > 1000) flow<EvenNumberEvent> { throw UnsupportedOperationException("Sorry") } else
                 when (c) {
-                    is AddEvenNumber -> flowOf(EvenNumberAdded(c.description, c.value + s.value))
-                    is SubtractEvenNumber -> flowOf(EvenNumberSubtracted(c.description, c.value - s.value))
+                    is AddEvenNumber -> flowOf(EvenNumberAdded(c.description, s.value + c.value))
+                    is SubtractEvenNumber -> flowOf(EvenNumberSubtracted(c.description, s.value - c.value))
                     null -> emptyFlow()
                 }
         },

@@ -1,7 +1,9 @@
 package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.application.examples.numbers.NumberStateRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberLockingStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberStateRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberLockingStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.numberStateRepository
 import com.fraktalio.fmodel.domain.IDecider
@@ -28,6 +30,12 @@ private suspend fun <C, S, E> IDecider<C, S, E>.given(repository: StateRepositor
         stateRepository = repository
     ).handle(command())
 
+@FlowPreview
+private suspend fun <C, S, E, V> IDecider<C, S, E>.given(repository: StateLockingRepository<C, S, V>, command: () -> C): Pair<S, V> =
+    stateStoredLockingAggregate(
+        decider = this,
+        stateRepository = repository
+    ).handleOptimistically(command())
 /**
  * DSL - When
  */
@@ -38,7 +46,7 @@ private fun <C, S, E> IDecider<C, S, E>.whenCommand(command: C): C = command
  * DSL - Then
  */
 private infix fun <S> S.thenState(expected: S) = shouldBe(expected)
-
+private infix fun <S, V> Pair<S, V>.thenState(expected: Pair<S, V>) = shouldBe(expected)
 /**
  * State-stored aggregate test
  */
@@ -48,6 +56,7 @@ class StateStoredAggregateTest : FunSpec({
     val oddDecider = oddNumberDecider()
     val combinedDecider = evenDecider.combine(oddDecider)
     val evenNumberStateRepository = evenNumberStateRepository() as EvenNumberStateRepository
+    val evenNumberLockingStateRepository = evenNumberLockingStateRepository() as EvenNumberLockingStateRepository
     val numberStateRepository = numberStateRepository() as NumberStateRepository
 
     test("State-stored aggregate - add even number") {
@@ -57,6 +66,15 @@ class StateStoredAggregateTest : FunSpec({
             given(evenNumberStateRepository) {
                 whenCommand(AddEvenNumber(Description("2"), NumberValue(2)))
             } thenState EvenNumberState(Description("2"), NumberValue(2))
+        }
+    }
+    test("State-stored locking aggregate - add even number") {
+        with(evenDecider) {
+            evenNumberLockingStateRepository.deleteAll()
+
+            given(evenNumberLockingStateRepository) {
+                whenCommand(AddEvenNumber(Description("2"), NumberValue(2)))
+            } thenState Pair(EvenNumberState(Description("2"), NumberValue(2)), 1)
         }
     }
 

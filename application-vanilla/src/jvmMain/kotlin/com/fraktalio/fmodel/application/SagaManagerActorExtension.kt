@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
+ * Copyright (c) 2022 Fraktalio D.O.O. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,19 +29,22 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlin.contracts.ExperimentalContracts
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.math.absoluteValue
 
 /**
  * Extension function - Handles the the [Flow] of action results of type [AR] by concurrently distributing the load across finite number of actors/handlers
  *
  * @param actionResults Action Results represent the outcome of some action you want to handle in some way
- * @param numberOfActors total number of actors/workers available for distributing the load
+ * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
  * @param actorsCapacity capacity of the actors channel's buffer
  * @param actorsStart actors coroutine start option
  * @param actorsContext additional to [CoroutineScope.coroutineContext] context of the actor coroutines.
+ * @param partitionKey a function that calculates the partition key/routing key of the Action Result - Action Results with the same partition key will be handled with the same 'actor' to keep the ordering
  * @return [Flow] of Actions of type [A]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ObsoleteCoroutinesApi
 @ExperimentalContracts
 @FlowPreview
 fun <AR, A> SagaManager<AR, A>.handleConcurrently(
@@ -62,8 +65,7 @@ fun <AR, A> SagaManager<AR, A>.handleConcurrently(
             }
         }
         .collect {
-            val partitionKeyVal = partitionKey(it)
-            val partition = (if (partitionKeyVal < 0) partitionKeyVal * (-1) else partitionKeyVal) % numberOfActors
+            val partition = partitionKey(it).absoluteValue % numberOfActors.coerceAtLeast(1)
             actors[partition].send(it)
         }
 }
@@ -72,14 +74,16 @@ fun <AR, A> SagaManager<AR, A>.handleConcurrently(
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]> by concurrently distributing the load across finite number of actors/handlers
  * @receiver [Flow] of action results of type [AR]
  * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @param numberOfActors total number of actors/workers available for distributing the load
+ * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
  * @param actorsCapacity capacity of the actors channel's buffer
  * @param actorsStart actors coroutine start option
  * @param actorsContext additional to [CoroutineScope.coroutineContext] context of the actor coroutines.
+ * @param partitionKey a function that calculates the partition key/routing key of the Action Result - Action Results with the same partition key will be handled with the same 'actor' to keep the ordering
  * @return the [Flow] of published Actions of type [A]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ObsoleteCoroutinesApi
 @ExperimentalContracts
 @FlowPreview
 fun <AR, A> Flow<AR>.publishConcurrentlyTo(

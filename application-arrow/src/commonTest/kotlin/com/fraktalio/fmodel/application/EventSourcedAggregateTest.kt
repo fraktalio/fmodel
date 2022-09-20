@@ -3,8 +3,11 @@ package com.fraktalio.fmodel.application
 import arrow.core.Either
 import arrow.core.Either.Left
 import arrow.core.Either.Right
+import arrow.core.continuations.Effect
 import com.fraktalio.fmodel.application.examples.numbers.NumberRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberLockingRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberLockingRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberRepository
 import com.fraktalio.fmodel.application.examples.numbers.numberRepository
 import com.fraktalio.fmodel.domain.IDecider
@@ -19,6 +22,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 
 /**
@@ -28,11 +32,21 @@ import kotlinx.coroutines.flow.toList
 private fun <C, S, E> IDecider<C, S, E>.given(
     repository: EventRepository<C, E>,
     command: () -> C
-): Flow<Either<Error, E>> =
+): Flow<Effect<Error, E>> =
     eventSourcingAggregate(
         decider = this,
         eventRepository = repository
-    ).handleEither(command())
+    ).handleWithEffect(command())
+
+@FlowPreview
+private fun <C, S, E, V> IDecider<C, S, E>.given(
+    repository: EventLockingRepository<C, E, V>,
+    command: () -> C
+): Flow<Effect<Error, Pair<E, V>>> =
+    eventSourcingLockingAggregate(
+        decider = this,
+        eventRepository = repository
+    ).handleOptimisticallyWithEffect(command())
 
 /**
  * DSL - When
@@ -43,8 +57,11 @@ private fun <C, S, E> IDecider<C, S, E>.whenCommand(command: C): C = command
 /**
  * DSL - Then
  */
-private suspend infix fun <E> Flow<Either<Error, E>>.thenEvents(expected: Iterable<Either<Error, E>>) =
-    toList() shouldContainExactly (expected)
+private suspend infix fun <E> Flow<Effect<Error, E>>.thenEvents(expected: Iterable<Either<Error, E>>) =
+    map { it.toEither() }.toList() shouldContainExactly (expected)
+
+private suspend infix fun <E, V> Flow<Effect<Error, Pair<E, V>>>.thenEventPairs(expected: Iterable<Either<Error, Pair<E, V>>>) =
+    map { it.toEither() }.toList() shouldContainExactly (expected)
 
 /**
  * Event sourced aggregate test
@@ -55,6 +72,7 @@ class EventSourcedAggregateTest : FunSpec({
     val oddDecider = oddNumberDecider()
     val combinedDecider = evenDecider.combine(oddDecider)
     val evenNumberRepository = evenNumberRepository() as EvenNumberRepository
+    val evenNumberLockingRepository = evenNumberLockingRepository() as EvenNumberLockingRepository
     val numberRepository = numberRepository() as NumberRepository
 
     test("Event-sourced aggregate - add even number") {
@@ -64,6 +82,20 @@ class EventSourcedAggregateTest : FunSpec({
             given(evenNumberRepository) {
                 whenCommand(AddEvenNumber(Description("2"), NumberValue(2)))
             } thenEvents listOf(Right(EvenNumberAdded(Description("2"), NumberValue(2))))
+        }
+    }
+
+    test("Event-sourced locking aggregate - add even number") {
+        with(evenDecider) {
+            evenNumberLockingRepository.deleteAll()
+
+            given(evenNumberLockingRepository) {
+                whenCommand(AddEvenNumber(Description("2"), NumberValue(2)))
+            } thenEventPairs listOf(
+                Right(
+                    Pair(EvenNumberAdded(Description("2"), NumberValue(2)), 1)
+                )
+            )
         }
     }
 
@@ -88,6 +120,5 @@ class EventSourcedAggregateTest : FunSpec({
             } thenEvents listOf(Right(EvenNumberAdded(Description("2"), NumberValue(2))))
         }
     }
-
 
 })

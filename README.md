@@ -4,6 +4,8 @@ When you’re developing an information system to automate the activities of the
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
 the business — together, they constitute the model of the domain.
 
+![event-modeling](.assets/event-modeling.png)
+
 ## Multiplatform
 
 Support for multiplatform programming is one of Kotlin’s key benefits. It reduces time spent writing and maintaining the
@@ -199,8 +201,10 @@ Notice that `Decider` implements an interface `IDecider` to communicate the cont
 
 - with identity element `Decider<Nothing?, Unit, Nothing?>`
 
-> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
-> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
+> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an
+> identity/empty element.
+> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
+> in parallel.
 
 
 We can now construct event-sourcing or/and state-storing aggregate by using the same `decider`.
@@ -261,6 +265,12 @@ fun <C, S, E> stateStoredAggregate(
         IDecider<C, S, E> by decider {}
 ```
 
+*The logic is orchestrated on the application layer. The components/functions are composed in different ways to support variety of requirements.*
+
+![aggregates-application-layer](.assets/aggregates.png)
+
+Check, [application-vanilla](application-vanilla) and [application-arrow](application-arrow) modules/libraries for scenarios that are offered out of the box.  
+
 ## View
 
 `_View`  is a datatype that represents the event handling algorithm, responsible for translating the events into
@@ -318,8 +328,10 @@ Notice that `View` implements an interface `IView` to communicate the contract.
 - `View<in Si, out So, in E?>.combine(y: View<in Si2, out So2, in E2?>): View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER>`
 - with identity element `View<Unit, Nothing?>`
 
-> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
-> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
+> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an
+> identity/empty element.
+> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
+> in parallel.
 
 We can now construct `materialized` view by using this `view`.
 
@@ -347,6 +359,12 @@ fun <S, E> materializedView(
 ): MaterializedView<S, E> =
     object : MaterializedView<S, E>, ViewStateRepository<E, S> by viewStateRepository, IView<S, E> by view {}
 ```
+
+*The logic is orchestrated on the application layer. The components/functions are composed in different ways to support variety of requirements.*
+
+![materialized-views-application-layer](.assets/mviews.png)
+
+Check, [application-vanilla](application-vanilla) and [application-arrow](application-arrow) modules/libraries for scenarios that are offered out of the box.
 
 ## Saga
 
@@ -394,6 +412,7 @@ Notice that `Saga` implements an interface `ISaga` to communicate the contract.
 - with identity element `Saga<Nothing?, Nothing?>`
 
 We can now construct `Saga Manager` by using this `saga`.
+
 
 ### Saga Manager
 
@@ -446,7 +465,8 @@ private fun <C, E> CoroutineScope.commandActor(
 }
 ```
 
-> [Actors](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/actor.html) are marked as @ObsoleteCoroutinesApi by Kotlin at the moment.
+> [Actors](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/actor.html)
+> are marked as @ObsoleteCoroutinesApi by Kotlin at the moment.
 
 ## Kotlin
 
@@ -464,50 +484,32 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>3.0.0</version>
+    <version>3.2.0</version>
  </dependency>
 
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-vanilla</artifactId>
-    <version>3.0.0</version>
+    <version>3.2.0</version>
  </dependency>
  
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-arrow</artifactId>
-    <version>3.0.0</version>
+    <version>3.2.0</version>
  </dependency>
 ```
 
 ### Examples
 
-Browse the [tests](domain/src/commonTest/kotlin/com/fraktalio/fmodel/domain/DeciderTest.kt)
-
 ![decider demo implementation](.assets/decider-impl.png)
 
 ![decider demo test](.assets/decider-test.png)
 
-- Envision how information system will look like and behave like by modeling the flow of information
-    - [event modeling](https://eventmodeling.org/posts/what-is-event-modeling/)
-- The result is a blueprint of the overall solution
-
-![event-modeling](.assets/event-modeling.png)
-
-- Translate the blueprint into the [source code](https://github.com/fraktalio/fmodel-demos)
-
-**Valuable resources:**
-
-- [The Blog - Domain modeling](https://fraktalio.com/blog/)
-- [The Demo Source Code](https://github.com/fraktalio/fmodel-demos)
-
-## Deploy to Maven Central
-
-### Manually
-
-```shell
-mvn clean deploy -Dgpg.passphrase="YOUR_PASSPHRASE" -Pci-cd
-```
+- Browse the [tests](domain/src/commonTest/kotlin/com/fraktalio/fmodel/domain/DeciderTest.kt)
+- Learn by example on the [playground](https://fraktalio.com/blog/playground)
+- Read the [blog](https://fraktalio.com/blog/)
+- Check the [demos](https://github.com/fraktalio/fmodel-demos)
 
 ## References and further reading
 

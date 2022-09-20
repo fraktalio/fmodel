@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
+ * Copyright (c) 2022 Fraktalio D.O.O. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import kotlinx.coroutines.flow.map
 
 /**
  * Event repository interface
- *
- * Used by [EventSourcingAggregate]
  *
  * @param C Command
  * @param E Event
@@ -54,4 +52,79 @@ interface EventRepository<C, E> {
      * @return newly saved [Flow] of Events of type [E]
      */
     fun Flow<E>.save(): Flow<E> = map { it.save() }
+}
+
+/**
+ * A type alias for the version provider/function.
+ * It provides the Pair of (Event, Version) of the last Event in the stream.
+ */
+typealias LatestVersionProvider <E, V> = (E) -> Pair<E, V>
+
+/**
+ * Event locking repository interface.
+ * Explicitly enables `optimistic locking` mechanism.
+ *
+ * If you fetch an event from a storage, the application records the `version` number of that event.
+ * You can update/save the event, but only if the `version` number in the storage has not changed.
+ * If there is a `version` mismatch, it means that someone else has added another event before you did.
+ *
+ *
+ * @param C Command
+ * @param E Event
+ * @param V Version
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+
+interface EventLockingRepository<C, E, V> {
+    /**
+     * Fetch events
+     *
+     * @receiver Command of type [C]
+     *
+     * @return [Flow] of Events of type [Pair]<[E], [V]>
+     */
+    fun C.fetchEvents(): Flow<Pair<E, V>>
+
+    /**
+     * The latest event stream version provider
+     */
+    val latestVersionProvider: LatestVersionProvider<E, V>
+
+
+    /**
+     * Save event
+     *
+     * @param latestVersionProvider The latest event stream version provider
+     * @receiver Event of type [E]
+     * @return newly saved Event of type [Pair]<[E], [V]>
+     */
+    suspend fun E.save(latestVersionProvider: LatestVersionProvider<E, V>): Pair<E, V> =
+        save(latestVersionProvider(this))
+
+    /**
+     * Save event
+     *
+     * @param latestVersion The latest event stream version
+     * @receiver Event of type [E]
+     * @return newly saved Event of type [Pair]<[E], [V]>
+     */
+    suspend fun E.save(latestVersion: Pair<E, V>?): Pair<E, V>
+
+    /**
+     * Save events
+     *
+     * @param latestVersionProvider The latest event stream version provider / function that provides the latest known event stream version
+     * @receiver [Flow] of Events of type [E]
+     * @return newly saved [Flow] of Events of type [Pair]<[E], [V]>
+     */
+    fun Flow<E>.save(latestVersionProvider: LatestVersionProvider<E, V>): Flow<Pair<E, V>>
+
+    /** Save events
+     *
+     * @param latestVersion The latest known event stream version
+     * @receiver [Flow] of Events of type [E]
+     * @return newly saved [Flow] of Events of type [Pair]<[E], [V]>
+     */
+    fun Flow<E>.save(latestVersion: Pair<E, V>?): Flow<Pair<E, V>>
 }

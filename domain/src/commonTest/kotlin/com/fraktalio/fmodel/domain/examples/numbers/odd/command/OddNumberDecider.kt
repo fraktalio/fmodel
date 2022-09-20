@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
+ * Copyright (c) 2022 Fraktalio D.O.O. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEven
         initialState = OddNumberState(Description("Initial state"), NumberValue(0)),
         decide = { c, s ->
             when (c) {
-                is AddOddNumber -> flowOf(OddNumberAdded(c.description, c.value + s.value))
-                is SubtractOddNumber -> flowOf(OddNumberSubtracted(c.description, c.value + s.value))
+                is AddOddNumber -> flowOf(OddNumberAdded(c.description, s.value + c.value))
+                is SubtractOddNumber -> flowOf(OddNumberSubtracted(c.description, s.value - c.value))
                 null -> emptyFlow()
             }
         },

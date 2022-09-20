@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
+ * Copyright (c) 2022 Fraktalio D.O.O. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ data class _Saga<in AR, out A>(
  * @return new Saga of type `[_Saga]<[AR_SUPER], [A_SUPER]>`
  */
 @FlowPreview
-inline fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> _Saga<AR?, A>.combine(
+inline infix fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> _Saga<AR?, A>.combine(
     y: _Saga<AR2?, A2>
 ): _Saga<AR_SUPER, A_SUPER> {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
+ * Copyright (c) 2022 Fraktalio D.O.O. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ fun numberSaga() = Saga<NumberEvent, NumberCommand>(
  * @return even number Saga instance
  */
 fun evenNumberSaga() = Saga<NumberEvent.EvenNumberEvent?, NumberCommand.OddNumberCommand>(
-    react = { numberEvent -> emptyFlow() }
+    react = { emptyFlow() }
 )
 
 /**

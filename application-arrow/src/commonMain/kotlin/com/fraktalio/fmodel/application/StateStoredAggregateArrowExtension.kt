@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
+ * Copyright (c) 2022 Fraktalio D.O.O. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.Either
-import arrow.core.Either.Companion.catch
-import arrow.core.Either.Left
-import arrow.core.computations.either
+import arrow.core.continuations.Effect
+import arrow.core.continuations.effect
+import arrow.core.nonFatalOrThrow
 import com.fraktalio.fmodel.application.Error.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -30,89 +29,211 @@ import kotlinx.coroutines.flow.map
  * Extension function - Handles the command message of type [C]
  *
  * @param command Command message of type [C]
- * @return Either [Error] or State of type [S]
+ * @return [Effect] (either [Error] or State of type [S])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-suspend fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(command: C): Either<Error, S> {
+suspend fun <C, S, E, I> I.handleWithEffect(command: C): Effect<Error, S> where I : StateComputation<C, S, E>,
+                                                                                I : StateRepository<C, S> {
     /**
      * Inner function - Computes new State based on the previous State and the [command] or fails.
      *
      * @param command of type [C]
-     * @return [Either] the newly computed state of type [S] or [Error]
+     * @return [Effect] (either the newly computed state of type [S] or [Error])
      */
-    suspend fun S?.eitherComputeNewStateOrFail(command: C): Either<Error, S> =
-        catch {
-            computeNewState(command)
-        }.mapLeft { throwable ->
-            CalculatingNewStateFailed(this, command, throwable)
+    suspend fun S?.computeNewStateWithEffect(command: C): Effect<Error, S> =
+        effect {
+            try {
+                computeNewState(command)
+            } catch (t: Throwable) {
+                shift(CalculatingNewStateFailed(this@computeNewStateWithEffect, command, t.nonFatalOrThrow()))
+            }
         }
 
     /**
      * Inner function - Fetch state - either version
      *
      * @receiver Command of type [C]
-     * @return [Either] [Error] or the State of type [S]?
+     * @return [Effect] (either [Error] or the State of type [S]?)
      */
-    suspend fun C.eitherFetchStateOrFail(): Either<FetchingStateFailed<C>, S?> =
-        catch {
-            fetchState()
-        }.mapLeft { throwable -> FetchingStateFailed(this, throwable) }
+    suspend fun C.fetchStateWithEffect(): Effect<Error, S?> =
+        effect {
+            try {
+                fetchState()
+            } catch (t: Throwable) {
+                shift(FetchingStateFailed(this@fetchStateWithEffect, t.nonFatalOrThrow()))
+            }
+        }
 
     /**
      * Inner function - Save state - either version
      *
      * @receiver State of type [S]
-     * @return [Either] [Error] or the newly saved State of type [S]
+     * @return [Effect] (either [Error] or the newly saved State of type [S])
      */
-    suspend fun S.eitherSaveOrFail(): Either<StoringStateFailed<S>, S> =
-        catch {
-            save()
-        }.mapLeft { throwable -> StoringStateFailed(this, throwable) }
+    suspend fun S.saveWithEffect(): Effect<Error, S> =
+        effect {
+            try {
+                save()
+            } catch (t: Throwable) {
+                shift(StoringStateFailed(this@saveWithEffect, t.nonFatalOrThrow()))
+            }
+        }
 
-    // Arrow provides a Monad instance for Either. Except for the types signatures, our program remains unchanged when we compute over Either. All values on the left side assume to be Right biased and, whenever a Left value is found, the computation short-circuits, producing a result that is compatible with the function type signature.
-    return either {
-        command.eitherFetchStateOrFail().bind()
-            .eitherComputeNewStateOrFail(command).bind()
-            .eitherSaveOrFail().bind()
+    return effect {
+        command
+            .fetchStateWithEffect().bind()
+            .computeNewStateWithEffect(command).bind()
+            .saveWithEffect().bind()
     }
 }
+
+/**
+ * Extension function - Handles the command message of type [C] to the locking state stored aggregate, optimistically
+ *
+ * @param command Command message of type [C]
+ * @return [Effect] (either [Error] or State of type [Pair]<[S], [V]>), in which [V] represents Version
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@FlowPreview
+suspend fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(command: C): Effect<Error, Pair<S, V>> where I : StateComputation<C, S, E>,
+                                                                                                          I : StateLockingRepository<C, S, V> {
+    /**
+     * Inner function - Computes new State based on the previous State and the [command] or fails.
+     *
+     * @param command of type [C]
+     * @return [Effect] (either the newly computed state of type [S] or [Error])
+     */
+    suspend fun S?.computeNewStateWithEffect(command: C): Effect<Error, S> =
+        effect {
+            try {
+                computeNewState(command)
+            } catch (t: Throwable) {
+                shift(CalculatingNewStateFailed(this@computeNewStateWithEffect, command, t.nonFatalOrThrow()))
+            }
+        }
+
+    /**
+     * Inner function - Fetch state - either version
+     *
+     * @receiver Command of type [C]
+     * @return [Effect] (either [Error] or the State of type [S]?)
+     */
+    suspend fun C.fetchStateWithEffect(): Effect<Error, Pair<S?, V?>> =
+        effect {
+            try {
+                fetchState()
+            } catch (t: Throwable) {
+                shift(FetchingStateFailed(this@fetchStateWithEffect, t.nonFatalOrThrow()))
+            }
+        }
+
+    /**
+     * Inner function - Save state - either version
+     *
+     * @receiver State of type [S]
+     * @return [Effect] (either [Error] or the newly saved State of type [S])
+     */
+    suspend fun S.saveWithEffect(currentStateVersion: V?): Effect<Error, Pair<S, V>> =
+        effect {
+            try {
+                save(currentStateVersion)
+            } catch (t: Throwable) {
+                shift(StoringStateFailed(this@saveWithEffect, t.nonFatalOrThrow()))
+            }
+        }
+
+    return effect {
+        val (state, version) = command.fetchStateWithEffect().bind()
+        state
+            .computeNewStateWithEffect(command).bind()
+            .saveWithEffect(version).bind()
+    }
+}
+
 
 /**
  * Extension function - Handles the [Flow] of command messages of type [C]
  *
  * @param commands [Flow] of Command messages of type [C]
- * @return [Flow] of [Either] [Error] or State of type [S]
+ * @return [Flow] of [Effect] (either [Error] or State of type [S])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-fun <C, S, E> StateStoredAggregate<C, S, E>.handleEither(commands: Flow<C>): Flow<Either<Error, S>> =
+fun <C, S, E, I> I.handleWithEffect(commands: Flow<C>): Flow<Effect<Error, S>> where I : StateComputation<C, S, E>,
+                                                                                     I : StateRepository<C, S> =
     commands
-        .map { handleEither(it) }
-        .catch { emit(Left(CommandPublishingFailed(it))) }
+        .map { handleWithEffect(it) }
+        .catch { emit(effect { shift(CommandPublishingFailed(it)) }) }
 
 /**
- * Extension function - Publishes the command of type [C] to the state stored aggregate of type  [StateStoredAggregate]<[C], [S], *>
+ * Extension function - Handles the [Flow] of command messages of type [C] to the locking state stored aggregate, optimistically
+ *
+ * @param commands [Flow] of Command messages of type [C]
+ * @return [Flow] of [Effect] (either [Error] or State of type [Pair]<[S], [V]>)
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@FlowPreview
+fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(commands: Flow<C>): Flow<Effect<Error, Pair<S, V>>> where I : StateComputation<C, S, E>,
+                                                                                                               I : StateLockingRepository<C, S, V> =
+    commands
+        .map { handleOptimisticallyWithEffect(it) }
+        .catch { emit(effect { shift(CommandPublishingFailed(it)) }) }
+
+/**
+ * Extension function - Publishes the command of type [C] to the state stored aggregate
  * @receiver command of type [C]
- * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
- * @return [Either] [Error] or successfully stored State of type [S]
+ * @param aggregate of type [StateComputation]<[C], [S], [E]>, [StateRepository]<[C], [S]>
+ * @return [Effect] (either [Error] or successfully stored State of type [S])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-suspend fun <C, S> C.publishEitherTo(aggregate: StateStoredAggregate<C, S, *>): Either<Error, S> =
-    aggregate.handleEither(this)
+suspend fun <C, S, E, A> C.publishWithEffect(aggregate: A): Effect<Error, S> where A : StateComputation<C, S, E>,
+                                                                                   A : StateRepository<C, S> =
+    aggregate.handleWithEffect(this)
 
 /**
- * Extension function - Publishes the command of type [C] to the state stored aggregate of type  [StateStoredAggregate]<[C], [S], *>
- * @receiver [Flow] of commands of type [C]
- * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
- * @return the [Flow] of [Either] [Error] or successfully  stored State of type [S]
+ * Extension function - Publishes the command of type [C] to the locking state stored aggregate, optimistically
+ * @receiver command of type [C]
+ * @param aggregate of type [StateComputation]<[C], [S], [E]>, [StateLockingRepository]<[C], [S], [V]>
+ * @return [Effect] (either [Error] or successfully stored State of type [Pair]<[S], [V]>)
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-fun <C, S> Flow<C>.publishEitherTo(aggregate: StateStoredAggregate<C, S, *>): Flow<Either<Error, S>> =
-    aggregate.handleEither(this)
+suspend fun <C, S, E, V, A> C.publishOptimisticallyWithEffect(aggregate: A): Effect<Error, Pair<S, V>> where A : StateComputation<C, S, E>,
+                                                                                                             A : StateLockingRepository<C, S, V> =
+    aggregate.handleOptimisticallyWithEffect(this)
+
+/**
+ * Extension function - Publishes the command of type [C] to the state stored aggregate
+ * @receiver [Flow] of commands of type [C]
+ * @param aggregate of type [StateComputation]<[C], [S], [E]>, [StateRepository]<[C], [S]>
+ * @return the [Flow] of [Effect] (either [Error] or successfully  stored State of type [S])
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@FlowPreview
+fun <C, S, E, A> Flow<C>.publishWithEffect(aggregate: A): Flow<Effect<Error, S>> where A : StateComputation<C, S, E>,
+                                                                                       A : StateRepository<C, S> =
+    aggregate.handleWithEffect(this)
+
+/**
+ * Extension function - Publishes the command of type [C] to the locking state stored aggregate, optimistically
+ * @receiver [Flow] of commands of type [C]
+ * @param aggregate of type [StateComputation]<[C], [S], [E]>, [StateLockingRepository]<[C], [S], [V]>
+ * @return the [Flow] of [Effect] (either [Error] or successfully  stored State of type [Pair]<[S], [V]>)
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@FlowPreview
+fun <C, S, E, V, A> Flow<C>.publishOptimisticallyWithEffect(aggregate: A): Flow<Effect<Error, Pair<S, V>>> where A : StateComputation<C, S, E>,
+                                                                                                                 A : StateLockingRepository<C, S, V> =
+    aggregate.handleOptimisticallyWithEffect(this)
+
+private fun <S, V> S.pairWith(version: V): Pair<S, V> = Pair(this, version)

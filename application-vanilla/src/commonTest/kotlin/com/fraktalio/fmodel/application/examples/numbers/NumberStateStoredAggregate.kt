@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
+ * Copyright (c) 2022 Fraktalio D.O.O. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberC
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
+import kotlinx.coroutines.FlowPreview
 
 
 /**
@@ -40,6 +41,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
  * @param repository the state-stored repository for all (even and odd) numbers
  * @return the state-stored aggregate instance for all (even and odd) numbers
  */
+@OptIn(FlowPreview::class)
 fun numberStateStoredAggregate(
     evenNumberDecider: Decider<EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?>,
     oddNumberDecider: Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?>,

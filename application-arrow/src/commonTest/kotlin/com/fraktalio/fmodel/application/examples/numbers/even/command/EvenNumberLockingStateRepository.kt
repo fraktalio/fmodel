@@ -16,7 +16,7 @@
 
 package com.fraktalio.fmodel.application.examples.numbers.even.command
 
-import com.fraktalio.fmodel.application.StateRepository
+import com.fraktalio.fmodel.application.StateLockingRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
@@ -25,34 +25,35 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 /**
  * A very simple state store ;)  It is initially empty.
  */
-private var evenNumberStateStorage: EvenNumberState = EvenNumberState(Description("0"), NumberValue(0))
+private var evenNumberStateStorage: Pair<EvenNumberState, Long> =
+    Pair(EvenNumberState(Description("0"), NumberValue(0)), 0)
 
 /**
  * Even number repository implementation
  *
  * @constructor Creates Even number repository
  */
-class EvenNumberStateRepository : StateRepository<EvenNumberCommand?, EvenNumberState> {
+class EvenNumberLockingStateRepository : StateLockingRepository<EvenNumberCommand?, EvenNumberState, Long> {
 
-    override suspend fun EvenNumberCommand?.fetchState(): EvenNumberState = evenNumberStateStorage
+    override suspend fun EvenNumberCommand?.fetchState(): Pair<EvenNumberState, Long> = evenNumberStateStorage
 
-    override suspend fun EvenNumberState.save(): EvenNumberState {
-        evenNumberStateStorage = this
-
+    override suspend fun EvenNumberState.save(currentStateVersion: Long?): Pair<EvenNumberState, Long> {
+        //TODO compare the versions and throw an exception if they dont match
+        evenNumberStateStorage = if (currentStateVersion != null) Pair(this, currentStateVersion + 1) else Pair(this, 0)
         return evenNumberStateStorage
     }
 
     fun deleteAll() {
-        evenNumberStateStorage = EvenNumberState(Description("0"), NumberValue(0))
+        evenNumberStateStorage = Pair(EvenNumberState(Description("0"), NumberValue(0)), 0)
     }
 
 }
 
 /**
- * Even number state repository
+ * Even number locking state repository
  *
  * @return state repository instance for Even numbers
  */
-fun evenNumberStateRepository(): StateRepository<EvenNumberCommand?, EvenNumberState> =
-    EvenNumberStateRepository()
+fun evenNumberLockingStateRepository(): StateLockingRepository<EvenNumberCommand?, EvenNumberState, Long> =
+    EvenNumberLockingStateRepository()
 

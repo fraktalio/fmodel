@@ -14,7 +14,7 @@ env:
   GPG_PRIVATE_PASSWORD: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
 jobs:
-  build:
+  publish:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -22,61 +22,37 @@ jobs:
         os: [ 'macos-latest', 'ubuntu-latest', 'windows-latest' ]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3.0.0
-        with:
-          fetch-depth: 0
-
-      - name: Set up Java
-        uses: actions/setup-java@v3.1.0
-        with:
-          distribution: 'adopt'
-          java-version: '11'
-
-      - name: Ubuntu build
-        uses: gradle/gradle-build-action@v2.1.5
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          arguments: --full-stacktrace build
-
-      - name: macosX64Test
-        uses: gradle/gradle-build-action@v2.1.5
-        if: matrix.os == 'macos-latest'
-        with:
-          arguments: --full-stacktrace macosX64Test
-
-      - name: mingwX64Test
-        uses: gradle/gradle-build-action@v2.1.5
-        if: matrix.os == 'windows-latest'
-        with:
-          arguments: --full-stacktrace mingwX64Test
-
-      - name: Upload reports
-        uses: actions/upload-artifact@v3.0.0
-        with:
-          name: 'reports-${{ matrix.os }}'
-          path: '**/build/reports/**'
-
-      - name: Stop Gradle daemons
-        run: ./gradlew --stop
-
-
-  publish:
-    needs: build
-    runs-on: macos-latest
-
-    steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Set up Java
-        uses: actions/setup-java@v3.1.0
+        uses: actions/setup-java@v3.5.0
         with:
           distribution: 'adopt'
           java-version: '11'
+          check-latest: true
 
-      - name: Publish version
-        uses: gradle/gradle-build-action@v2.1.5
+      - name: Publish JVM, JS and Linux versions
+        uses: gradle/gradle-build-action@v2.3.0
+        if: matrix.os == 'ubuntu-latest'
         with:
-          arguments: --full-stacktrace publishAllPublicationsToOssrhRepository
+          cache-disabled: true
+          arguments: --full-stacktrace test publishAllPublicationToOssrhRepository
+
+      - name: Publish MacOS version
+        uses: gradle/gradle-build-action@v2.3.0
+        if: matrix.os == 'macos-latest'
+        with:
+          cache-disabled: true
+          arguments: --full-stacktrace macosX64Test publishMacosX64PublicationToOssrhRepository
+
+      - name: Publish Windows version
+        uses: gradle/gradle-build-action@v2.3.0
+        if: matrix.os == 'windows-latest'
+        with:
+          cache-disabled: true
+          arguments: --full-stacktrace mingwX64Test publishMingwX64PublicationToOssrhRepository
+
+      - name: Stop Gradle daemons
+        run: ./gradlew --stop

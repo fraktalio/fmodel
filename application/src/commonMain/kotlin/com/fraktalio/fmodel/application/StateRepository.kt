@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Fraktalio D.O.O. All rights reserved.
+ * Copyright (c) 2022 Fraktalio D.O.O. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,4 +40,40 @@ interface StateRepository<C, S> {
      * @return newly saved State of type [S]
      */
     suspend fun S.save(): S
+}
+
+/**
+ * State Locking repository interface.
+ *
+ * Explicitly enables `optimistic locking` mechanism.
+ *
+ * If you fetch an item/state from a storage, the application records the `version` number of that item.
+ * You can update/save the item/state, but only if the `version` number in the storage has not changed.
+ * If there is a `version` mismatch, it means that someone else has modified the item/state before you did.
+ *
+ * @param C Command
+ * @param S State
+ * @param V Version
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface StateLockingRepository<C, S, V> {
+    /**
+     * Fetch state and version
+     *
+     * @receiver Command of type [C]
+     * @return the [Pair] of current State/[S] and current Version/[V]
+     */
+    suspend fun C.fetchState(): Pair<S?, V?>
+
+    /**
+     * Save state
+     *
+     * You can update/save the item/state, but only if the `version` number in the storage has not changed.
+     *
+     * @receiver State/[S]
+     * @param currentStateVersion The current version of the state
+     * @return newly saved State of type [Pair]<[S], [V]>
+     */
+    suspend fun S.save(currentStateVersion: V?): Pair<S, V>
 }
