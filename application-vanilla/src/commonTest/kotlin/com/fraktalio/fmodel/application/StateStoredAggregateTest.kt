@@ -31,11 +31,15 @@ private suspend fun <C, S, E> IDecider<C, S, E>.given(repository: StateRepositor
     ).handle(command())
 
 @FlowPreview
-private suspend fun <C, S, E, V> IDecider<C, S, E>.given(repository: StateLockingRepository<C, S, V>, command: () -> C): Pair<S, V> =
+private suspend fun <C, S, E, V> IDecider<C, S, E>.given(
+    repository: StateLockingRepository<C, S, V>,
+    command: () -> C
+): Pair<S, V> =
     stateStoredLockingAggregate(
         decider = this,
         stateRepository = repository
     ).handleOptimistically(command())
+
 /**
  * DSL - When
  */
@@ -46,7 +50,8 @@ private fun <C, S, E> IDecider<C, S, E>.whenCommand(command: C): C = command
  * DSL - Then
  */
 private infix fun <S> S.thenState(expected: S) = shouldBe(expected)
-private infix fun <S, V> Pair<S, V>.thenState(expected: Pair<S, V>) = shouldBe(expected)
+private infix fun <S, V> Pair<S, V>.thenStateAndVersion(expected: Pair<S, V>) = shouldBe(expected)
+
 /**
  * State-stored aggregate test
  */
@@ -74,7 +79,7 @@ class StateStoredAggregateTest : FunSpec({
 
             given(evenNumberLockingStateRepository) {
                 whenCommand(AddEvenNumber(Description("2"), NumberValue(2)))
-            } thenState Pair(EvenNumberState(Description("2"), NumberValue(2)), 1)
+            } thenStateAndVersion Pair(EvenNumberState(Description("2"), NumberValue(2)), 1)
         }
     }
 
