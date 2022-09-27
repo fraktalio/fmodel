@@ -2,43 +2,8 @@ package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.domain.IDecider
 import com.fraktalio.fmodel.domain.ISaga
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
-import kotlin.contracts.ExperimentalContracts
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-
-/**
- * Event-sourced aggregate/decider algorithm
- * Computes new Events based on the previous Events and the Command.
- */
-context (IDecider<C, S, E>, C)
-internal fun <C, S, E> Flow<E>.computeNewEvents(): Flow<E> = flow {
-    val currentState = fold(initialState) { s, e -> evolve(s, e) }
-    val resultingEvents = decide(this@C, currentState)
-    emitAll(resultingEvents)
-}
-
-/**
- * Event-sourced orchestrating aggregate/decider algorithm
- * Computes new Events based on the previous Events and the Command.
- * Saga might react on Events and send new Commands to the Decider.
- */
-context (IDecider<C, S, E>, ISaga<E, C>, C)
-@FlowPreview
-internal fun <C, S, E> Flow<E>.computeNewEvents(): Flow<E> = flow {
-    val currentState = fold(initialState) { s, e -> evolve(s, e) }
-    var resultingEvents = decide(this@C, currentState)
-
-    resultingEvents.flatMapConcat { react(it) }.onEach {
-        val newEvents = flowOf(this@computeNewEvents, resultingEvents).flattenConcat().computeNewEvents()
-        resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
-    }.collect()
-
-    emitAll(resultingEvents)
-}
 
 
 /**
@@ -48,19 +13,49 @@ internal fun <C, S, E> Flow<E>.computeNewEvents(): Flow<E> = flow {
  * @receiver command of type C to be handled
  */
 context (IDecider<C, S, E>, EventRepository<C, E>)
-fun <C, S, E> C.handle(): Flow<E> = fetchEvents().computeNewEvents().save()
-
+fun <C, S, E> C.handle(): Flow<E> =
+    with(object : EventComputation<C, S, E>, IDecider<C, S, E> by this@IDecider {}) {
+        this@handle.handleIt()
+    }
 
 /**
  * Handle command - Event-sourced aggregate/decider
- * @receiver [EventSourcingAggregate] - context receiver
+ * @receiver [EventComputation] - context receiver
+ * @receiver [EventRepository] - context receiver
  * @receiver command of type C to be handled
- *
- * Alternative function to `context (IDecider<C, S, E>, EventRepository<C, E>) C.handle()`, which combines multiple contexts ([IDecider], [EventRepository]) into a single meaningful interface/context [EventSourcingAggregate]
  */
-context (EventSourcingAggregate<C, S, E>)
-@FlowPreview
+context (EventComputation<C, S, E>, EventRepository<C, E>)
 fun <C, S, E> C.handleIt(): Flow<E> = fetchEvents().computeNewEvents(this).save()
+
+/**
+ * Handle command optimistically - Event-sourced locking aggregate/decider
+ * @receiver [IDecider] - context receiver
+ * @receiver [EventLockingRepository] - context receiver
+ * @receiver command of type C to be handled
+ */
+context (IDecider<C, S, E>, EventLockingRepository<C, E, V>)
+@FlowPreview
+fun <C, S, E, V> C.handleOptimistically(): Flow<Pair<E, V>> =
+    with(object : EventComputation<C, S, E>, IDecider<C, S, E> by this@IDecider {}) {
+        this@handleOptimistically.handleItOptimistically()
+    }
+
+/**
+ * Handle command optimistically - Event-sourced locking aggregate/decider
+ * @receiver [EventComputation] - context receiver
+ * @receiver [EventLockingRepository] - context receiver
+ * @receiver command of type C to be handled
+ */
+context (EventComputation<C, S, E>, EventLockingRepository<C, E, V>)
+@FlowPreview
+fun <C, S, E, V> C.handleItOptimistically(): Flow<Pair<E, V>> = flow {
+    val events = this@handleItOptimistically.fetchEvents()
+    emitAll(
+        events.map { it.first }
+            .computeNewEvents(this@handleItOptimistically)
+            .save(events.lastOrNull())
+    )
+}
 
 /**
  * Handle command - Event-sourced orchestrating aggregate/decider
@@ -71,18 +66,50 @@ fun <C, S, E> C.handleIt(): Flow<E> = fetchEvents().computeNewEvents(this).save(
  */
 context (IDecider<C, S, E>, ISaga<E, C>, EventRepository<C, E>)
 @FlowPreview
-fun <C, S, E> C.handle(): Flow<E> = fetchEvents().computeNewEvents().save()
+fun <C, S, E> C.handle(): Flow<E> =
+    with(object : EventOrchestratingComputation<C, S, E>, IDecider<C, S, E> by this@IDecider,
+        ISaga<E, C> by this@ISaga {}) {
+        this@handle.handleIt()
+    }
 
 /**
  * Handle command - Event-sourced orchestrating aggregate/decider
- * @receiver [EventSourcingOrchestratingAggregate] - context receiver
+ * @receiver [EventOrchestratingComputation] - context receiver
+ * @receiver [EventRepository] - context receiver
  * @receiver command of type C to be handled
- *
- * Alternative function to `context (IDecider<C, S, E>, ISaga<E, C>, EventRepository<C, E>) C.handle()`, which combines multiple contexts ([IDecider], [ISaga], [EventRepository]) into a single meaningful interface/context [EventSourcingOrchestratingAggregate]
  */
-context (EventSourcingOrchestratingAggregate<C, S, E>)
+context (EventOrchestratingComputation<C, S, E>, EventRepository<C, E>)
 @FlowPreview
-fun <C, S, E> C.handleIt(): Flow<E> = fetchEvents().computeNewEvents(this).save()
+fun <C, S, E> C.handleIt(): Flow<E> = fetchEvents().computeNewEventsByOrchestrating(this) { it.fetchEvents() }.save()
+
+/**
+ * Handle command optimistically - Event-sourced orchestrating locking aggregate/decider
+ * @receiver [IDecider] - context receiver
+ * @receiver [ISaga] - context receiver
+ * @receiver [EventLockingRepository] - context receiver
+ * @receiver command of type C to be handled
+ */
+context (IDecider<C, S, E>, ISaga<E, C>, EventLockingRepository<C, E, V>)
+@FlowPreview
+fun <C, S, E, V> C.handleOptimistically(): Flow<Pair<E, V>> =
+    with(object : EventOrchestratingComputation<C, S, E>, IDecider<C, S, E> by this@IDecider,
+        ISaga<E, C> by this@ISaga {}) {
+        this@handleOptimistically.handleItOptimistically()
+    }
+
+/**
+ * Handle command optimistically - Event-sourced orchestrating locking aggregate/decider
+ * @receiver [EventOrchestratingComputation] - context receiver
+ * @receiver [EventLockingRepository] - context receiver
+ * @receiver command of type C to be handled
+ */
+context (EventOrchestratingComputation<C, S, E>, EventLockingRepository<C, E, V>)
+@FlowPreview
+fun <C, S, E, V> C.handleItOptimistically(): Flow<Pair<E, V>> =
+    this
+        .fetchEvents().map { it.first }
+        .computeNewEventsByOrchestrating(this) { it.fetchEvents().map { pair -> pair.first } }
+        .save(latestVersionProvider)
 
 /**
  * Handle command(s) - Event-sourced aggregate/decider
@@ -95,65 +122,34 @@ context (IDecider<C, S, E>, EventRepository<C, E>)
 fun <C, S, E> Flow<C>.handle(): Flow<E> = flatMapConcat { it.handle() }
 
 /**
- * Handle command(s) concurrently by the finite number of actors - Event-sourced aggregate/decider
- * @receiver [IDecider] - context receiver
+ * Handle command(s) - Event-sourced aggregate/decider
+ * @receiver [EventComputation] - context receiver
  * @receiver [EventRepository] - context receiver
  * @receiver commands of type Flow<C> to be handled
  */
-context (IDecider<C, S, E>, EventRepository<C, E>)
-@ExperimentalContracts
-fun <C, S, E> Flow<C>.handleConcurrently(
-    numberOfActors: Int = 100,
-    actorsCapacity: Int = Channel.BUFFERED,
-    actorsStart: CoroutineStart = CoroutineStart.LAZY,
-    actorsContext: CoroutineContext = EmptyCoroutineContext,
-    partitionKey: (C) -> Int
-): Flow<E> =
-    publishConcurrentlyTo(
-        eventSourcingAggregate(this@IDecider, this@EventRepository),
-        numberOfActors,
-        actorsCapacity,
-        actorsStart,
-        actorsContext,
-        partitionKey
-    )
-
-/**
- * Handle command(s) - Event-sourced aggregate/decider
- * @receiver [EventSourcingAggregate] - context receiver
- * @receiver commands of type Flow<C> to be handled
- *
- * Alternative function to `context (IDecider<C, S, E>, EventRepository<C, E>) Flow<C>.handle()`, which combines multiple contexts ([IDecider], [EventRepository]) into a single meaningful interface/context [EventSourcingAggregate]
- */
-context (EventSourcingAggregate<C, S, E>)
+context (EventComputation<C, S, E>, EventRepository<C, E>)
 @FlowPreview
 fun <C, S, E> Flow<C>.handleIt(): Flow<E> = flatMapConcat { it.handleIt() }
 
 /**
- * Handle command(s) concurrently by the finite number of actors - Event-sourced aggregate/decider
- * @receiver [EventSourcingAggregate] - context receiver
+ * Handle command(s) optimistically - Event-sourced locking aggregate/decider
+ * @receiver [IDecider] - context receiver
+ * @receiver [EventLockingRepository] - context receiver
  * @receiver commands of type Flow<C> to be handled
- *
- * Alternative function to `context (IDecider<C, S, E>, EventRepository<C, E> handleConcurrently(...))`, which combines multiple contexts ([IDecider], [EventRepository]) into a single meaningful interface/context [EventSourcingAggregate]
  */
-context (EventSourcingAggregate<C, S, E>)
+context (IDecider<C, S, E>, EventLockingRepository<C, E, V>)
 @FlowPreview
-@ExperimentalContracts
-fun <C, S, E> Flow<C>.handleItConcurrently(
-    numberOfActors: Int = 100,
-    actorsCapacity: Int = Channel.BUFFERED,
-    actorsStart: CoroutineStart = CoroutineStart.LAZY,
-    actorsContext: CoroutineContext = EmptyCoroutineContext,
-    partitionKey: (C) -> Int
-): Flow<E> =
-    publishConcurrentlyTo(
-        this@EventSourcingAggregate,
-        numberOfActors,
-        actorsCapacity,
-        actorsStart,
-        actorsContext,
-        partitionKey
-    )
+fun <C, S, E, V> Flow<C>.handleOptimistically(): Flow<Pair<E, V>> = flatMapConcat { it.handleOptimistically() }
+
+/**
+ * Handle command(s) optimistically - Event-sourced locking aggregate/decider
+ * @receiver [EventComputation] - context receiver
+ * @receiver [EventLockingRepository] - context receiver
+ * @receiver commands of type Flow<C> to be handled
+ */
+context (EventComputation<C, S, E>, EventLockingRepository<C, E, V>)
+@FlowPreview
+fun <C, S, E, V> Flow<C>.handleItOptimistically(): Flow<Pair<E, V>> = flatMapConcat { it.handleItOptimistically() }
 
 /**
  * Handle command(s) - Event-sourced orchestrating aggregate/decider
@@ -167,62 +163,32 @@ context (IDecider<C, S, E>, ISaga<E, C>, EventRepository<C, E>)
 fun <C, S, E> Flow<C>.handle(): Flow<E> = flatMapConcat { it.handle() }
 
 /**
- * Handle command(s) concurrently by the finite number of actors - Event-sourced aggregate/decider
- * @receiver [IDecider] - context receiver
- * @receiver [ISaga] - context receiver
+ * Handle command(s) - Event-sourced orchestrating aggregate/decider
+ * @receiver [EventOrchestratingComputation] - context receiver
  * @receiver [EventRepository] - context receiver
  * @receiver commands of type Flow<C> to be handled
  */
-context (IDecider<C, S, E>, ISaga<E, C>, EventRepository<C, E>)
-@ExperimentalContracts
-fun <C, S, E> Flow<C>.handleConcurrently(
-    numberOfActors: Int = 100,
-    actorsCapacity: Int = Channel.BUFFERED,
-    actorsStart: CoroutineStart = CoroutineStart.LAZY,
-    actorsContext: CoroutineContext = EmptyCoroutineContext,
-    partitionKey: (C) -> Int
-): Flow<E> =
-    publishConcurrentlyTo(
-        eventSourcingOrchestratingAggregate(this@IDecider, this@EventRepository, this@ISaga),
-        numberOfActors,
-        actorsCapacity,
-        actorsStart,
-        actorsContext,
-        partitionKey
-    )
-
-/**
- * Handle command(s) - Event-sourced orchestrating aggregate/decider
- * @receiver [EventSourcingOrchestratingAggregate] - context receiver
- * @receiver commands of type Flow<C> to be handled
- *
- * Alternative function to `context (IDecider<C, S, E>, ISaga<E, C>, EventRepository<C, E>) Flow<C>.handle()`, which combines multiple contexts ([IDecider], [ISaga], [EventRepository]) into a single meaningful interface/context [EventSourcingOrchestratingAggregate]
- */
-context (EventSourcingOrchestratingAggregate<C, S, E>)
+context (EventOrchestratingComputation<C, S, E>, EventRepository<C, E>)
 @FlowPreview
 fun <C, S, E> Flow<C>.handleIt(): Flow<E> = flatMapConcat { it.handleIt() }
 
 /**
- * Handle command(s) concurrently by the finite number of actors - Event-sourced orchestrating aggregate/decider
- * @receiver [EventSourcingOrchestratingAggregate] - context receiver
+ * Handle command(s) optimistically - Event-sourced orchestrating locking aggregate/decider
+ * @receiver [IDecider] - context receiver
+ * @receiver [ISaga] - context receiver
+ * @receiver [EventLockingRepository] - context receiver
  * @receiver commands of type Flow<C> to be handled
- *
- * Alternative function to `context (IDecider<C, S, E>, ISaga<E, C>, EventRepository<C, E>)  Flow<C>.handleConcurrently(...)`, which combines multiple contexts ([IDecider], [ISaga], [EventRepository]) into a single meaningful interface/context [EventSourcingOrchestratingAggregate]
  */
-context (EventSourcingOrchestratingAggregate<C, S, E>)
-@ExperimentalContracts
-fun <C, S, E> Flow<C>.handleItConcurrently(
-    numberOfActors: Int = 100,
-    actorsCapacity: Int = Channel.BUFFERED,
-    actorsStart: CoroutineStart = CoroutineStart.LAZY,
-    actorsContext: CoroutineContext = EmptyCoroutineContext,
-    partitionKey: (C) -> Int
-): Flow<E> =
-    publishConcurrentlyTo(
-        this@EventSourcingOrchestratingAggregate,
-        numberOfActors,
-        actorsCapacity,
-        actorsStart,
-        actorsContext,
-        partitionKey
-    )
+context (IDecider<C, S, E>, ISaga<E, C>, EventLockingRepository<C, E, V>)
+@FlowPreview
+fun <C, S, E, V> Flow<C>.handleOptimistically(): Flow<Pair<E, V>> = flatMapConcat { it.handleOptimistically() }
+
+/**
+ * Handle command(s) optimistically - Event-sourced orchestrating locking aggregate/decider
+ * @receiver [EventOrchestratingComputation] - context receiver
+ * @receiver [EventLockingRepository] - context receiver
+ * @receiver commands of type Flow<C> to be handled
+ */
+context (EventOrchestratingComputation<C, S, E>, EventLockingRepository<C, E, V>)
+@FlowPreview
+fun <C, S, E, V> Flow<C>.handleItOptimistically(): Flow<Pair<E, V>> = flatMapConcat { it.handleItOptimistically() }

@@ -50,33 +50,4 @@ class MaterializedViewContextualTest : FunSpec({
             )
         }
     }
-
-    test("Materialized view concurrent and contextual - even number added") {
-        evenNumberViewRepository.deleteAll()
-        with(evenView) {
-            with(evenNumberViewRepository) {
-                flowOf(
-                    EvenNumberAdded(Description("EvenNumberAdded"), NumberValue(2)),
-                    EvenNumberAdded(Description("EvenNumberAdded"), NumberValue(4))
-                ).handleConcurrently { it?.description.hashCode() }.toList() shouldContainExactly listOf(
-                    EvenNumberState(Description("Initial state, EvenNumberAdded"), NumberValue(2)),
-                    EvenNumberState(Description("Initial state, EvenNumberAdded, EvenNumberAdded"), NumberValue(6))
-                )
-            }
-        }
-    }
-
-    test("Materialized view concurrent and contextual materialized view interface - even number added") {
-        evenNumberViewRepository.deleteAll()
-        with(materializedView(evenView, evenNumberViewRepository)) {
-            flowOf(
-                EvenNumberAdded(Description("EvenNumberAdded"), NumberValue(2)),
-                EvenNumberAdded(Description("EvenNumberAdded"), NumberValue(4))
-            ).handleConcurrently { it?.description.hashCode() }.toList() shouldContainExactly listOf(
-                EvenNumberState(Description("Initial state, EvenNumberAdded"), NumberValue(2)),
-                EvenNumberState(Description("Initial state, EvenNumberAdded, EvenNumberAdded"), NumberValue(6))
-            )
-        }
-    }
-
 })

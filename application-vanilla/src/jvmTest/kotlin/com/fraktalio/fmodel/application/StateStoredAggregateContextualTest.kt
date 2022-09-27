@@ -52,34 +52,6 @@ class StateStoredAggregateContextualTest : FunSpec({
         }
     }
 
-    test("State-stored aggregate concurrent and contextual - add even number") {
-        evenNumberStateRepository.deleteAll()
-        with(evenDecider) {
-            with(evenNumberStateRepository) {
-                flowOf(
-                    AddEvenNumber(Description("desc"), NumberValue(6)),
-                    AddEvenNumber(Description("desc"), NumberValue(4))
-                ).handleConcurrently { it?.description.hashCode() }.toList() shouldContainExactly listOf(
-                    EvenNumberState(Description("desc"), NumberValue(6)),
-                    EvenNumberState(Description("desc"), NumberValue(10))
-                )
-            }
-        }
-    }
-
-    test("State-stored aggregate concurrent and contextual with aggregate interface - add even number") {
-        evenNumberStateRepository.deleteAll()
-        with(stateStoredAggregate(evenDecider, evenNumberStateRepository)) {
-            flowOf(
-                AddEvenNumber(Description("desc"), NumberValue(6)),
-                AddEvenNumber(Description("desc"), NumberValue(4))
-            ).handleConcurrently { it?.description.hashCode() }.toList() shouldContainExactly listOf(
-                EvenNumberState(Description("desc"), NumberValue(6)),
-                EvenNumberState(Description("desc"), NumberValue(10))
-            )
-        }
-    }
-
     test("State-stored aggregate contextual - add even number - exception (large number > 1000)") {
         shouldThrow<UnsupportedOperationException> {
 

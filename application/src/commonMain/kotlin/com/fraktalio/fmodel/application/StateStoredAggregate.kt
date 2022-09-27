@@ -34,7 +34,6 @@ interface StateComputation<C, S, E> : IDecider<C, S, E> {
      * @param command of type [C]
      * @return The newly computed state of type [S]
      */
-    @FlowPreview
     suspend fun S?.computeNewState(command: C): S {
         val currentState = this ?: initialState
         val events = decide(command, currentState)
