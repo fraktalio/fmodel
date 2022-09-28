@@ -45,7 +45,7 @@ class StateStoredAggregateContextualTest : FunSpec({
             flowOf(
                 AddEvenNumber(Description("desc"), NumberValue(6)),
                 AddEvenNumber(Description("desc"), NumberValue(4))
-            ).handle().toList() shouldContainExactly listOf(
+            ).handleIt().toList() shouldContainExactly listOf(
                 EvenNumberState(Description("desc"), NumberValue(6)),
                 EvenNumberState(Description("desc"), NumberValue(10))
             )

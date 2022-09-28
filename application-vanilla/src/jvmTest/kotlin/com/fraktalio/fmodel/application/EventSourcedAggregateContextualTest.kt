@@ -30,7 +30,7 @@ class EventSourcedAggregateContextualTest : FunSpec({
             flowOf(
                 AddEvenNumber(Description("desc"), NumberValue(6)),
                 AddEvenNumber(Description("desc"), NumberValue(4))
-            ).handle().toList() shouldContainExactly listOf(
+            ).handleIt().toList() shouldContainExactly listOf(
                 EvenNumberAdded(Description("desc"), NumberValue(6)),
                 EvenNumberAdded(Description("desc"), NumberValue(4))
             )

@@ -44,7 +44,7 @@ class MaterializedViewContextualTest : FunSpec({
             flowOf(
                 EvenNumberAdded(Description("EvenNumberAdded"), NumberValue(2)),
                 EvenNumberAdded(Description("EvenNumberAdded"), NumberValue(4))
-            ).handle().toList() shouldContainExactly listOf(
+            ).handleIt().toList() shouldContainExactly listOf(
                 EvenNumberState(Description("Initial state, EvenNumberAdded"), NumberValue(2)),
                 EvenNumberState(Description("Initial state, EvenNumberAdded, EvenNumberAdded"), NumberValue(6))
             )
