@@ -19,8 +19,7 @@ package com.fraktalio.fmodel.application.examples.numbers.odd.command
 import com.fraktalio.fmodel.application.EventRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.*
 
 /**
  * A very simple event store ;)  It is initially empty.
@@ -37,18 +36,14 @@ class OddNumberRepository : EventRepository<OddNumberCommand?, OddNumberEvent?> 
     override fun OddNumberCommand?.fetchEvents(): Flow<OddNumberEvent?> =
         oddNumberEventStorage.asFlow()
 
-
-    override suspend fun OddNumberEvent?.save(): OddNumberEvent? {
-        oddNumberEventStorage = oddNumberEventStorage.plus(this)
-
-        return this
+    override fun Flow<OddNumberEvent?>.save(): Flow<OddNumberEvent?> = flow {
+        oddNumberEventStorage = oddNumberEventStorage.plus(this@save.toList())
+        emitAll(oddNumberEventStorage.asFlow())
     }
 
     fun deleteAll() {
         oddNumberEventStorage = emptyList()
-
     }
-
 }
 
 /**

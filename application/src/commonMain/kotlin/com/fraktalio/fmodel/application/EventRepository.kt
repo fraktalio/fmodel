@@ -19,7 +19,6 @@ package com.fraktalio.fmodel.application
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 
 /**
  * Event repository interface
@@ -45,7 +44,7 @@ interface EventRepository<C, E> {
      * @receiver Event of type [E]
      * @return newly saved Event of type [E]
      */
-    suspend fun E.save(): E
+    suspend fun E.save(): E = flowOf(this).save().first()
 
     /**
      * Save events
@@ -53,7 +52,7 @@ interface EventRepository<C, E> {
      * @receiver [Flow] of Events of type [E]
      * @return newly saved [Flow] of Events of type [E]
      */
-    fun Flow<E>.save(): Flow<E> = map { it.save() }
+    fun Flow<E>.save(): Flow<E>
 }
 
 /**
