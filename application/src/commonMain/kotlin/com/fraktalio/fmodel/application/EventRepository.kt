@@ -17,6 +17,8 @@
 package com.fraktalio.fmodel.application
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /**
@@ -109,7 +111,7 @@ interface EventLockingRepository<C, E, V> {
      * @receiver Event of type [E]
      * @return newly saved Event of type [Pair]<[E], [V]>
      */
-    suspend fun E.save(latestVersion: Pair<E, V>?): Pair<E, V>
+    suspend fun E.save(latestVersion: Pair<E, V>?): Pair<E, V> = flowOf(this).save(latestVersionProvider).first()
 
     /**
      * Save events
