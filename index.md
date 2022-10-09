@@ -41,7 +41,6 @@ this project :)
 ## Table of Contents
 
 * [<strong>f(model)</strong> - Functional domain modeling](#fmodel---functional-domain-modeling)
-    * [Abstraction and generalization](#abstraction-and-generalization)
     * [decide: (C, S) -&gt; Flow&lt;E&gt;](#decide-c-s---flowe)
     * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
     * [Event-sourced or State-stored systems](#event-sourced-or-state-stored-systems)
@@ -59,16 +58,6 @@ this project :)
     * [Examples](#start-using-the-libraries)
     * [References and further reading](#references-and-further-reading)
 
-## Abstraction and generalization
-
-Abstractions can hide irrelevant details and use names to reference objects. It emphasizes what an object is or does
-rather than how it is represented or how it works.
-
-Generalization reduces complexity by replacing multiple entities which perform similar functions with a single
-construct.
-
-Abstraction and generalization are often used together. Abstracts are generalized through parameterization to provide
-more excellent utility.
 
 ## `decide: (C, S) -> Flow<E>`
 
