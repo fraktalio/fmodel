@@ -93,7 +93,6 @@ The new state is always evolved out of the current state `S` and the current eve
   in the storage.
 - Event-sourced systems are storing the events in immutable storage by only appending.
 
-### A statement:
 
 Both types of systems can be designed by using only these two functions and three generic parameters:
 
@@ -105,7 +104,8 @@ Both types of systems can be designed by using only these two functions and thre
 There is more to it! You can switch from one system type to another or have both flavors included within your systems
 landscape.
 
-### A proof:
+<details>
+  <summary>A proof</summary>
 
 We can fold/recreate the new state out of the flow of events by using `evolve` function `(S, E) -> S` and providing the
 initialState of type S as a starting point.
@@ -118,13 +118,14 @@ Essentially, this `fold` is a function that is mapping a flow of Events to the S
 
 We can now use this function `(Flow<E>) -> S` to:
 
-- contra-map our `decide` function (`(C, S) -> Flow<E>`) over `S` type to: `(C, Flow<E>) -> Flow<E>`  - **this is an event-sourced system**
+- contra-map our `decide` function (`(C, S) -> Flow<E>`) over `S` type to: `(C, Flow<E>) -> Flow<E>`  - **this is an
+  event-sourced system**
 - or to map our `decide` function (`(C, S) -> Flow<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored
   system**
+
+</details>
   
- 
-We can verify that we can design any information system (event-sourced or/and state-stored) in this way by using these
-two functions wrapped in a datatype class (algebraic data structure), which is generalized with three generic
+Two functions are wrapped in a datatype class (algebraic data structure), which is generalized with three generic
 parameters:
 
 ```kotlin
