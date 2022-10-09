@@ -104,26 +104,6 @@ Both types of systems can be designed by using only these two functions and thre
 There is more to it! You can switch from one system type to another or have both flavors included within your systems
 landscape.
 
-<details>
-  <summary>A proof</summary>
-
-We can fold/recreate the new state out of the flow of events by using `evolve` function `(S, E) -> S` and providing the
-initialState of type S as a starting point.
-
-- `Flow<E>.fold(initialState: S, ((S, E) -> S)): S`
-
-Essentially, this `fold` is a function that is mapping a flow of Events to the State:
-
-- `(Flow<E>) -> S`
-
-We can now use this function `(Flow<E>) -> S` to:
-
-- contra-map our `decide` function (`(C, S) -> Flow<E>`) over `S` type to: `(C, Flow<E>) -> Flow<E>`  - **this is an
-  event-sourced system**
-- or to map our `decide` function (`(C, S) -> Flow<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored
-  system**
-
-</details>
   
 Two functions are wrapped in a datatype class (algebraic data structure), which is generalized with three generic
 parameters:
@@ -135,7 +115,7 @@ data class Decider<C, S, E>(
 )
 ```
 
-`Decider` is the most important datatype, but it is not the only one. There are others:
+`Decider` is the most important datatype, but it is not the only one:
  
  - Domain layer
    - Decider
