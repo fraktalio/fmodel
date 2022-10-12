@@ -17,6 +17,7 @@
 package com.fraktalio.fmodel.domain.examples.numbers.even.command
 
 import com.fraktalio.fmodel.domain.Decider
+import com.fraktalio.fmodel.domain.decider
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
@@ -36,22 +37,24 @@ import kotlinx.coroutines.flow.flowOf
  * @return Even number decider instance
  */
 fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumberEvent?> =
-    Decider(
-        initialState = EvenNumberState(Description("Initial state"), NumberValue(0)),
-        decide = { c, s ->
+    decider {
+        initialState {
+            EvenNumberState(Description("Initial state"), NumberValue(0))
+        }
+        decide { c, s ->
             if (c != null && c.value.get > 1000) flow<EvenNumberEvent> { throw UnsupportedOperationException("Sorry") } else
                 when (c) {
                     is AddEvenNumber -> flowOf(EvenNumberAdded(c.description, s.value + c.value))
                     is SubtractEvenNumber -> flowOf(EvenNumberSubtracted(c.description, s.value - c.value))
                     null -> emptyFlow()
                 }
-        },
-        evolve = { s, e ->
+        }
+        evolve { s, e ->
             when (e) {
                 is EvenNumberAdded -> EvenNumberState(s.description + e.description, e.value)
                 is EvenNumberSubtracted -> EvenNumberState(s.description - e.description, e.value)
                 null -> s
             }
         }
-    )
+    }
 

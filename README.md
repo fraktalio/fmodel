@@ -385,7 +385,7 @@ Notice that `View` implements an interface `IView` to communicate the contract.
 <details>
   <summary>Example</summary>
 
-  ```kotlin
+```kotlin
     fun restaurantOrderView() = View<RestaurantOrderViewState?, RestaurantOrderEvent?>(
     // Initial state of the [RestaurantOrderViewState] is `null`. It does not exist.
     initialState = null,
@@ -405,7 +405,7 @@ Notice that `View` implements an interface `IView` to communicate the contract.
         }
     }
 )
-  ```
+```
 
 </details>
 
@@ -471,7 +471,7 @@ fun <S, E> materializedView(
   <summary>Example</summary>
 
   ```kotlin
-    typealias RestaurantOrderMaterializedView = MaterializedView<RestaurantOrderViewState?, RestaurantOrderEvent?>
+typealias RestaurantOrderMaterializedView = MaterializedView<RestaurantOrderViewState?, RestaurantOrderEvent?>
 
 fun restaurantOrderMaterializedView(
     restaurantOrderView: RestaurantOrderView,
