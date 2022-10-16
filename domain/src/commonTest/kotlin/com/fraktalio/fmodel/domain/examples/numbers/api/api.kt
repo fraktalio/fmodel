@@ -17,6 +17,10 @@
 
 package com.fraktalio.fmodel.domain.examples.numbers.api
 
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.SubtractEvenNumber
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberSubtracted
 import kotlin.jvm.JvmInline
 
 @JvmInline
@@ -111,3 +115,133 @@ data class OddNumberState(
     override val value: NumberValue
 ) : NumberState()
 
+
+// DSL - if you think DSL provides value in this case...nothing wrong in using constructors
+
+fun desc(block: () -> String): Description = Description(block())
+fun num(block: () -> Int): NumberValue = NumberValue(block())
+
+// Commands
+class AddEvenNumberBuilder internal constructor() {
+
+    private var description: Description = Description("")
+    private var value: NumberValue = NumberValue(0)
+
+    fun description(lambda: () -> Description) {
+        description = lambda()
+    }
+
+    fun value(lambda: () -> NumberValue) {
+        value = lambda()
+    }
+
+    fun build(): AddEvenNumber = AddEvenNumber(description, value)
+}
+
+fun addEvenNumber(block: AddEvenNumberBuilder.() -> Unit): AddEvenNumber =
+    AddEvenNumberBuilder().apply(block).build()
+
+class SubtractEvenNumberBuilder internal constructor() {
+
+    private var description: Description = Description("")
+    private var value: NumberValue = NumberValue(0)
+
+    fun description(lambda: () -> Description) {
+        description = lambda()
+    }
+
+    fun value(lambda: () -> NumberValue) {
+        value = lambda()
+    }
+
+    fun build(): SubtractEvenNumber = SubtractEvenNumber(description, value)
+}
+
+fun subtractEvenNumber(block: SubtractEvenNumberBuilder.() -> Unit): SubtractEvenNumber =
+    SubtractEvenNumberBuilder().apply(block).build()
+
+// Events
+class EvenNumberAddedBuilder internal constructor() {
+
+    private var description: Description = Description("")
+    private var value: NumberValue = NumberValue(0)
+
+    fun description(lambda: () -> Description) {
+        description = lambda()
+    }
+
+    fun value(lambda: () -> NumberValue) {
+        value = lambda()
+    }
+
+    fun build(): EvenNumberAdded = EvenNumberAdded(description, value)
+}
+
+fun evenNumberAdded(block: EvenNumberAddedBuilder.() -> Unit): EvenNumberAdded =
+    EvenNumberAddedBuilder().apply(block).build()
+
+class EvenNumberSubtractedBuilder internal constructor() {
+
+    private var description: Description = Description("")
+    private var value: NumberValue = NumberValue(0)
+
+    fun description(lambda: () -> Description) {
+        description = lambda()
+    }
+
+    fun value(lambda: () -> NumberValue) {
+        value = lambda()
+    }
+
+    fun build(): EvenNumberSubtracted = EvenNumberSubtracted(description, value)
+}
+
+fun evenNumberSubtracted(block: EvenNumberSubtractedBuilder.() -> Unit): EvenNumberSubtracted =
+    EvenNumberSubtractedBuilder().apply(block).build()
+
+// State
+class EvenNumberStateBuilder internal constructor() {
+
+    private var description: Description = Description("")
+    private var value: NumberValue = NumberValue(0)
+
+    fun description(lambda: () -> Description) {
+        description = lambda()
+    }
+
+    fun descriptionString(lambda: () -> String) {
+        description = Description(lambda())
+    }
+
+    fun value(lambda: () -> NumberValue) {
+        value = lambda()
+    }
+
+    fun valueInt(lambda: () -> Int) {
+        value = NumberValue(lambda())
+    }
+
+    fun build(): EvenNumberState = EvenNumberState(description, value)
+}
+
+fun evenNumberState(block: EvenNumberStateBuilder.() -> Unit): EvenNumberState =
+    EvenNumberStateBuilder().apply(block).build()
+
+class OddNumberStateBuilder internal constructor() {
+
+    private var description: Description = Description("")
+    private var value: NumberValue = NumberValue(0)
+
+    fun description(lambda: () -> Description) {
+        description = lambda()
+    }
+
+    fun value(lambda: () -> NumberValue) {
+        value = lambda()
+    }
+
+    fun build(): OddNumberState = OddNumberState(description, value)
+}
+
+fun oddNumberState(block: OddNumberStateBuilder.() -> Unit): OddNumberState =
+    OddNumberStateBuilder().apply(block).build()

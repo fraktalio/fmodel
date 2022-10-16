@@ -49,6 +49,11 @@ typealias ISaga<AR, A> = I_Saga<AR, A>
 typealias Saga<AR, A> = _Saga<AR, A>
 
 /**
+ * Saga DSL - A convenient builder DSL for the [Saga]
+ */
+fun <AR, A> saga(react: (AR) -> Flow<A>): Saga<AR, A> = Saga(react)
+
+/**
  * [_Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).
  * It is responsible for mapping different events into action results ([AR]) that the [_Saga] then can use to calculate the next actions ([A]) to be mapped to command(s).
  *

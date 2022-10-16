@@ -45,6 +45,30 @@ typealias IView<S, E> = I_View<S, S, E>
 typealias View<S, E> = _View<S, S, E>
 
 /**
+ * View DSL - A convenient builder DSL for the [View]
+ */
+fun <S, E> view(block: ViewBuilder<S, E>.() -> Unit): View<S, E> =
+    ViewBuilder<S, E>().apply(block).build()
+
+/**
+ * View builder
+ */
+class ViewBuilder<S, E> internal constructor() {
+    private var evolve: (S, E) -> S = { s, _ -> s }
+    private var initialState: () -> S = { error("Initial State is not initialized") }
+
+    fun evolve(lambda: (S, E) -> S) {
+        evolve = lambda
+    }
+
+    fun initialState(lambda: () -> S) {
+        initialState = lambda
+    }
+
+    fun build(): View<S, E> = View(evolve, initialState())
+}
+
+/**
  * [_View] is a datatype that represents the event handling algorithm,
  * responsible for translating the events into denormalized state,
  * which is more adequate for querying.

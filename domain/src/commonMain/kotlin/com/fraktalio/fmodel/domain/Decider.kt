@@ -17,10 +17,7 @@
 package com.fraktalio.fmodel.domain
 
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flattenConcat
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 
 /**
  * An Interface of the [_Decider].
@@ -50,6 +47,61 @@ typealias IDecider<C, S, E> = I_Decider<C, S, S, E, E>
  * A typealias for [_Decider]<C, Si, So, Ei, Eo>, specializing the [_Decider] to three generic parameters: C, S and E, where C=C, Si=S, So=S, Ei=E, Eo=E
  */
 typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
+
+/**
+ * Decider DSL - A convenient builder DSL for the [Decider]
+ *
+ *
+ * Example:
+ *
+ * ```kotlin
+ * fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumberEvent?> =
+ *    decider {
+ *        initialState { EvenNumberState(Description("Initial state"), NumberValue(0)) }
+ *        decide { c, s ->
+ *            if (c != null && c.value.get > 1000) flow<EvenNumberEvent> { throw UnsupportedOperationException("Sorry") } else
+ *                when (c) {
+ *                    is AddEvenNumber -> flowOf(EvenNumberAdded(c.description, s.value + c.value))
+ *                    is SubtractEvenNumber -> flowOf(EvenNumberSubtracted(c.description, s.value - c.value))
+ *                    null -> emptyFlow()
+ *                }
+ *        }
+ *        evolve { s, e ->
+ *            when (e) {
+ *                is EvenNumberAdded -> EvenNumberState(s.description + e.description, e.value)
+ *                is EvenNumberSubtracted -> EvenNumberState(s.description - e.description, e.value)
+ *                null -> s
+ *            }
+ *        }
+ *    }
+ * ```
+ */
+fun <C, S, E> decider(block: DeciderBuilder<C, S, E>.() -> Unit): Decider<C, S, E> =
+    DeciderBuilder<C, S, E>().apply(block).build()
+
+/**
+ * Decider builder
+ */
+class DeciderBuilder<C, S, E> internal constructor() {
+
+    private var decide: (C, S) -> Flow<E> = { _, _ -> emptyFlow() }
+    private var evolve: (S, E) -> S = { s, _ -> s }
+    private var initialState: () -> S = { error("Initial State is not initialized") }
+
+    fun decide(lambda: (C, S) -> Flow<E>) {
+        decide = lambda
+    }
+
+    fun evolve(lambda: (S, E) -> S) {
+        evolve = lambda
+    }
+
+    fun initialState(lambda: () -> S) {
+        initialState = lambda
+    }
+
+    fun build(): Decider<C, S, E> = Decider(decide, evolve, initialState())
+}
 
 /**
  * [_Decider] is a datatype that represents the main decision-making algorithm.

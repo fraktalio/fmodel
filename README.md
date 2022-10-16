@@ -171,8 +171,8 @@ Notice that `Decider` implements an interface `IDecider` to communicate the cont
 <details>
   <summary>Example</summary>
 
-  ```kotlin
-    fun restaurantOrderDecider() = Decider<RestaurantOrderCommand?, RestaurantOrder?, RestaurantOrderEvent?>(
+```kotlin
+fun restaurantOrderDecider() = Decider<RestaurantOrderCommand?, RestaurantOrder?, RestaurantOrderEvent?>(
     // Initial state of the Restaurant Order is `null`. It does not exist.
     initialState = null,
     // Exhaustive command handler(s): for each type of [RestaurantCommand] you are going to publish specific events/facts, as required by the current state/s of the [RestaurantOrder].
@@ -206,7 +206,7 @@ Notice that `Decider` implements an interface `IDecider` to communicate the cont
         }
     }
 )
-  ```
+```
 
 </details>
 
@@ -284,8 +284,8 @@ fun <C, S, E> eventSourcingAggregate(
 <details>
   <summary>Example</summary>
 
-  ```kotlin
-    typealias RestaurantOrderAggregate = EventSourcingAggregate<RestaurantOrderCommand?, RestaurantOrder?, RestaurantOrderEvent?>
+```kotlin
+typealias RestaurantOrderAggregate = EventSourcingAggregate<RestaurantOrderCommand?, RestaurantOrder?, RestaurantOrderEvent?>
 
 fun restaurantOrderAggregate(
     restaurantOrderDecider: RestaurantOrderDecider,
@@ -294,7 +294,7 @@ fun restaurantOrderAggregate(
     decider = restaurantOrderDecider,
     eventRepository = eventRepository,
 )
-  ```
+```
 
 </details>
 
@@ -329,8 +329,8 @@ fun <C, S, E> stateStoredAggregate(
 <details>
   <summary>Example</summary>
 
-  ```kotlin
-    typealias RestaurantOrderAggregate = StateStoredAggregate<RestaurantOrderCommand?, RestaurantOrder?, RestaurantOrderEvent?>
+```kotlin
+typealias RestaurantOrderAggregate = StateStoredAggregate<RestaurantOrderCommand?, RestaurantOrder?, RestaurantOrderEvent?>
 
 fun restaurantOrderAggregate(
     restaurantOrderDecider: RestaurantOrderDecider,
@@ -339,7 +339,7 @@ fun restaurantOrderAggregate(
     decider = restaurantOrderDecider,
     stateRepository = aggregateRepository
 )
-  ```
+```
 
 </details>
 
@@ -385,8 +385,8 @@ Notice that `View` implements an interface `IView` to communicate the contract.
 <details>
   <summary>Example</summary>
 
-  ```kotlin
-    fun restaurantOrderView() = View<RestaurantOrderViewState?, RestaurantOrderEvent?>(
+```kotlin
+fun restaurantOrderView() = View<RestaurantOrderViewState?, RestaurantOrderEvent?>(
     // Initial state of the [RestaurantOrderViewState] is `null`. It does not exist.
     initialState = null,
     // Exhaustive event-sourcing handling part: for each event of type [RestaurantOrderEvent] you are going to evolve from the current state/s of the [RestaurantOrderViewState] to a new state of the [RestaurantOrderViewState].
@@ -405,7 +405,7 @@ Notice that `View` implements an interface `IView` to communicate the contract.
         }
     }
 )
-  ```
+```
 
 </details>
 
@@ -470,8 +470,8 @@ fun <S, E> materializedView(
 <details>
   <summary>Example</summary>
 
-  ```kotlin
-    typealias RestaurantOrderMaterializedView = MaterializedView<RestaurantOrderViewState?, RestaurantOrderEvent?>
+```kotlin
+typealias RestaurantOrderMaterializedView = MaterializedView<RestaurantOrderViewState?, RestaurantOrderEvent?>
 
 fun restaurantOrderMaterializedView(
     restaurantOrderView: RestaurantOrderView,
@@ -480,7 +480,7 @@ fun restaurantOrderMaterializedView(
     view = restaurantOrderView,
     viewStateRepository = viewStateRepository
 )
-  ```
+```
 
 </details>
 
@@ -523,7 +523,7 @@ Notice that `Saga` implements an interface `ISaga` to communicate the contract.
 <details>
   <summary>Example</summary>
 
-  ```kotlin
+```kotlin
 
 fun restaurantOrderSaga() = Saga<RestaurantEvent?, RestaurantOrderCommand>(
     react = { e ->
@@ -557,7 +557,7 @@ fun restaurantSaga() = Saga<RestaurantOrderEvent?, RestaurantCommand>(
     }
 )
 
-  ```
+ ```
 
 </details>
 
@@ -608,7 +608,7 @@ fun <AR, A> sagaManager(
 <details>
   <summary>Example</summary>
 
-  ```kotlin
+```kotlin
 
 typealias OrderRestaurantSagaManager = SagaManager<Event?, Command>
 
@@ -622,7 +622,7 @@ fun sagaManager(
     // How and where do you want to publish new commands.
     actionPublisher = actionPublisher
 )
-  ```
+```
 
 </details>
 
