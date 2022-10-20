@@ -258,3 +258,17 @@ fun <C, S, E, V> stateStoredLockingOrchestratingAggregate(
         StateLockingRepository<C, S, V> by stateRepository,
         IDecider<C, S, E> by decider,
         ISaga<E, C> by saga {}
+
+fun <C, S, E> stateComputation(
+    decider: IDecider<C, S, E>
+): StateComputation<C, S, E> =
+    object : StateComputation<C, S, E>,
+        IDecider<C, S, E> by decider {}
+
+fun <C, S, E> stateOrchestratingComputation(
+    decider: IDecider<C, S, E>,
+    saga: ISaga<E, C>
+): StateOrchestratingComputation<C, S, E> =
+    object : StateOrchestratingComputation<C, S, E>,
+        IDecider<C, S, E> by decider,
+        ISaga<E, C> by saga {}

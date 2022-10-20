@@ -30,7 +30,7 @@ class EventSourcedAggregateContextualTest : FunSpec({
             flowOf(
                 AddEvenNumber(Description("desc"), NumberValue(6)),
                 AddEvenNumber(Description("desc"), NumberValue(4))
-            ).handleIt().toList() shouldContainExactly listOf(
+            ).handle().toList() shouldContainExactly listOf(
                 EvenNumberAdded(Description("desc"), NumberValue(6)),
                 EvenNumberAdded(Description("desc"), NumberValue(4))
             )
@@ -40,7 +40,7 @@ class EventSourcedAggregateContextualTest : FunSpec({
     // version 2
     test("Event-sourced decider and repository - contextual - add even number") {
         evenNumberRepository.deleteAll()
-        with(evenDecider) {
+        with(eventComputation(evenDecider)) {
             with(evenNumberRepository) {
                 flowOf(
                     AddEvenNumber(Description("desc"), NumberValue(6)),

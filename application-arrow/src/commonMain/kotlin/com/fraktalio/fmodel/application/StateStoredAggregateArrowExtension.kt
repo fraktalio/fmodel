@@ -19,11 +19,10 @@ package com.fraktalio.fmodel.application
 import arrow.core.continuations.Effect
 import arrow.core.continuations.effect
 import arrow.core.nonFatalOrThrow
-import com.fraktalio.fmodel.application.Error.*
+import com.fraktalio.fmodel.application.Error.CommandHandlingFailed
+import com.fraktalio.fmodel.application.Error.CommandPublishingFailed
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 
 /**
  * Extension function - Handles the command message of type [C]
@@ -35,59 +34,15 @@ import kotlinx.coroutines.flow.map
  */
 @FlowPreview
 suspend fun <C, S, E, I> I.handleWithEffect(command: C): Effect<Error, S> where I : StateComputation<C, S, E>,
-                                                                                I : StateRepository<C, S> {
-    /**
-     * Inner function - Computes new State based on the previous State and the [command] or fails.
-     *
-     * @param command of type [C]
-     * @return [Effect] (either the newly computed state of type [S] or [Error])
-     */
-    suspend fun S?.computeNewStateWithEffect(command: C): Effect<Error, S> =
-        effect {
-            try {
-                computeNewState(command)
-            } catch (t: Throwable) {
-                shift(CalculatingNewStateFailed(this@computeNewStateWithEffect, command, t.nonFatalOrThrow()))
-            }
-        }
+                                                                                I : StateRepository<C, S> =
+    effect {
+        try {
+            command.fetchState().computeNewState(command).save()
+        } catch (t: Throwable) {
+            shift(CommandHandlingFailed(this, t.nonFatalOrThrow()))
 
-    /**
-     * Inner function - Fetch state - either version
-     *
-     * @receiver Command of type [C]
-     * @return [Effect] (either [Error] or the State of type [S]?)
-     */
-    suspend fun C.fetchStateWithEffect(): Effect<Error, S?> =
-        effect {
-            try {
-                fetchState()
-            } catch (t: Throwable) {
-                shift(FetchingStateFailed(this@fetchStateWithEffect, t.nonFatalOrThrow()))
-            }
         }
-
-    /**
-     * Inner function - Save state - either version
-     *
-     * @receiver State of type [S]
-     * @return [Effect] (either [Error] or the newly saved State of type [S])
-     */
-    suspend fun S.saveWithEffect(): Effect<Error, S> =
-        effect {
-            try {
-                save()
-            } catch (t: Throwable) {
-                shift(StoringStateFailed(this@saveWithEffect, t.nonFatalOrThrow()))
-            }
-        }
-
-    return effect {
-        command
-            .fetchStateWithEffect().bind()
-            .computeNewStateWithEffect(command).bind()
-            .saveWithEffect().bind()
     }
-}
 
 /**
  * Extension function - Handles the command message of type [C] to the locking state stored aggregate, optimistically
@@ -99,60 +54,17 @@ suspend fun <C, S, E, I> I.handleWithEffect(command: C): Effect<Error, S> where 
  */
 @FlowPreview
 suspend fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(command: C): Effect<Error, Pair<S, V>> where I : StateComputation<C, S, E>,
-                                                                                                          I : StateLockingRepository<C, S, V> {
-    /**
-     * Inner function - Computes new State based on the previous State and the [command] or fails.
-     *
-     * @param command of type [C]
-     * @return [Effect] (either the newly computed state of type [S] or [Error])
-     */
-    suspend fun S?.computeNewStateWithEffect(command: C): Effect<Error, S> =
-        effect {
-            try {
-                computeNewState(command)
-            } catch (t: Throwable) {
-                shift(CalculatingNewStateFailed(this@computeNewStateWithEffect, command, t.nonFatalOrThrow()))
-            }
+                                                                                                          I : StateLockingRepository<C, S, V> =
+    effect {
+        try {
+            val (state, version) = command.fetchState()
+            state
+                .computeNewState(command)
+                .save(version)
+        } catch (t: Throwable) {
+            shift(CommandHandlingFailed(this, t.nonFatalOrThrow()))
         }
-
-    /**
-     * Inner function - Fetch state - either version
-     *
-     * @receiver Command of type [C]
-     * @return [Effect] (either [Error] or the State of type [S]?)
-     */
-    suspend fun C.fetchStateWithEffect(): Effect<Error, Pair<S?, V?>> =
-        effect {
-            try {
-                fetchState()
-            } catch (t: Throwable) {
-                shift(FetchingStateFailed(this@fetchStateWithEffect, t.nonFatalOrThrow()))
-            }
-        }
-
-    /**
-     * Inner function - Save state - either version
-     *
-     * @receiver State of type [S]
-     * @return [Effect] (either [Error] or the newly saved State of type [S])
-     */
-    suspend fun S.saveWithEffect(currentStateVersion: V?): Effect<Error, Pair<S, V>> =
-        effect {
-            try {
-                save(currentStateVersion)
-            } catch (t: Throwable) {
-                shift(StoringStateFailed(this@saveWithEffect, t.nonFatalOrThrow()))
-            }
-        }
-
-    return effect {
-        val (state, version) = command.fetchStateWithEffect().bind()
-        state
-            .computeNewStateWithEffect(command).bind()
-            .saveWithEffect(version).bind()
     }
-}
-
 
 /**
  * Extension function - Handles the [Flow] of command messages of type [C]
@@ -235,5 +147,3 @@ fun <C, S, E, A> Flow<C>.publishWithEffect(aggregate: A): Flow<Effect<Error, S>>
 fun <C, S, E, V, A> Flow<C>.publishOptimisticallyWithEffect(aggregate: A): Flow<Effect<Error, Pair<S, V>>> where A : StateComputation<C, S, E>,
                                                                                                                  A : StateLockingRepository<C, S, V> =
     aggregate.handleOptimisticallyWithEffect(this)
-
-private fun <S, V> S.pairWith(version: V): Pair<S, V> = Pair(this, version)

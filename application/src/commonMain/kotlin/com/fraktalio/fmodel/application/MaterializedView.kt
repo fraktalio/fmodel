@@ -139,3 +139,9 @@ fun <S, E, EV, SV> materializedLockingDeduplicationView(
     object : MaterializedLockingDeduplicationView<S, E, EV, SV>,
         ViewStateLockingDeduplicationRepository<E, S, EV, SV> by viewStateRepository,
         IView<S, E> by view {}
+
+fun <S, E> viewStateComputation(
+    view: IView<S, E>,
+): ViewStateComputation<S, E> =
+    object : ViewStateComputation<S, E>,
+        IView<S, E> by view {}

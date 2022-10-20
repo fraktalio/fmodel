@@ -1,5 +1,7 @@
 package com.fraktalio.fmodel.application
 
+import arrow.core.Either
+import arrow.core.continuations.Effect
 import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberViewRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
@@ -8,45 +10,51 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEv
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.even.query.evenNumberView
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.toList
 import kotlin.contracts.ExperimentalContracts
+
+private suspend infix fun <S> Effect<Error, S>.thenState(expected: S) {
+    val state = when (val result = this.toEither()) {
+        is Either.Right -> result.value
+        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
+    }
+    return state shouldBe expected
+}
 
 /**
  * Materialized View Contextual Test
  */
 @FlowPreview
 @ExperimentalContracts
-class MaterializedViewContextualTest : FunSpec({
+class MaterializedViewArrowContextualTest : FunSpec({
     val evenView = evenNumberView()
     val evenNumberViewRepository = evenNumberViewRepository() as EvenNumberViewRepository
 
-    test("Materialized view contextual - even number added") {
+    test("Materialized view arrow contextual - even number added") {
         evenNumberViewRepository.deleteAll()
         with(viewStateComputation(evenView)) {
             with(evenNumberViewRepository) {
                 flowOf(
                     EvenNumberAdded(Description("EvenNumberAdded"), NumberValue(2)),
-                    EvenNumberAdded(Description("EvenNumberAdded"), NumberValue(4))
-                ).handle().toList() shouldContainExactly listOf(
-                    EvenNumberState(Description("Initial state, EvenNumberAdded"), NumberValue(2)),
-                    EvenNumberState(Description("Initial state, EvenNumberAdded, EvenNumberAdded"), NumberValue(6))
+                ).handleWithEffect().first() thenState EvenNumberState(
+                    Description("Initial state, EvenNumberAdded"),
+                    NumberValue(2)
                 )
             }
         }
     }
 
-    test("Materialized view contextual materialized view interface - even number added") {
+    test("Materialized view arrow contextual materialized view interface - even number added") {
         evenNumberViewRepository.deleteAll()
         with(materializedView(evenView, evenNumberViewRepository)) {
             flowOf(
                 EvenNumberAdded(Description("EvenNumberAdded"), NumberValue(2)),
-                EvenNumberAdded(Description("EvenNumberAdded"), NumberValue(4))
-            ).handle().toList() shouldContainExactly listOf(
-                EvenNumberState(Description("Initial state, EvenNumberAdded"), NumberValue(2)),
-                EvenNumberState(Description("Initial state, EvenNumberAdded, EvenNumberAdded"), NumberValue(6))
+            ).handleWithEffect().first() thenState EvenNumberState(
+                Description("Initial state, EvenNumberAdded"),
+                NumberValue(2)
             )
         }
     }

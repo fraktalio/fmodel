@@ -245,3 +245,18 @@ fun <C, S, E, V> eventSourcingLockingOrchestratingAggregate(
         EventLockingRepository<C, E, V> by eventRepository,
         IDecider<C, S, E> by decider,
         ISaga<E, C> by saga {}
+
+
+fun <C, S, E> eventComputation(
+    decider: IDecider<C, S, E>
+): EventComputation<C, S, E> =
+    object : EventComputation<C, S, E>,
+        IDecider<C, S, E> by decider {}
+
+fun <C, S, E> eventOrchestratingComputation(
+    decider: IDecider<C, S, E>,
+    saga: ISaga<E, C>
+): EventOrchestratingComputation<C, S, E> =
+    object : EventOrchestratingComputation<C, S, E>,
+        IDecider<C, S, E> by decider,
+        ISaga<E, C> by saga {}

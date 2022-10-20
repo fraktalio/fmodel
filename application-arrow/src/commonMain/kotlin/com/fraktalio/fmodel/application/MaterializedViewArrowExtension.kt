@@ -32,41 +32,14 @@ import kotlinx.coroutines.flow.map
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-suspend fun <S, E, I> I.handleWithEffect(event: E): Effect<Error, S> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> {
-
-    fun S?.computeNewStateWithEffect(event: E): Effect<Error, S> =
-        effect {
-            try {
-                computeNewState(event)
-            } catch (t: Throwable) {
-                shift(CalculatingNewViewStateFailed(this@computeNewStateWithEffect, event, t.nonFatalOrThrow()))
-            }
+suspend fun <S, E, I> I.handleWithEffect(event: E): Effect<Error, S> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> =
+    effect {
+        try {
+            event.fetchState().computeNewState(event).save()
+        } catch (t: Throwable) {
+            shift(EventHandlingFailed(event, t.nonFatalOrThrow()))
         }
-
-    suspend fun E.fetchStateWithEffect(): Effect<Error, S?> =
-        effect {
-            try {
-                fetchState()
-            } catch (t: Throwable) {
-                shift(FetchingViewStateFailed(this@fetchStateWithEffect, t.nonFatalOrThrow()))
-            }
-        }
-
-    suspend fun S.saveWithEffect(): Effect<Error, S> =
-        effect {
-            try {
-                save()
-            } catch (t: Throwable) {
-                shift(StoringStateFailed(this@saveWithEffect, t.nonFatalOrThrow()))
-            }
-        }
-
-    return effect {
-        event.fetchStateWithEffect().bind()
-            .computeNewStateWithEffect(event).bind()
-            .saveWithEffect().bind()
     }
-}
 
 /**
  * Extension function - Handles the event of type [E]
@@ -76,41 +49,15 @@ suspend fun <S, E, I> I.handleWithEffect(event: E): Effect<Error, S> where I : V
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-suspend fun <S, E, V, I> I.handleOptimisticallyWithEffect(event: E): Effect<Error, Pair<S, V>> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> {
-    fun S?.computeNewStateWithEffect(event: E): Effect<Error, S> =
-        effect {
-            try {
-                computeNewState(event)
-            } catch (t: Throwable) {
-                shift(CalculatingNewViewStateFailed(this@computeNewStateWithEffect, event, t.nonFatalOrThrow()))
-            }
+suspend fun <S, E, V, I> I.handleOptimisticallyWithEffect(event: E): Effect<Error, Pair<S, V>> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> =
+    effect {
+        try {
+            val (state, version) = event.fetchState()
+            state.computeNewState(event).save(version)
+        } catch (t: Throwable) {
+            shift(EventHandlingFailed(event, t.nonFatalOrThrow()))
         }
-
-    suspend fun E.fetchStateWithEffect(): Effect<Error, Pair<S?, V?>> =
-        effect {
-            try {
-                fetchState()
-            } catch (t: Throwable) {
-                shift(FetchingViewStateFailed(this@fetchStateWithEffect, t.nonFatalOrThrow()))
-            }
-        }
-
-    suspend fun S.saveWithEffect(currentVersion: V?): Effect<Error, Pair<S, V>> =
-        effect {
-            try {
-                save(currentVersion)
-            } catch (t: Throwable) {
-                shift(StoringStateFailed(this@saveWithEffect, t.nonFatalOrThrow()))
-            }
-        }
-
-    return effect {
-        val (state, version) = event.fetchStateWithEffect().bind()
-        state
-            .computeNewStateWithEffect(event).bind()
-            .saveWithEffect(version).bind()
     }
-}
 
 /**
  * Extension function - Handles the event of type [E]
@@ -124,39 +71,14 @@ suspend fun <S, E, V, I> I.handleOptimisticallyWithEffect(event: E): Effect<Erro
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 suspend fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplicationWithEffect(eventAndVersion: Pair<E, EV>): Effect<Error, Pair<S, SV>> where I : ViewStateComputation<S, E>, I : ViewStateLockingDeduplicationRepository<E, S, EV, SV> {
-    fun S?.computeNewStateWithEffect(event: E): Effect<Error, S> =
-        effect {
-            try {
-                computeNewState(event)
-            } catch (t: Throwable) {
-                shift(CalculatingNewViewStateFailed(this@computeNewStateWithEffect, event, t.nonFatalOrThrow()))
-            }
-        }
-
-    suspend fun E.fetchStateWithEffect(): Effect<Error, Pair<S?, SV?>> =
-        effect {
-            try {
-                fetchState()
-            } catch (t: Throwable) {
-                shift(FetchingViewStateFailed(this@fetchStateWithEffect, t.nonFatalOrThrow()))
-            }
-        }
-
-    suspend fun S.saveWithEffect(entityVersion: EV, currentStateVersion: SV?): Effect<Error, Pair<S, SV>> =
-        effect {
-            try {
-                save(entityVersion, currentStateVersion)
-            } catch (t: Throwable) {
-                shift(StoringStateFailed(this@saveWithEffect, t.nonFatalOrThrow()))
-            }
-        }
-
     return effect {
         val (event, eventVersion) = eventAndVersion
-        val (state, currentStateVersion) = event.fetchStateWithEffect().bind()
-        state
-            .computeNewStateWithEffect(event).bind()
-            .saveWithEffect(eventVersion, currentStateVersion).bind()
+        try {
+            val (state, currentStateVersion) = event.fetchState()
+            state.computeNewState(event).save(eventVersion, currentStateVersion)
+        } catch (t: Throwable) {
+            shift(EventHandlingFailed(event, t.nonFatalOrThrow()))
+        }
     }
 }
 
