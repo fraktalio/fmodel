@@ -59,25 +59,6 @@ class EventSourcedAggregateActorTest : FunSpec({
     val evenDecider = evenNumberDecider()
     val evenNumberRepository = evenNumberRepository() as EvenNumberRepository
 
-    test("Event-sourced aggregate actor - add even number") {
-        with(evenDecider) {
-            evenNumberRepository.deleteAll()
-
-            // choosing command `description` hash as a partition key. It is the same for these two commands.
-            given(evenNumberRepository, { it?.description.hashCode() }) {
-                whenCommand(
-                    flowOf(
-                        AddEvenNumber(Description("desc"), NumberValue(6)),
-                        AddEvenNumber(Description("desc"), NumberValue(4))
-                    )
-                )
-            } thenEventsExactly listOf(
-                EvenNumberAdded(Description("desc"), NumberValue(6)),
-                EvenNumberAdded(Description("desc"), NumberValue(4))
-            )
-        }
-    }
-
     test("Event-sourced aggregate actor - add even number - different partition keys") {
         with(evenDecider) {
             evenNumberRepository.deleteAll()

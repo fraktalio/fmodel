@@ -18,39 +18,33 @@ package com.fraktalio.fmodel.application.examples.numbers.even.command
 
 import com.fraktalio.fmodel.application.EventRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
-import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
+import kotlinx.coroutines.flow.*
 
 /**
  * A very simple event store ;)  It is initially empty.
  */
-private var evenNumberEventStorage: List<NumberEvent.EvenNumberEvent?> = emptyList()
+private var evenNumberEventStorage: List<EvenNumberEvent?> = emptyList()
 
 /**
  * Even number repository implementation
  *
  * @constructor Creates Even number repository
  */
-class EvenNumberRepository : EventRepository<EvenNumberCommand?, NumberEvent.EvenNumberEvent?> {
+class EvenNumberRepository : EventRepository<EvenNumberCommand?, EvenNumberEvent?> {
 
-    override fun EvenNumberCommand?.fetchEvents(): Flow<NumberEvent.EvenNumberEvent?> =
-
+    override fun EvenNumberCommand?.fetchEvents(): Flow<EvenNumberEvent?> =
         evenNumberEventStorage.asFlow()
 
-
-    override suspend fun NumberEvent.EvenNumberEvent?.save(): NumberEvent.EvenNumberEvent? {
-
-        evenNumberEventStorage = evenNumberEventStorage.plus(this)
-
-        return this
+    override fun Flow<EvenNumberEvent?>.save(): Flow<EvenNumberEvent?> = flow {
+        evenNumberEventStorage = evenNumberEventStorage.plus(this@save.toList())
+        emitAll(evenNumberEventStorage.asFlow())
     }
 
     fun deleteAll() {
         evenNumberEventStorage = emptyList()
 
     }
-
 }
 
 /**
@@ -58,6 +52,6 @@ class EvenNumberRepository : EventRepository<EvenNumberCommand?, NumberEvent.Eve
  *
  * @return event repository instance for Even numbers
  */
-fun evenNumberRepository(): EventRepository<EvenNumberCommand?, NumberEvent.EvenNumberEvent?> =
+fun evenNumberRepository(): EventRepository<EvenNumberCommand?, EvenNumberEvent?> =
     EvenNumberRepository()
 

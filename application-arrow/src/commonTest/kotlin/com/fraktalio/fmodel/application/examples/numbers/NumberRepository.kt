@@ -21,9 +21,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 
 /**
  * A very simple event store ;)  It is initially empty.
@@ -39,7 +37,6 @@ class NumberRepository : EventRepository<NumberCommand?, NumberEvent?> {
 
 
     override fun NumberCommand?.fetchEvents(): Flow<NumberEvent?> =
-
         numberEventStorage.asFlow().map { numberEvent ->
             when (numberEvent) {
                 is EvenNumberEvent -> numberEvent
@@ -48,20 +45,15 @@ class NumberRepository : EventRepository<NumberCommand?, NumberEvent?> {
             }
         }
 
-
-    override suspend fun NumberEvent?.save(): NumberEvent? {
-
-        numberEventStorage = numberEventStorage.plus(this)
-
-        return this
+    override fun Flow<NumberEvent?>.save(): Flow<NumberEvent?> = flow {
+        numberEventStorage = numberEventStorage.plus(this@save.toList())
+        emitAll(numberEventStorage.asFlow())
     }
+
 
     fun deleteAll() {
         numberEventStorage = emptyList()
-
     }
-
-
 }
 
 /**

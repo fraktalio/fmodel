@@ -62,6 +62,15 @@ private suspend infix fun <S> Effect<Error, S>.thenState(expected: S) {
     return state shouldBe expected
 }
 
+private suspend infix fun <S, V> Effect<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
+    val state = when (val result = this.toEither()) {
+        is Either.Right -> result.value
+        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
+    }
+    return state shouldBe expected
+}
+
+
 private suspend fun <S> Effect<Error, S>.thenError() {
     val error = when (val result = this.toEither()) {
         is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value ${result.value}")
@@ -98,7 +107,7 @@ class StateStoredAggregateTest : FunSpec({
 
             given(evenNumberLockingStateRepository) {
                 whenCommand(AddEvenNumber(Description("2"), NumberValue(2)))
-            } thenState Pair(EvenNumberState(Description("2"), NumberValue(2)), 1)
+            } thenStateAndVersion Pair(EvenNumberState(Description("2"), NumberValue(2)), 1)
         }
     }
 

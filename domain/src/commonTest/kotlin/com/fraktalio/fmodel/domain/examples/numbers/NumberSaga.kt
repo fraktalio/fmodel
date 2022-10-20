@@ -19,16 +19,21 @@ package com.fraktalio.fmodel.domain.examples.numbers
 import com.fraktalio.fmodel.domain.Saga
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.AddEvenNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand.SubtractEvenNumber
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.AddOddNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberCommand.SubtractOddNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEvent.EvenNumberSubtracted
+import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberSubtracted
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
+import com.fraktalio.fmodel.domain.saga
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 
@@ -38,66 +43,71 @@ import kotlinx.coroutines.flow.flowOf
  * It reacts on Action Results of type of any Event (Even or Odd) and issue a Command/Action (Odd or Even)
  * For example if the EvenNumberAdded happened with value 4, a new command of type AddOddNumber will be published with value EvenNumberAdded-1=3
  *
+ * NOTE: Saga DSL is used to create the Saga
+ *
  * @return number Saga instance
  */
-fun numberSaga() = Saga<NumberEvent, NumberCommand>(
-    react = { numberEvent ->
-        when (numberEvent) {
-            is EvenNumberAdded -> flowOf(
-                AddOddNumber(
-                    Description("${numberEvent.value.get - 1}"),
-                    NumberValue(numberEvent.value.get - 1)
-                )
+fun numberSaga() = saga<NumberEvent, NumberCommand> { numberEvent ->
+    when (numberEvent) {
+        is EvenNumberAdded -> flowOf(
+            AddOddNumber(
+                Description("${numberEvent.value.get - 1}"),
+                NumberValue(numberEvent.value.get - 1)
             )
-            is EvenNumberSubtracted -> flowOf(
-                SubtractOddNumber(
-                    Description("${numberEvent.value.get - 1}"),
-                    NumberValue(numberEvent.value.get - 1)
-                )
+        )
+
+        is EvenNumberSubtracted -> flowOf(
+            SubtractOddNumber(
+                Description("${numberEvent.value.get - 1}"),
+                NumberValue(numberEvent.value.get - 1)
             )
-            is OddNumberAdded -> flowOf(
-                AddEvenNumber(
-                    Description("${numberEvent.value.get + 1}"),
-                    NumberValue(numberEvent.value.get + 1)
-                )
+        )
+
+        is OddNumberAdded -> flowOf(
+            AddEvenNumber(
+                Description("${numberEvent.value.get + 1}"),
+                NumberValue(numberEvent.value.get + 1)
             )
-            is OddNumberSubtracted -> flowOf(
-                SubtractEvenNumber(
-                    Description("${numberEvent.value.get + 1}"),
-                    NumberValue(numberEvent.value.get + 1)
-                )
+        )
+
+        is OddNumberSubtracted -> flowOf(
+            SubtractEvenNumber(
+                Description("${numberEvent.value.get + 1}"),
+                NumberValue(numberEvent.value.get + 1)
             )
-            else -> emptyFlow()
-        }
+        )
+
+        else -> emptyFlow()
     }
-)
+}
 
 /**
  * Even number saga
  *
  * It reacts on Action Results of type of any [NumberEvent.EvenNumberEvent] and issue a Command/Action of type [NumberCommand.OddNumberCommand]
  *
+ * NOTE: Saga DSL is NOT used to create the Saga, we use a regular/primary constructor in this case.
  * @return even number Saga instance
  */
-fun evenNumberSaga() = Saga<NumberEvent.EvenNumberEvent?, NumberCommand.OddNumberCommand>(
-    react = { numberEvent ->
-        when (numberEvent) {
-            is EvenNumberAdded -> flowOf(
-                AddOddNumber(
-                    Description("${numberEvent.value.get - 1}"),
-                    NumberValue(numberEvent.value.get - 1)
-                )
+fun evenNumberSaga() = Saga<EvenNumberEvent?, OddNumberCommand> { numberEvent ->
+    when (numberEvent) {
+        is EvenNumberAdded -> flowOf(
+            AddOddNumber(
+                Description("${numberEvent.value.get - 1}"),
+                NumberValue(numberEvent.value.get - 1)
             )
-            is EvenNumberSubtracted -> flowOf(
-                SubtractOddNumber(
-                    Description("${numberEvent.value.get - 1}"),
-                    NumberValue(numberEvent.value.get - 1)
-                )
+        )
+
+        is EvenNumberSubtracted -> flowOf(
+            SubtractOddNumber(
+                Description("${numberEvent.value.get - 1}"),
+                NumberValue(numberEvent.value.get - 1)
             )
-            else -> emptyFlow()
-        }
+        )
+
+        else -> emptyFlow()
     }
-)
+}
 
 /**
  * Odd number saga
@@ -106,7 +116,7 @@ fun evenNumberSaga() = Saga<NumberEvent.EvenNumberEvent?, NumberCommand.OddNumbe
  *
  * @return odd number Saga instance
  */
-fun oddNumberSaga() = Saga<NumberEvent.OddNumberEvent?, NumberCommand.EvenNumberCommand>(
+fun oddNumberSaga() = Saga<OddNumberEvent?, EvenNumberCommand>(
     react = { numberEvent ->
         when (numberEvent) {
             is OddNumberAdded -> flowOf(
@@ -115,12 +125,14 @@ fun oddNumberSaga() = Saga<NumberEvent.OddNumberEvent?, NumberCommand.EvenNumber
                     NumberValue(numberEvent.value.get + 1)
                 )
             )
+
             is OddNumberSubtracted -> flowOf(
                 SubtractEvenNumber(
                     Description("${numberEvent.value.get + 1}"),
                     NumberValue(numberEvent.value.get + 1)
                 )
             )
+
             else -> emptyFlow()
         }
     }

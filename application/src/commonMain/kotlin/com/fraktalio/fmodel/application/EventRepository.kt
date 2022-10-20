@@ -17,7 +17,8 @@
 package com.fraktalio.fmodel.application
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Event repository interface
@@ -43,7 +44,7 @@ interface EventRepository<C, E> {
      * @receiver Event of type [E]
      * @return newly saved Event of type [E]
      */
-    suspend fun E.save(): E
+    suspend fun E.save(): E = flowOf(this).save().first()
 
     /**
      * Save events
@@ -51,14 +52,14 @@ interface EventRepository<C, E> {
      * @receiver [Flow] of Events of type [E]
      * @return newly saved [Flow] of Events of type [E]
      */
-    fun Flow<E>.save(): Flow<E> = map { it.save() }
+    fun Flow<E>.save(): Flow<E>
 }
 
 /**
  * A type alias for the version provider/function.
  * It provides the Pair of (Event, Version) of the last Event in the stream.
  */
-typealias LatestVersionProvider <E, V> = (E) -> Pair<E, V>
+typealias LatestVersionProvider <E, V> = suspend (E) -> Pair<E, V>
 
 /**
  * Event locking repository interface.
@@ -109,7 +110,7 @@ interface EventLockingRepository<C, E, V> {
      * @receiver Event of type [E]
      * @return newly saved Event of type [Pair]<[E], [V]>
      */
-    suspend fun E.save(latestVersion: Pair<E, V>?): Pair<E, V>
+    suspend fun E.save(latestVersion: Pair<E, V>?): Pair<E, V> = flowOf(this).save(latestVersionProvider).first()
 
     /**
      * Save events

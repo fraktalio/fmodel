@@ -101,7 +101,8 @@ Both types of systems can be designed by using only these two functions and thre
 There is more to it! You can switch from one system type to another or have both flavors included within your systems
 landscape.
 
-### A proof:
+<details>
+  <summary>A proof</summary>
 
 We can fold/recreate the new state out of the flow of events by using `evolve` function `(S, E) -> S` and providing the
 initialState of type S as a starting point.
@@ -114,13 +115,14 @@ Essentially, this `fold` is a function that is mapping a flow of Events to the S
 
 We can now use this function `(Flow<E>) -> S` to:
 
-- contra-map our `decide` function (`(C, S) -> Flow<E>`) over `S` type to: `(C, Flow<E>) -> Flow<E>`  - **
-  this is an event-sourced system**
+- contra-map our `decide` function (`(C, S) -> Flow<E>`) over `S` type to: `(C, Flow<E>) -> Flow<E>`  - **this is an
+  event-sourced system**
 - or to map our `decide` function (`(C, S) -> Flow<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored
   system**
 
-We can verify that we can design any information system (event-sourced or/and state-stored) in this way by using these
-two functions wrapped in a datatype class (algebraic data structure), which is generalized with three generic
+</details>
+
+Two functions are wrapped in a datatype class (algebraic data structure), which is generalized with three generic
 parameters:
 
 ```kotlin
@@ -165,6 +167,48 @@ typealias IDecider<C, S, E> = I_Decider<C, S, S, E, E>
 
 Additionally, `initialState` of the Decider is introduced to gain more control over the initial state of the Decider.
 Notice that `Decider` implements an interface `IDecider` to communicate the contract.
+
+<details>
+  <summary>Example</summary>
+
+```kotlin
+fun restaurantOrderDecider() = Decider<RestaurantOrderCommand?, RestaurantOrder?, RestaurantOrderEvent?>(
+    // Initial state of the Restaurant Order is `null`. It does not exist.
+    initialState = null,
+    // Exhaustive command handler(s): for each type of [RestaurantCommand] you are going to publish specific events/facts, as required by the current state/s of the [RestaurantOrder].
+    decide = { c, s ->
+        when (c) {
+            is CreateRestaurantOrderCommand ->
+                // ** positive flow **
+                if (s == null) flowOf(RestaurantOrderCreatedEvent(c.identifier, c.lineItems, c.restaurantIdentifier))
+                // ** negative flow **
+                else flowOf(RestaurantOrderRejectedEvent(c.identifier, "Restaurant order already exists"))
+            is MarkRestaurantOrderAsPreparedCommand ->
+                // ** positive flow **
+                if ((s != null && CREATED == s.status)) flowOf(RestaurantOrderPreparedEvent(c.identifier))
+                // ** negative flow **
+                else flowOf(
+                    RestaurantOrderNotPreparedEvent(
+                        c.identifier,
+                        "Restaurant order does not exist or not in CREATED state"
+                    )
+                )
+            null -> emptyFlow() // We ignore the `null` command by emitting the empty flow. Only the Decider that can handle `null` command can be combined (Monoid) with other Deciders.
+        }
+    },
+    // Exhaustive event-sourcing handler(s): for each event of type [RestaurantEvent] you are going to evolve from the current state/s of the [RestaurantOrder] to a new state of the [RestaurantOrder]
+    evolve = { s, e ->
+        when (e) {
+            is RestaurantOrderCreatedEvent -> RestaurantOrder(e.identifier, e.restaurantId, CREATED, e.lineItems)
+            is RestaurantOrderPreparedEvent -> s?.copy(status = PREPARED)
+            is RestaurantOrderErrorEvent -> s // Error events are not changing the state / We return current state instead.
+            null -> s // Null events are not changing the state / We return current state instead. Only the Decider that can handle `null` event can be combined (Monoid) with other Deciders.
+        }
+    }
+)
+```
+
+</details>
 
 ![decider image](.assets/decider.png)
 
@@ -237,6 +281,23 @@ fun <C, S, E> eventSourcingAggregate(
         IDecider<C, S, E> by decider {}
 ```
 
+<details>
+  <summary>Example</summary>
+
+```kotlin
+typealias RestaurantOrderAggregate = EventSourcingAggregate<RestaurantOrderCommand?, RestaurantOrder?, RestaurantOrderEvent?>
+
+fun restaurantOrderAggregate(
+    restaurantOrderDecider: RestaurantOrderDecider,
+    eventRepository: EventRepository<RestaurantOrderCommand?, RestaurantOrderEvent?>
+): RestaurantOrderAggregate = eventSourcingAggregate(
+    decider = restaurantOrderDecider,
+    eventRepository = eventRepository,
+)
+```
+
+</details>
+
 ### State-stored aggregate
 
 [State stored aggregate](application/src/commonMain/kotlin/com/fraktalio/fmodel/application/StateStoredAggregate.kt) is
@@ -265,11 +326,30 @@ fun <C, S, E> stateStoredAggregate(
         IDecider<C, S, E> by decider {}
 ```
 
-*The logic is orchestrated on the application layer. The components/functions are composed in different ways to support variety of requirements.*
+<details>
+  <summary>Example</summary>
+
+```kotlin
+typealias RestaurantOrderAggregate = StateStoredAggregate<RestaurantOrderCommand?, RestaurantOrder?, RestaurantOrderEvent?>
+
+fun restaurantOrderAggregate(
+    restaurantOrderDecider: RestaurantOrderDecider,
+    aggregateRepository: StateRepository<RestaurantOrderCommand?, RestaurantOrder?>
+): RestaurantOrderAggregate = stateStoredAggregate(
+    decider = restaurantOrderDecider,
+    stateRepository = aggregateRepository
+)
+```
+
+</details>
+
+*The logic is orchestrated on the application layer. The components/functions are composed in different ways to support
+variety of requirements.*
 
 ![aggregates-application-layer](.assets/aggregates.png)
 
-Check, [application-vanilla](application-vanilla) and [application-arrow](application-arrow) modules/libraries for scenarios that are offered out of the box.  
+Check, [application-vanilla](application-vanilla) and [application-arrow](application-arrow) modules/libraries for
+scenarios that are offered out of the box.
 
 ## View
 
@@ -301,6 +381,33 @@ typealias IView<S, E> = I_View<S, S, E>
 ```
 
 Notice that `View` implements an interface `IView` to communicate the contract.
+
+<details>
+  <summary>Example</summary>
+
+```kotlin
+fun restaurantOrderView() = View<RestaurantOrderViewState?, RestaurantOrderEvent?>(
+    // Initial state of the [RestaurantOrderViewState] is `null`. It does not exist.
+    initialState = null,
+    // Exhaustive event-sourcing handling part: for each event of type [RestaurantOrderEvent] you are going to evolve from the current state/s of the [RestaurantOrderViewState] to a new state of the [RestaurantOrderViewState].
+    evolve = { s, e ->
+        when (e) {
+            is RestaurantOrderCreatedEvent -> RestaurantOrderViewState(
+                e.identifier,
+                e.restaurantId,
+                CREATED,
+                e.lineItems
+            )
+            is RestaurantOrderPreparedEvent -> s?.copy(status = PREPARED)
+            is RestaurantOrderErrorEvent -> s // We ignore the `error` event by returning current State/s.
+            null -> s // We ignore the `null` event by returning current State/s. Only the View that can handle `null` event can be combined (Monoid) with other Views.
+
+        }
+    }
+)
+```
+
+</details>
 
 ![view image](.assets/view.png)
 
@@ -360,11 +467,30 @@ fun <S, E> materializedView(
     object : MaterializedView<S, E>, ViewStateRepository<E, S> by viewStateRepository, IView<S, E> by view {}
 ```
 
-*The logic is orchestrated on the application layer. The components/functions are composed in different ways to support variety of requirements.*
+<details>
+  <summary>Example</summary>
+
+```kotlin
+typealias RestaurantOrderMaterializedView = MaterializedView<RestaurantOrderViewState?, RestaurantOrderEvent?>
+
+fun restaurantOrderMaterializedView(
+    restaurantOrderView: RestaurantOrderView,
+    viewStateRepository: ViewStateRepository<RestaurantOrderEvent?, RestaurantOrderViewState?>
+): RestaurantOrderMaterializedView = materializedView(
+    view = restaurantOrderView,
+    viewStateRepository = viewStateRepository
+)
+```
+
+</details>
+
+*The logic is orchestrated on the application layer. The components/functions are composed in different ways to support
+variety of requirements.*
 
 ![materialized-views-application-layer](.assets/mviews.png)
 
-Check, [application-vanilla](application-vanilla) and [application-arrow](application-arrow) modules/libraries for scenarios that are offered out of the box.
+Check, [application-vanilla](application-vanilla) and [application-arrow](application-arrow) modules/libraries for
+scenarios that are offered out of the box.
 
 ## Saga
 
@@ -394,6 +520,47 @@ typealias ISaga<AR, A> = I_Saga<AR, A>
 
 Notice that `Saga` implements an interface `ISaga` to communicate the contract.
 
+<details>
+  <summary>Example</summary>
+
+```kotlin
+
+fun restaurantOrderSaga() = Saga<RestaurantEvent?, RestaurantOrderCommand>(
+    react = { e ->
+        when (e) {
+            is RestaurantOrderPlacedAtRestaurantEvent -> flowOf(
+                CreateRestaurantOrderCommand(
+                    e.restaurantOrderId,
+                    e.identifier,
+                    e.lineItems
+                )
+            )
+            is RestaurantCreatedEvent -> emptyFlow() // We choose to ignore this event, in our case.
+            is RestaurantMenuActivatedEvent -> emptyFlow() // We choose to ignore this event, in our case.
+            is RestaurantMenuChangedEvent -> emptyFlow() // We choose to ignore this event, in our case.
+            is RestaurantMenuPassivatedEvent -> emptyFlow() // We choose to ignore this event, in our case.
+            is RestaurantErrorEvent -> emptyFlow() // We choose to ignore this event, in our case.
+            null -> emptyFlow() // We ignore the `null` event by returning the empty flow of commands. Only the Saga that can handle `null` event/action-result can be combined (Monoid) with other Sagas.
+        }
+    }
+)
+
+fun restaurantSaga() = Saga<RestaurantOrderEvent?, RestaurantCommand>(
+    react = { e ->
+        when (e) {
+            //TODO evolve the example ;), it does not do much at the moment.
+            is RestaurantOrderCreatedEvent -> emptyFlow()
+            is RestaurantOrderPreparedEvent -> emptyFlow()
+            is RestaurantOrderErrorEvent -> emptyFlow()
+            null -> emptyFlow() // We ignore the `null` event by returning the empty flow of commands. Only the Saga that can handle `null` event/action-result can be combined (Monoid) with other Sagas.
+        }
+    }
+)
+
+ ```
+
+</details>
+
 ![saga image](.assets/saga.png)
 
 ### Saga extensions and functions
@@ -412,7 +579,6 @@ Notice that `Saga` implements an interface `ISaga` to communicate the contract.
 - with identity element `Saga<Nothing?, Nothing?>`
 
 We can now construct `Saga Manager` by using this `saga`.
-
 
 ### Saga Manager
 
@@ -438,6 +604,27 @@ fun <AR, A> sagaManager(
 ): SagaManager<AR, A> =
     object : SagaManager<AR, A>, ActionPublisher<A> by actionPublisher, ISaga<AR, A> by saga {}
 ```
+
+<details>
+  <summary>Example</summary>
+
+```kotlin
+
+typealias OrderRestaurantSagaManager = SagaManager<Event?, Command>
+
+fun sagaManager(
+    restaurantOrderSaga: RestaurantOrderSaga,
+    restaurantSaga: RestaurantSaga,
+    actionPublisher: ActionPublisher<Command>
+): OrderRestaurantSagaManager = sagaManager(
+    // Combining individual choreography Sagas into one orchestrating Saga.
+    saga = restaurantOrderSaga.combine(restaurantSaga),
+    // How and where do you want to publish new commands.
+    actionPublisher = actionPublisher
+)
+```
+
+</details>
 
 ### Experimental features
 
