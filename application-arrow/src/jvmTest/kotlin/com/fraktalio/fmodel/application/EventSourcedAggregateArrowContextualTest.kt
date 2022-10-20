@@ -35,11 +35,9 @@ class EventSourcedAggregateArrowContextualTest : FunSpec({
         evenNumberRepository.deleteAll()
         with(eventSourcingAggregate(evenDecider, evenNumberRepository)) {
             flowOf(
-                AddEvenNumber(Description("desc"), NumberValue(6)),
                 AddEvenNumber(Description("desc"), NumberValue(4))
             ).handleWithEffect() thenEvents (
                     listOf(
-                        Right(EvenNumberAdded(Description("desc"), NumberValue(6))),
                         Right(EvenNumberAdded(Description("desc"), NumberValue(4)))
                     )
                     )
