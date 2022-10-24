@@ -2,7 +2,7 @@
 coroutines = "1.6.4"
 dokka = "1.7.20"
 kotest = "5.5.1"
-kotest-plugin = "5.5.1"
+kotest-plugin = "5.5.2"
 kotlin = "1.7.20"
 arrow = "1.1.3"
 
