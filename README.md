@@ -471,28 +471,25 @@ scenarios that are offered out of the box.
 
 ## Saga
 
-`_Saga` is a datatype that represents the central point of control, deciding what to execute next (`A`). It is
-responsible for mapping different events from many aggregates into action results `AR` that the `_Saga` then can use to
+`Saga` is a datatype that represents the central point of control, deciding what to execute next (`A`). It is
+responsible for mapping different events from many aggregates into action results `AR` that the `Saga` then can use to
 calculate the next actions `A` to be mapped to commands of other aggregates.
 
-`_Saga` is stateless, it does not maintain the state.
+`Saga` is stateless, it does not maintain the state.
 
-It has two generic parameters `AR`, `A`, representing the type of the values that `_Saga` may contain or use.
-`_Saga` can be specialized for any type of `AR`, `A` because these types do not affect its behavior.
-`_Saga` behaves the same for `AR`=`Int` or `AR`=`YourCustomType`, for example.
+It has two generic parameters `AR`, `A`, representing the type of the values that `Saga` may contain or use.
+`Saga` can be specialized for any type of `AR`, `A` because these types do not affect its behavior.
+`Saga` behaves the same for `AR`=`Int` or `AR`=`YourCustomType`, for example.
 
-`_Saga` is a pure domain component.
+`Saga` is a pure domain component.
 
 - `AR` - Action Result
 - `A`  - Action
 
 ```kotlin
-data class _Saga<AR, A>(
+data class Saga<AR, A>(
     val react: (AR) -> Flow<A>
 ) : I_Saga<AR, A>
-
-typealias Saga<AR, A> = _Saga<AR, A>
-typealias ISaga<AR, A> = I_Saga<AR, A>
 ```
 
 Notice that `Saga` implements an interface `ISaga` to communicate the contract.
