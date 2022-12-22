@@ -223,7 +223,7 @@ fun restaurantOrderDecider() = Decider<RestaurantOrderCommand?, RestaurantOrder?
 - `Decider<C, S, E>.dimapOnEvent(fl: (En) -> E, fr: (E) -> En): Decider<C, S, En>`
 - `Decider<C, S, E>.dimapOnState(fl: (Sn) -> S, fr: (S) -> Sn): Decider<C, Sn, E>`
 
-#### Monoid
+#### *Commutative* Monoid
 
 - `<reified Cx : C_SUPER, Sx, reified Ex : E_SUPER, reified Cy : C_SUPER, Sy, reified Ey : E_SUPER, C_SUPER> Decider<Cx?, Sx, Ex?>.combine(
   y: Decider<Cy?, Sy, Ey?>
@@ -235,6 +235,8 @@ fun restaurantOrderDecider() = Decider<RestaurantOrderCommand?, RestaurantOrder?
 > identity/empty element.
 > Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
 > in parallel.
+> 
+> `combine` operation is also commutative. This means that the order in which deciders are combined does not affect the result.
 
 
 We can now construct event-sourcing or/and state-storing aggregate by using the same `decider`.
@@ -409,13 +411,16 @@ fun restaurantOrderView() = View<RestaurantOrderViewState?, RestaurantOrderEvent
 
 #### Monoid
 
-- `View<Sx, Ex?>.combine(y: View<Sy, Ey?>): View<Pair<Sx, Sy>, E_SUPER>`
+- `<Sx, reified Ex : E_SUPER, Sy, reified Ey : E_SUPER, E_SUPER>  View<Sx, Ex?>.combine(y: View<Sy, Ey?>): View<Pair<Sx, Sy>, E_SUPER>`
 - with identity element `View<Unit, Nothing?>`
 
 > A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an
 > identity/empty element.
 > Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
 > in parallel.
+>
+> `combine` operation is also commutative. This means that the order in which views are combined does not affect the result.
+
 
 We can now construct `materialized` view by using this `view`.
 
@@ -549,8 +554,16 @@ fun restaurantSaga() = Saga<RestaurantOrderEvent?, RestaurantCommand>(
 
 #### Monoid
 
-- `Saga<in AR?, out A>.combine(y: _Saga<in ARn?, out An>): Saga<AR_SUPER, A_SUPER>`
+- `<reified ARx : AR_SUPER, Ax : A_SUPER, reified ARy : AR_SUPER, Ay : A_SUPER, AR_SUPER, A_SUPER> Saga<in ARx?, out Ax>.combine(y: Saga<in ARy?, out Ay>): Saga<AR_SUPER, A_SUPER>`
 - with identity element `Saga<Nothing?, Nothing?>`
+
+> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an
+> identity/empty element.
+> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
+> in parallel.
+>
+> `combine` operation is also commutative. This means that the order in which sagas are combined does not affect the result.
+
 
 We can now construct `Saga Manager` by using this `saga`.
 
