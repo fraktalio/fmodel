@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.*
  * @param Ei Input Event type - contravariant/in type parameter
  * @param Eo Output Event type - covariant/out type parameter
  *
+ * @see [IDecider]
+ *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface I_Decider<in C, in Si, out So, in Ei, out Eo> {
@@ -39,12 +41,50 @@ interface I_Decider<in C, in Si, out So, in Ei, out Eo> {
 /**
  * A convenient typealias for the [I_Decider] interface. It is specializing the five parameters [I_Decider] interface to only three parameters interface [IDecider].
  *
+ * @param C Command
+ * @param S State
+ * @param E Event
+ *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 typealias IDecider<C, S, E> = I_Decider<C, S, S, E, E>
 
 /**
- * A typealias for [_Decider]<C, Si, So, Ei, Eo>, specializing the [_Decider] to three generic parameters: C, S and E, where C=C, Si=S, So=S, Ei=E, Eo=E
+ * A typealias for [_Decider]<C, Si, So, Ei, Eo>, specializing the [_Decider] to three generic parameters: C/Command, S/State and E/Event
+ *
+ * [Decider] is a datatype that represents the main decision-making algorithm.
+ * It has three generic parameters `C`, `S`, `E` , representing the type of the values that [Decider] may contain or use.
+ * [Decider] can be specialized for any type `C` or `S` or `E` because these types does not affect its behavior.
+ * [Decider] behaves the same for `C`=[Int] or `C`=`OddNumberCommand`.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?> =
+ *     Decider(
+ *         initialState = OddNumberState(Description("Initial state"), NumberValue(0)),
+ *         decide = { c, s ->
+ *             when (c) {
+ *                 is AddOddNumber -> flowOf(OddNumberAdded(c.description, s.value + c.value))
+ *                 is SubtractOddNumber -> flowOf(OddNumberSubtracted(c.description, s.value - c.value))
+ *                 null -> emptyFlow()
+ *             }
+ *         },
+ *         evolve = { s, e ->
+ *             when (e) {
+ *                 is OddNumberAdded -> OddNumberState(s.description + e.description, e.value)
+ *                 is OddNumberSubtracted -> OddNumberState(s.description - e.description, e.value)
+ *                 null -> s
+ *             }
+ *         }
+ *     )
+ * ```
+ *
+ * @param C Command
+ * @param S State
+ * @param E Event
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
 
@@ -121,6 +161,8 @@ class DeciderBuilder<C, S, E> internal constructor() {
  * @property initialState A starting point / An initial state of type [So]
  * @constructor Creates [_Decider]
  *
+ * @see [Decider]
+ *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class _Decider<in C, in Si, out So, in Ei, out Eo>(
@@ -164,7 +206,8 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
      * @param Ein Event input new
      * @param f
      */
-    inline fun <Ein> mapLeftOnEvent(crossinline f: (Ein) -> Ei): _Decider<C, Si, So, Ein, Eo> = dimapOnEvent(f) { it }
+    internal inline fun <Ein> mapLeftOnEvent(crossinline f: (Ein) -> Ei): _Decider<C, Si, So, Ein, Eo> =
+        dimapOnEvent(f) { it }
 
     /**
      * Right map on E/Event parameter - Covariant
@@ -172,7 +215,8 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
      * @param Eon Event output new
      * @param f
      */
-    inline fun <Eon> mapOnEvent(crossinline f: (Eo) -> Eon): _Decider<C, Si, So, Ei, Eon> = dimapOnEvent({ it }, f)
+    internal inline fun <Eon> mapOnEvent(crossinline f: (Eo) -> Eon): _Decider<C, Si, So, Ei, Eon> =
+        dimapOnEvent({ it }, f)
 
     /**
      * Dimap on S/State parameter - Contravariant on input state (Si) and Covariant on output state (So) = Profunctor
@@ -196,7 +240,9 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
      * @param Sin State input new
      * @param f
      */
-    inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _Decider<C, Sin, So, Ei, Eo> = dimapOnState(f) { it }
+    @PublishedApi
+    internal inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _Decider<C, Sin, So, Ei, Eo> =
+        dimapOnState(f) { it }
 
     /**
      * Right map on S/State parameter - Covariant
@@ -204,7 +250,9 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
      * @param Son State output new
      * @param f
      */
-    inline fun <Son> mapOnState(crossinline f: (So) -> Son): _Decider<C, Si, Son, Ei, Eo> = dimapOnState({ it }, f)
+    @PublishedApi
+    internal inline fun <Son> mapOnState(crossinline f: (So) -> Son): _Decider<C, Si, Son, Ei, Eo> =
+        dimapOnState({ it }, f)
 }
 
 /**
@@ -222,7 +270,7 @@ data class _Decider<in C, in Si, out So, in Ei, out Eo>(
  * @return new decider of type [_Decider]<[C], [Si], [Son], [Ei], [Eo]>
  */
 @FlowPreview
-fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.applyOnState(
+internal fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.applyOnState(
     ff: _Decider<C, Si, (So) -> Son, Ei, Eo>
 ): _Decider<C, Si, Son, Ei, Eo> = _Decider(
     decide = { c, si -> flowOf(ff.decide(c, si), decide(c, si)).flattenConcat() },
@@ -244,7 +292,8 @@ fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.applyOnState(
  * @return new decider of type [_Decider]<[C], [Si], [Pair]<[So], [Son]>, [Ei], [Eo]>
  */
 @FlowPreview
-fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.productOnState(
+@PublishedApi
+internal fun <C, Si, So, Ei, Eo, Son> _Decider<C, Si, So, Ei, Eo>.productOnState(
     fb: _Decider<C, Si, Son, Ei, Eo>
 ): _Decider<C, Si, Pair<So, Son>, Ei, Eo> = applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
 
