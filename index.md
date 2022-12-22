@@ -194,37 +194,25 @@ evolve = { s, e ->
 
 #### Contravariant
 
-- `Decider<C, Si, So, Ei, Eo>.mapLeftOnCommand(f: (Cn) -> C): Decider<Cn, Si, So, Ei, Eo>`
+- `Decider<C, S, E>.mapLeftOnCommand(f: (Cn) -> C): Decider<Cn, S, E`
 
 #### Profunctor (Contravariant and Covariant)
 
-- `Decider<C, Si, So, Ei, Eo>.dimapOnEvent(
-  fl: (Ein) -> Ei, fr: (Eo) -> Eon
-  ): Decider<C, Si, So, Ein, Eon>`
-- `Decider<C, Si, So, Ei, Eo>.mapLeftOnEvent(f: (Ein) -> Ei): Decider<C, Si, So, Ein, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.mapOnEvent(f: (Eo) -> Eon): Decider<C, Si, So, Ei, Eon>`
-- `Decider<C, Si, So, Ei, Eo>.dimapOnState(
-  fl: (Sin) -> Si, fr: (So) -> Son
-  ): Decider<C, Sin, Son, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.mapLeftOnState(f: (Sin) -> Si): Decider<C, Sin, So, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.mapOnState(f: (So) -> Son): Decider<C, Si, Son, Ei, Eo>`
-
-#### Applicative
-
-- `rjustOnS(so: So): Decider<C, Si, So, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.applyOnState(ff: Decider<C, Si, (So) -> Son, Ei, Eo>): Decider<C, Si, Son, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.productOnState(fb: Decider<C, Si, Son, Ei, Eo>): Decider<C, Si, Pair<So, Son>, Ei, Eo>`
+- `Decider<C, S, E>.dimapOnEvent(fl: (En) -> E, fr: (E) -> En): Decider<C, S, En>`
+- `Decider<C, S, E>.dimapOnState(fl: (Sn) -> S, fr: (S) -> Sn): Decider<C, Sn, E>`
 
 #### Monoid
 
-- `Decider<in C?, in Si, out So, in Ei?, out Eo>.combine(
-  y: Decider<in Cn?, in Sin, out Son, in Ein?, out Eon>
-  ): Decider<C_SUPER, Pair<Si, Sin>, Pair<So, Son>, Ei_SUPER, Eo_SUPER>`
+- `<reified Cx : C_SUPER, Sx, reified Ex : E_SUPER, reified Cy : C_SUPER, Sy, reified Ey : E_SUPER, C_SUPER> Decider<Cx?, Sx, Ex?>.combine(
+  y: Decider<Cy?, Sy, Ey?>
+  ): Decider<C_SUPER, Pair<Sx, Sy>, E_SUPER>`
 
 - with identity element `Decider<Nothing?, Unit, Nothing?>`
 
-> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
-> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
+> A monoid is a type together with a binary operation (`combine`) over that type, satisfying associativity and having an
+> identity/empty element.
+> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
+> in parallel.
 
 
 We can now construct event-sourcing or/and state-storing aggregate by using the same `decider`.
@@ -386,29 +374,22 @@ evolve = { s, e ->
 
 #### Contravariant
 
-- `View<Si, So, E>.mapLeftOnEvent(f: (En) -> E): View<Si, So, En>`
+- `View<S, E>.mapLeftOnEvent(f: (En) -> E): View<S, En>`
 
 #### Profunctor (Contravariant and Covariant)
 
-- `View<Si, So, E>.dimapOnState(
-  fl: (Sin) -> Si, fr: (So) -> Son
-  ): View<Sin, Son, E>`
-- `View<Si, So, E>.mapLeftOnState(f: (Sin) -> Si): View<Sin, So, E>`
-- `View<Si, So, E>.mapOnState(f: (So) -> Son): View<Si, Son, E>`
-
-#### Applicative
-
-- `View<Si, So, E>.applyOnState(ff: View<Si, (So) -> Son, E>): View<Si, Son, E>`
-- `justOnState(so: So): View<Si, So, E>`
+- `View<S, E>.dimapOnState(fl: (Sn) -> S, fr: (S) -> Sn): View<Sn, E>`
 
 #### Monoid
 
-- `View<in Si, out So, in E?>.combine(y: View<in Si2, out So2, in E2?>): View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER>`
+- `View<Sx, Ex?>.combine(y: View<Sy, Ey?>): View<Pair<Sx, Sy>, E_SUPER>`
 - with identity element `View<Unit, Nothing?>`
 
-> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an identity/empty element.
-> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed in parallel.
-
+> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an
+> identity/empty element.
+> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
+> in parallel.
+> 
 We can now construct `materialized` view by using this `view`.
 
 ### Materialized View
@@ -459,28 +440,25 @@ fun restaurantOrderMaterializedView(
 
 ## Saga
 
-`_Saga` is a datatype that represents the central point of control, deciding what to execute next (`A`). It is
-responsible for mapping different events from many aggregates into action results `AR` that the `_Saga` then can use to
+`Saga` is a datatype that represents the central point of control, deciding what to execute next (`A`). It is
+responsible for mapping different events from many aggregates into action results `AR` that the `Saga` then can use to
 calculate the next actions `A` to be mapped to commands of other aggregates.
 
-`_Saga` is stateless, it does not maintain the state.
+`Saga` is stateless, it does not maintain the state.
 
-It has two generic parameters `AR`, `A`, representing the type of the values that `_Saga` may contain or use.
-`_Saga` can be specialized for any type of `AR`, `A` because these types do not affect its behavior.
-`_Saga` behaves the same for `AR`=`Int` or `AR`=`YourCustomType`, for example.
+It has two generic parameters `AR`, `A`, representing the type of the values that `Saga` may contain or use.
+`Saga` can be specialized for any type of `AR`, `A` because these types do not affect its behavior.
+`Saga` behaves the same for `AR`=`Int` or `AR`=`YourCustomType`, for example.
 
-`_Saga` is a pure domain component.
+`Saga` is a pure domain component.
 
 - `AR` - Action Result
 - `A`  - Action
 
 ```kotlin
-data class _Saga<AR, A>(
+data class Saga<AR, A>(
     val react: (AR) -> Flow<A>
-) : I_Saga<AR, A>
-
-typealias Saga<AR, A> = _Saga<AR, A>
-typealias ISaga<AR, A> = I_Saga<AR, A>
+) : ISaga<AR, A>
 ```
 
 Notice that `Saga` implements an interface `ISaga` to communicate the contract.
