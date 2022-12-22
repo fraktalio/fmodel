@@ -23,6 +23,8 @@ package com.fraktalio.fmodel.domain
  * @param So Output State type
  * @param E Event type
  *
+ * @see [IView]
+ *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface I_View<in Si, out So, in E> {
@@ -40,7 +42,18 @@ typealias IView<S, E> = I_View<S, S, E>
 /**
  * A typealias for [_View]<Si, So, E>, specializing the [_View] to two generic parameters: S and E, where Si=S, So=S, E=E
  *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ * [View] is a datatype that represents the event handling algorithm,
+ * responsible for translating the events into denormalized state,
+ * which is more adequate for querying.
+ *
+ * It has two generic parameters `S`, `E`, representing the type of the values that [View] may contain or use.
+ * [View] can be specialized for any type of `S`, `E` because these types does not affect its behavior.
+ * [View] behaves the same for `E`=[Int] or `E`=`YourCustomType`.
+ *
+ * @param S State type
+ * @param E Event type
+ *
+ * @author Иванугалић / Ivan Dugalic / @idugalic
  */
 typealias View<S, E> = _View<S, S, E>
 
@@ -86,6 +99,8 @@ class ViewBuilder<S, E> internal constructor() {
  * @property initialState A starting point / An initial state of type [So]
  * @constructor Creates [_View]
  *
+ * @see [View]
+ *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class _View<in Si, out So, in E>(
@@ -113,7 +128,8 @@ data class _View<in Si, out So, in E>(
      * @param fl
      * @param fr
      */
-    inline fun <Sin, Son> dimapOnState(
+    @PublishedApi
+    internal inline fun <Sin, Son> dimapOnState(
         crossinline fl: (Sin) -> Si, crossinline fr: (So) -> Son
     ): _View<Sin, Son, E> = _View(
         evolve = { sin, e -> fr(evolve(fl(sin), e)) },
@@ -126,7 +142,8 @@ data class _View<in Si, out So, in E>(
      * @param Sin State input new
      * @param f
      */
-    inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _View<Sin, So, E> = dimapOnState(f) { it }
+    @PublishedApi
+    internal inline fun <Sin> mapLeftOnState(crossinline f: (Sin) -> Si): _View<Sin, So, E> = dimapOnState(f) { it }
 
     /**
      * Right map on S/State parameter - Covariant
@@ -146,7 +163,7 @@ data class _View<in Si, out So, in E>(
  * @param Son State output new type
  * @param ff
  */
-fun <Si, So, E, Son> _View<Si, So, E>.applyOnState(
+internal fun <Si, So, E, Son> _View<Si, So, E>.applyOnState(
     ff: _View<Si, (So) -> Son, E>
 ): _View<Si, Son, E> = _View(
     evolve = { si, e -> ff.evolve(si, e)(evolve(si, e)) },
@@ -162,7 +179,8 @@ fun <Si, So, E, Son> _View<Si, So, E>.applyOnState(
  * @param Son State output new type
  * @param fb
  */
-fun <Si, So, E, Son> _View<Si, So, E>.productOnState(fb: _View<Si, Son, E>): _View<Si, Pair<So, Son>, E> =
+@PublishedApi
+internal fun <Si, So, E, Son> _View<Si, So, E>.productOnState(fb: _View<Si, Son, E>): _View<Si, Pair<So, Son>, E> =
     applyOnState(fb.mapOnState { b: Son -> { a: So -> Pair(a, b) } })
 
 /**
