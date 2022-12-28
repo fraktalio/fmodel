@@ -1,4 +1,4 @@
-package com.fraktalio.fmodel.domain
+package com.fraktalio.fmodel.domain.internal
 
 /**
  * [InternalView] is a datatype that represents the event handling algorithm,

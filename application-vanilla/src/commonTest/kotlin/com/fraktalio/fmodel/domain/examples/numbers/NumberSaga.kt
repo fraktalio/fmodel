@@ -49,12 +49,14 @@ fun numberSaga() = Saga<NumberEvent?, NumberCommand?>(
                     NumberValue(numberEvent.value.get - 1)
                 )
             )
+
             is EvenNumberSubtracted -> flowOf(
                 SubtractOddNumber(
                     Description("${numberEvent.value.get - 1}"),
                     NumberValue(numberEvent.value.get - 1)
                 )
             )
+
             else -> emptyFlow()
         }
     }
@@ -87,12 +89,14 @@ fun oddNumberSaga() = Saga<NumberEvent.OddNumberEvent?, NumberCommand.EvenNumber
                     NumberValue(numberEvent.value.get + 1)
                 )
             )
+
             is OddNumberSubtracted -> flowOf(
                 SubtractEvenNumber(
                     Description("${numberEvent.value.get + 1}"),
                     NumberValue(numberEvent.value.get + 1)
                 )
             )
+
             else -> emptyFlow()
         }
     }

@@ -16,6 +16,9 @@
 
 package com.fraktalio.fmodel.domain
 
+import com.fraktalio.fmodel.domain.internal.InternalView
+import com.fraktalio.fmodel.domain.internal.combine
+
 /**
  * View interface
  *
@@ -35,8 +38,25 @@ interface IView<S, in E> {
  * [View] can be specialized for any type of `S`, `E` because these types does not affect its behavior.
  * [View] behaves the same for `E`=[Int] or `E`=`YourCustomType`.
  *
+ * Example:
+ *
+ * ```kotlin
+ * fun oddNumberView(): View<OddNumberState, OddNumberEvent?> = View(
+ *     initialState = OddNumberState(Description("Initial state"), NumberValue(0)),
+ *     evolve = { s, e ->
+ *         when (e) {
+ *             is OddNumberAdded -> OddNumberState(s.description + e.description, s.value + e.value)
+ *             is OddNumberSubtracted -> OddNumberState(s.description - e.description, s.value - e.value)
+ *             null -> s
+ *         }
+ *     }
+ * )
+ * ```
+ *
  * @param S State type
  * @param E Event type
+ * @property evolve A pure function/lambda that takes input state of type [S] and input event of type [E] as parameters, and returns the output/new state [S]
+ * @property initialState A starting point / An initial state of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
@@ -93,6 +113,24 @@ inline infix fun <S, reified E : E_SUPER, S2, reified E2 : E_SUPER, E_SUPER> Vie
 
 /**
  * View DSL - A convenient builder DSL for the [View]
+ *
+ * Example:
+ *
+ * ```kotlin
+ * fun evenNumberView(): View<EvenNumberState, EvenNumberEvent?> =
+ *     view {
+ *         initialState {
+ *             EvenNumberState(Description("Initial state"), NumberValue(0))
+ *         }
+ *         evolve { s, e ->
+ *             when (e) {
+ *                 is EvenNumberAdded -> EvenNumberState(s.description + e.description, s.value + e.value)
+ *                 is EvenNumberSubtracted -> EvenNumberState(s.description - e.description, s.value - e.value)
+ *                 null -> s
+ *             }
+ *         }
+ *     }
+ * ```
  */
 fun <S, E> view(block: ViewBuilder<S, E>.() -> Unit): View<S, E> =
     ViewBuilder<S, E>().apply(block).build()

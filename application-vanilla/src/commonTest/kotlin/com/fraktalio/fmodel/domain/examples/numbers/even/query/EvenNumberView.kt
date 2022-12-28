@@ -41,10 +41,12 @@ fun evenNumberView(): View<EvenNumberState?, EvenNumberEvent?> = View(
                 Description(evenNumberState.description.get + ", " + e.description.get),
                 NumberValue(evenNumberState.value.get + e.value.get)
             )
+
             e is EvenNumberSubtracted && (evenNumberState != null) -> EvenNumberState(
                 Description(evenNumberState.description.get + ", " + e.description.get),
                 NumberValue(evenNumberState.value.get - e.value.get)
             )
+
             else -> evenNumberState
         }
     }

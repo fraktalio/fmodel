@@ -16,6 +16,8 @@
 
 package com.fraktalio.fmodel.domain
 
+import com.fraktalio.fmodel.domain.internal.InternalDecider
+import com.fraktalio.fmodel.domain.internal.combine
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -66,6 +68,9 @@ interface IDecider<in C, S, E> {
  * @param C Command
  * @param S State
  * @param E Event
+ * @property decide A function/lambda that takes command of type [C] and input state of type [S] as parameters, and returns/emits the flow of output events [Flow]<[E]>
+ * @property evolve A function/lambda that takes input state of type [S] and input event of type [E] as parameters, and returns the output/new state [S]
+ * @property initialState A starting point / An initial state of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */

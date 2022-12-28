@@ -36,6 +36,44 @@ interface ISaga<in AR, out A> {
 
 /**
  * Saga DSL - A convenient builder DSL for the [Saga]
+ *
+ * Example:
+ *
+ * ```kotlin
+ * fun numberSaga() = saga<NumberEvent, NumberCommand> { numberEvent ->
+ *     when (numberEvent) {
+ *         is EvenNumberAdded -> flowOf(
+ *             AddOddNumber(
+ *                 Description("${numberEvent.value.get - 1}"),
+ *                 NumberValue(numberEvent.value.get - 1)
+ *             )
+ *         )
+ *
+ *         is EvenNumberSubtracted -> flowOf(
+ *             SubtractOddNumber(
+ *                 Description("${numberEvent.value.get - 1}"),
+ *                 NumberValue(numberEvent.value.get - 1)
+ *             )
+ *         )
+ *
+ *         is OddNumberAdded -> flowOf(
+ *             AddEvenNumber(
+ *                 Description("${numberEvent.value.get + 1}"),
+ *                 NumberValue(numberEvent.value.get + 1)
+ *             )
+ *         )
+ *
+ *         is OddNumberSubtracted -> flowOf(
+ *             SubtractEvenNumber(
+ *                 Description("${numberEvent.value.get + 1}"),
+ *                 NumberValue(numberEvent.value.get + 1)
+ *             )
+ *         )
+ *
+ *         else -> emptyFlow()
+ *     }
+ * }
+ * ```
  */
 fun <AR, A> saga(react: (AR) -> Flow<A>): Saga<AR, A> = Saga(react)
 
@@ -44,6 +82,30 @@ fun <AR, A> saga(react: (AR) -> Flow<A>): Saga<AR, A> = Saga(react)
  * It is responsible for mapping different events into action results ([AR]) that the [Saga] then can use to calculate the next actions ([A]) to be mapped to command(s).
  *
  * Saga does not maintain the state.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * fun evenNumberSaga() = Saga<EvenNumberEvent?, OddNumberCommand> { numberEvent ->
+ *     when (numberEvent) {
+ *         is EvenNumberAdded -> flowOf(
+ *             AddOddNumber(
+ *                 Description("${numberEvent.value.get - 1}"),
+ *                 NumberValue(numberEvent.value.get - 1)
+ *             )
+ *         )
+ *
+ *         is EvenNumberSubtracted -> flowOf(
+ *             SubtractOddNumber(
+ *                 Description("${numberEvent.value.get - 1}"),
+ *                 NumberValue(numberEvent.value.get - 1)
+ *             )
+ *         )
+ *
+ *         else -> emptyFlow()
+ *     }
+ * }
+ * ```
  *
  * @param AR Action Result type
  * @param A Action type

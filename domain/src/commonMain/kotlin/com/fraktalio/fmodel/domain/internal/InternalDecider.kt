@@ -1,4 +1,4 @@
-package com.fraktalio.fmodel.domain
+package com.fraktalio.fmodel.domain.internal
 
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow

@@ -227,8 +227,9 @@ fun restaurantOrderDecider() = Decider<RestaurantOrderCommand?, RestaurantOrder?
 > identity/empty element.
 > Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
 > in parallel.
-> 
-> `combine` operation is also commutative. This means that the order in which deciders are combined does not affect the result.
+>
+> `combine` operation is also commutative. This means that the order in which deciders are combined does not affect the
+> result.
 
 
 We can now construct event-sourcing or/and state-storing aggregate by using the same `decider`.
@@ -404,7 +405,8 @@ fun restaurantOrderView() = View<RestaurantOrderViewState?, RestaurantOrderEvent
 > Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
 > in parallel.
 >
-> `combine` operation is also commutative. This means that the order in which views are combined does not affect the result.
+> `combine` operation is also commutative. This means that the order in which views are combined does not affect the
+> result.
 
 
 We can now construct `materialized` view by using this `view`.
@@ -547,7 +549,8 @@ fun restaurantSaga() = Saga<RestaurantOrderEvent?, RestaurantCommand>(
 > Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
 > in parallel.
 >
-> `combine` operation is also commutative. This means that the order in which sagas are combined does not affect the result.
+> `combine` operation is also commutative. This means that the order in which sagas are combined does not affect the
+> result.
 
 
 We can now construct `Saga Manager` by using this `saga`.
