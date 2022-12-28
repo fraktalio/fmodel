@@ -138,31 +138,23 @@ data class Decider<C, S, E>(
 
 ## Decider
 
-`_Decider` is a datatype that represents the main decision-making algorithm. It belongs to the Domain layer. It has five
-generic parameters `C`, `Si`, `So`, `Ei`, `Eo` , representing the type of the values that `_Decider` may contain or use.
-`_Decider` can be specialized for any type `C` or `Si` or `So` or `Ei` or `Eo` because these types do not affect its
-behavior. `_Decider` behaves the same for `C`=`Int` or `C`=`YourCustomType`, for example.
+`Decider` is a datatype that represents the main decision-making algorithm. It belongs to the Domain layer. It has three
+generic parameters `C`, `S`, `E` , representing the type of the values that `Decider` may contain or use.
+`Decider` can be specialized for any type `C` or `S` or `E` because these types do not affect its
+behavior. `Decider` behaves the same for `C`=`Int` or `C`=`YourCustomType`, for example.
 
-`_Decider` is a pure domain component.
+`Decider` is a pure domain component.
 
 - `C` - Command
-- `Si` - input State
-- `So` - output State
-- `Ei` - input Event
-- `Eo` - output Event
-
-We make a difference between input and output types, and we are more general in this case. We can always specialize down
-to the 3 generic parameters: `typealias Decider<C, S, E> = _Decider<C, S, S, E, E>`
+- `S` - State
+- `E` - Event
 
 ```kotlin
-data class _Decider<C, Si, So, Ei, Eo>(
-    val decide: (C, Si) -> Flow<Eo>,
-    val evolve: (Si, Ei) -> So,
-    val initialState: So
-) : I_Decider<C, Si, So, Ei, Eo>
-
-typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
-typealias IDecider<C, S, E> = I_Decider<C, S, S, E, E>
+data class Decider<in C, S, E>(
+    override val decide: (C, S) -> Flow<E>,
+    override val evolve: (S, E) -> S,
+    override val initialState: S
+) : IDecider<C, S, E> 
 ```
 
 Additionally, `initialState` of the Decider is introduced to gain more control over the initial state of the Decider.
@@ -216,7 +208,7 @@ fun restaurantOrderDecider() = Decider<RestaurantOrderCommand?, RestaurantOrder?
 
 #### Contravariant
 
-- `Decider<C, S, E>.mapLeftOnCommand(f: (Cn) -> C): Decider<Cn, S, E`
+- `Decider<C, S, E>.mapLeftOnCommand(f: (Cn) -> C): Decider<Cn, S, E>`
 
 #### Profunctor (Contravariant and Covariant)
 
@@ -341,31 +333,24 @@ scenarios that are offered out of the box.
 
 ## View
 
-`_View`  is a datatype that represents the event handling algorithm, responsible for translating the events into
+`View`  is a datatype that represents the event handling algorithm, responsible for translating the events into
 denormalized state, which is more adequate for querying. It belongs to the Domain layer. It is usually used to create
 the view/query side of the CQRS pattern. Obviously, the command side of the CQRS is usually event-sourced aggregate.
 
-It has three generic parameters `Si`, `So`, `E`, representing the type of the values that `_View` may contain or use.
-`_View` can be specialized for any type of `Si`, `So`, `E` because these types do not affect its behavior.
-`_View` behaves the same for `E`=`Int` or `E`=`YourCustomType`, for example.
+It has two generic parameters `S`, `E`, representing the type of the values that `View` may contain or use.
+`View` can be specialized for any type of `S`, `E` because these types do not affect its behavior.
+`View` behaves the same for `E`=`Int` or `E`=`YourCustomType`, for example.
 
-`_View` is a pure domain component.
+`View` is a pure domain component.
 
-- `Si` - input State
-- `So` - output State
-- `E`  - Event
-
-We make a difference between input and output types, and we are more general in this case. We can always specialize down
-to the 2 generic parameters: `typealias View<S, E> = _View<S, S, E>`
+- `S` - State
+- `E` - Event
 
 ```kotlin
-data class _View<Si, So, E>(
-    val evolve: (Si, E) -> So,
-    val initialState: So,
-) : I_View<Si, So, E>
-
-typealias View<S, E> = _View<S, S, E>
-typealias IView<S, E> = I_View<S, S, E>
+data class View<S, in E>(
+    override val evolve: (S, E) -> S,
+    override val initialState: S
+) : IView<S, E>
 ```
 
 Notice that `View` implements an interface `IView` to communicate the contract.
@@ -409,7 +394,7 @@ fun restaurantOrderView() = View<RestaurantOrderViewState?, RestaurantOrderEvent
 
 - `View<S, E>.dimapOnState(fl: (Sn) -> S, fr: (S) -> Sn): View<Sn, E>`
 
-#### Monoid
+#### *Commutative* Monoid
 
 - `<Sx, reified Ex : E_SUPER, Sy, reified Ey : E_SUPER, E_SUPER>  View<Sx, Ex?>.combine(y: View<Sy, Ey?>): View<Pair<Sx, Sy>, E_SUPER>`
 - with identity element `View<Unit, Nothing?>`
