@@ -17,6 +17,7 @@
 package com.fraktalio.fmodel.domain
 
 import com.fraktalio.fmodel.domain.internal.InternalView
+import com.fraktalio.fmodel.domain.internal.asView
 import com.fraktalio.fmodel.domain.internal.combine
 
 /**
@@ -64,8 +65,6 @@ data class View<S, in E>(
     override val evolve: (S, E) -> S,
     override val initialState: S
 ) : IView<S, E> {
-    @PublishedApi
-    internal constructor(view: InternalView<S, S, E>) : this(view.evolve, view.initialState)
 
     /**
      * Left map on E/Event
@@ -77,7 +76,7 @@ data class View<S, in E>(
      */
     inline fun <En> mapLeftOnEvent(
         crossinline f: (En) -> E
-    ): View<S, En> = View(InternalView(evolve, initialState).mapLeftOnEvent(f))
+    ): View<S, En> = InternalView(evolve, initialState).mapLeftOnEvent(f).asView()
 
     /**
      * Di-map on S/State
@@ -91,7 +90,7 @@ data class View<S, in E>(
     inline fun <Sn> dimapOnState(
         crossinline fl: (Sn) -> S,
         crossinline fr: (S) -> Sn
-    ): View<Sn, E> = View(InternalView(evolve, initialState).dimapOnState(fl, fr))
+    ): View<Sn, E> = InternalView(evolve, initialState).dimapOnState(fl, fr).asView()
 
 }
 
@@ -109,7 +108,7 @@ data class View<S, in E>(
  * @return new View of type [View]<[Pair]<[S], [S2]>, [E_SUPER]>
  */
 inline infix fun <S, reified E : E_SUPER, S2, reified E2 : E_SUPER, E_SUPER> View<S, E?>.combine(y: View<S2, E2?>): View<Pair<S, S2>, E_SUPER> =
-    View(InternalView(evolve, initialState).combine(InternalView(y.evolve, y.initialState)))
+    InternalView(evolve, initialState).combine(InternalView(y.evolve, y.initialState)).asView()
 
 /**
  * View DSL - A convenient builder DSL for the [View]

@@ -1,5 +1,6 @@
 package com.fraktalio.fmodel.domain.internal
 
+import com.fraktalio.fmodel.domain.Decider
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flattenConcat
@@ -202,3 +203,5 @@ internal inline infix fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, E
     return deciderX.productOnState(deciderY)
 }
 
+@PublishedApi
+internal fun <C, S, E> InternalDecider<C, S, S, E, E>.asDecider() = Decider(this.decide, this.evolve, this.initialState)

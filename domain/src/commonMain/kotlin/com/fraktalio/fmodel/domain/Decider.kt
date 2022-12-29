@@ -17,6 +17,7 @@
 package com.fraktalio.fmodel.domain
 
 import com.fraktalio.fmodel.domain.internal.InternalDecider
+import com.fraktalio.fmodel.domain.internal.asDecider
 import com.fraktalio.fmodel.domain.internal.combine
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +25,8 @@ import kotlinx.coroutines.flow.emptyFlow
 
 
 /**
+ * Decider Interface
+ *
  * @param C Command
  * @param S State
  * @param E Event
@@ -79,14 +82,6 @@ data class Decider<in C, S, E>(
     override val evolve: (S, E) -> S,
     override val initialState: S
 ) : IDecider<C, S, E> {
-
-    @PublishedApi
-    internal constructor(decider: InternalDecider<C, S, S, E, E>) : this(
-        decider.decide,
-        decider.evolve,
-        decider.initialState
-    )
-
     /**
      * Left map on C/Command parameter
      *
@@ -97,7 +92,7 @@ data class Decider<in C, S, E>(
      */
     inline fun <Cn> mapLeftOnCommand(
         crossinline f: (Cn) -> C
-    ): Decider<Cn, S, E> = Decider(InternalDecider(decide, evolve, initialState).mapLeftOnCommand(f))
+    ): Decider<Cn, S, E> = InternalDecider(decide, evolve, initialState).mapLeftOnCommand(f).asDecider()
 
     /**
      * Di-map on E/Event parameter
@@ -110,7 +105,7 @@ data class Decider<in C, S, E>(
      */
     inline fun <En> dimapOnEvent(
         crossinline fl: (En) -> E, crossinline fr: (E) -> En
-    ): Decider<C, S, En> = Decider(InternalDecider(decide, evolve, initialState).dimapOnEvent(fl, fr))
+    ): Decider<C, S, En> = InternalDecider(decide, evolve, initialState).dimapOnEvent(fl, fr).asDecider()
 
     /**
      * Di-map on S/State parameter
@@ -121,7 +116,7 @@ data class Decider<in C, S, E>(
      */
     inline fun <Sn> dimapOnState(
         crossinline fl: (Sn) -> S, crossinline fr: (S) -> Sn
-    ): Decider<C, Sn, E> = Decider(InternalDecider(decide, evolve, initialState).dimapOnState(fl, fr))
+    ): Decider<C, Sn, E> = InternalDecider(decide, evolve, initialState).dimapOnState(fl, fr).asDecider()
 
 }
 
@@ -147,9 +142,10 @@ data class Decider<in C, S, E>(
 @FlowPreview
 inline infix fun <reified C : C_SUPER, S, reified E : E_SUPER, reified C2 : C_SUPER, S2, reified E2 : E_SUPER, C_SUPER, E_SUPER> Decider<C?, S, E?>.combine(
     y: Decider<C2?, S2, E2?>
-): Decider<C_SUPER?, Pair<S, S2>, E_SUPER?> = Decider(
+): Decider<C_SUPER?, Pair<S, S2>, E_SUPER?> =
     InternalDecider(decide, evolve, initialState).combine(InternalDecider(y.decide, y.evolve, y.initialState))
-)
+        .asDecider()
+
 
 /**
  * Decider DSL - A convenient builder DSL for the [Decider]

@@ -1,5 +1,7 @@
 package com.fraktalio.fmodel.domain.internal
 
+import com.fraktalio.fmodel.domain.View
+
 /**
  * [InternalView] is a datatype that represents the event handling algorithm,
  * responsible for translating the events into denormalized state,
@@ -128,3 +130,6 @@ internal inline infix fun <Si, So, reified E : E_SUPER, Si2, So2, reified E2 : E
 
     return viewX.productOnState(viewY)
 }
+
+@PublishedApi
+internal fun <S, E> InternalView<S, S, E>.asView() = View(this.evolve, this.initialState)
