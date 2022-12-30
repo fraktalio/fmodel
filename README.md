@@ -4,17 +4,10 @@ When you’re developing an information system to automate the activities of the
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
 the business — together, they constitute the model of the domain.
 
-![event-modeling](.assets/event-modeling.png)
-
-## Multiplatform
-
-Support for multiplatform programming is one of Kotlin’s key benefits. It reduces time spent writing and maintaining the
-same code for different platforms while retaining the flexibility and benefits of native programming.
-
 ## `IOR<Library, Inspiration>`
 
-This project can be used as a multiplatform library, or as an inspiration, or both. It provides just enough tactical
-Domain-Driven Design patterns, optimised for Event Sourcing and CQRS.
+This project can be used as a multiplatform library, or as an inspiration, or both. **It provides just enough tactical
+Domain-Driven Design patterns, optimised for Event Sourcing and CQRS.**
 
 - The `domain` model library is fully isolated from the application layer and API-related concerns. It represents a pure
   declaration of the program logic. It is written in [Kotlin](https://kotlinlang.org/) programming language, without
@@ -34,9 +27,12 @@ The libraries are non-intrusive, and you can select any flavor, or choose both (
 only `domain` library and model the orchestration (`application` library) on your own. Or, you can simply be inspired by
 this project :)
 
+![event-modeling](.assets/event-modeling.png)
+
 ## Table of Contents
 
 * [<strong>f(model)</strong> - Functional domain modeling](#fmodel---functional-domain-modeling)
+    * [Multiplatform](#multiplatform)
     * [Abstraction and generalization](#abstraction-and-generalization)
     * [decide: (C, S) -&gt; Flow&lt;E&gt;](#decide-c-s---flowe)
     * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
@@ -54,6 +50,11 @@ this project :)
     * [Kotlin](#kotlin)
     * [Examples](#start-using-the-libraries)
     * [References and further reading](#references-and-further-reading)
+
+## Multiplatform
+
+Support for multiplatform programming is one of Kotlin’s key benefits. It reduces time spent writing and maintaining the
+same code for different platforms while retaining the flexibility and benefits of native programming.
 
 ## Abstraction and generalization
 
