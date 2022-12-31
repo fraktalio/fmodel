@@ -9,14 +9,33 @@ the business — together, they constitute the model of the domain.
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/U8NzcWV8b4Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
+## Table of Contents
 
-![event-modeling](https://github.com/fraktalio/fmodel/raw/main/.assets/event-modeling.png)
+* [<strong>f(model)</strong> - Functional domain modeling](#fmodel---functional-domain-modeling)
+    * [decide: (C, S) -&gt; Flow&lt;E&gt;](#decide-c-s---flowe)
+    * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
+    * [Event-sourced or State-stored systems](#event-sourced-or-state-stored-systems)
+    * [Decider](#decider)
+        * [Decider extensions and functions](#decider-extensions-and-functions)
+        * [Event-sourcing aggregate](#event-sourcing-aggregate)
+        * [State-stored aggregate](#state-stored-aggregate)
+    * [View](#view)
+        * [View extensions and functions](#view-extensions-and-functions)
+        * [Materialized View](#materialized-view)
+    * [Saga](#saga)
+        * [Saga extensions and functions](#saga-extensions-and-functions)
+        * [Saga Manager](#saga-manager)
+    * [Kotlin](#kotlin)
+    * [Examples](#start-using-the-libraries)
 
 
 ## `IOR<Library, Inspiration>`
 
 This project can be used as a library, or as an inspiration, or both. It provides just enough tactical Domain-Driven
 Design patterns, optimised for Event Sourcing and CQRS.
+
+![event-modeling](https://github.com/fraktalio/fmodel/raw/main/.assets/event-modeling.png)
+
 
 - The `domain` model library is fully isolated from the application layer and API-related concerns. It represents a pure
   declaration of the program logic. It is written in [Kotlin](https://kotlinlang.org/) programming language, without
@@ -37,26 +56,6 @@ Design patterns, optimised for Event Sourcing and CQRS.
 The libraries are non-intrusive, and you can select any flavor, or choose both (`vanila` and `arrow`). You can use
 only `domain` library and model the orchestration (`application` library) on your own. Or, you can simply be inspired by
 this project :)
-
-## Table of Contents
-
-* [<strong>f(model)</strong> - Functional domain modeling](#fmodel---functional-domain-modeling)
-    * [decide: (C, S) -&gt; Flow&lt;E&gt;](#decide-c-s---flowe)
-    * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
-    * [Event-sourced or State-stored systems](#event-sourced-or-state-stored-systems)
-    * [Decider](#decider)
-        * [Decider extensions and functions](#decider-extensions-and-functions)
-        * [Event-sourcing aggregate](#event-sourcing-aggregate)
-        * [State-stored aggregate](#state-stored-aggregate)
-    * [View](#view)
-        * [View extensions and functions](#view-extensions-and-functions)
-        * [Materialized View](#materialized-view)
-    * [Saga](#saga)
-        * [Saga extensions and functions](#saga-extensions-and-functions)
-        * [Saga Manager](#saga-manager)
-    * [Kotlin](#kotlin)
-    * [Examples](#start-using-the-libraries)
-    * [References and further reading](#references-and-further-reading)
 
 
 ## `decide: (C, S) -> Flow<E>`
