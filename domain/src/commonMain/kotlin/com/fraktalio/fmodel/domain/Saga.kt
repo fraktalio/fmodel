@@ -23,60 +23,108 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /**
- * An interface of the [_Saga].
+ * An interface of the [Saga].
  *
  * @param AR Action Result type
  * @param A Action type
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-interface I_Saga<in AR, out A> {
+interface ISaga<in AR, out A> {
     val react: (AR) -> Flow<A>
 }
 
 /**
- * A convenient typealias for the [I_Saga] interface.
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-typealias ISaga<AR, A> = I_Saga<AR, A>
-
-/**
- * A typealias for [_Saga]<AR, A>, specializing the [_Saga] to two generic parameters: AR and A
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-typealias Saga<AR, A> = _Saga<AR, A>
-
-/**
  * Saga DSL - A convenient builder DSL for the [Saga]
+ *
+ * Example:
+ *
+ * ```kotlin
+ * fun numberSaga() = saga<NumberEvent, NumberCommand> { numberEvent ->
+ *     when (numberEvent) {
+ *         is EvenNumberAdded -> flowOf(
+ *             AddOddNumber(
+ *                 Description("${numberEvent.value.get - 1}"),
+ *                 NumberValue(numberEvent.value.get - 1)
+ *             )
+ *         )
+ *
+ *         is EvenNumberSubtracted -> flowOf(
+ *             SubtractOddNumber(
+ *                 Description("${numberEvent.value.get - 1}"),
+ *                 NumberValue(numberEvent.value.get - 1)
+ *             )
+ *         )
+ *
+ *         is OddNumberAdded -> flowOf(
+ *             AddEvenNumber(
+ *                 Description("${numberEvent.value.get + 1}"),
+ *                 NumberValue(numberEvent.value.get + 1)
+ *             )
+ *         )
+ *
+ *         is OddNumberSubtracted -> flowOf(
+ *             SubtractEvenNumber(
+ *                 Description("${numberEvent.value.get + 1}"),
+ *                 NumberValue(numberEvent.value.get + 1)
+ *             )
+ *         )
+ *
+ *         else -> emptyFlow()
+ *     }
+ * }
+ * ```
  */
 fun <AR, A> saga(react: (AR) -> Flow<A>): Saga<AR, A> = Saga(react)
 
 /**
- * [_Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).
- * It is responsible for mapping different events into action results ([AR]) that the [_Saga] then can use to calculate the next actions ([A]) to be mapped to command(s).
+ * [Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).
+ * It is responsible for mapping different events into action results ([AR]) that the [Saga] then can use to calculate the next actions ([A]) to be mapped to command(s).
  *
  * Saga does not maintain the state.
+ *
+ * Example:
+ *
+ * ```kotlin
+ * fun evenNumberSaga() = Saga<EvenNumberEvent?, OddNumberCommand> { numberEvent ->
+ *     when (numberEvent) {
+ *         is EvenNumberAdded -> flowOf(
+ *             AddOddNumber(
+ *                 Description("${numberEvent.value.get - 1}"),
+ *                 NumberValue(numberEvent.value.get - 1)
+ *             )
+ *         )
+ *
+ *         is EvenNumberSubtracted -> flowOf(
+ *             SubtractOddNumber(
+ *                 Description("${numberEvent.value.get - 1}"),
+ *                 NumberValue(numberEvent.value.get - 1)
+ *             )
+ *         )
+ *
+ *         else -> emptyFlow()
+ *     }
+ * }
+ * ```
  *
  * @param AR Action Result type
  * @param A Action type
  * @property react A function/lambda that takes input state of type [AR], and returns the flow of actions [Flow]<[A]>.
- * @constructor Creates [_Saga]
+ * @constructor Creates [Saga]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-data class _Saga<in AR, out A>(
+data class Saga<in AR, out A>(
     override val react: (AR) -> Flow<A>
-) : I_Saga<AR, A> {
+) : ISaga<AR, A> {
     /**
      * Left map on AR/ActionResult parameter - Contravariant
      *
      * @param ARn ActionResult type new
      * @param f
      */
-    inline fun <ARn> mapLeftOnActionResult(crossinline f: (ARn) -> AR): _Saga<ARn, A> =
-        _Saga(react = { arn -> react(f(arn)) })
+    inline fun <ARn> mapLeftOnActionResult(crossinline f: (ARn) -> AR): Saga<ARn, A> =
+        Saga(react = { arn -> react(f(arn)) })
 
     /**
      * Right map on A/Action parameter - Covariant
@@ -84,12 +132,12 @@ data class _Saga<in AR, out A>(
      * @param An
      * @param f
      */
-    inline fun <An> mapOnAction(crossinline f: (A) -> An): _Saga<AR, An> =
-        _Saga(react = { ar -> react(ar).map { f(it) } })
+    inline fun <An> mapOnAction(crossinline f: (A) -> An): Saga<AR, An> =
+        Saga(react = { ar -> react(ar).map { f(it) } })
 }
 
 /**
- * Combines [_Saga]s into one [_Saga]
+ * Combines [Saga]s into one [Saga]
  *
  * Specially convenient when:
  * - [AR] and [AR2] have common superclass [AR_SUPER], or
@@ -102,17 +150,17 @@ data class _Saga<in AR, out A>(
  * @param AR_SUPER common superclass for [AR] and [AR2]
  * @param A_SUPER common superclass for [A] and [A2]
  * @param y second saga
- * @return new Saga of type `[_Saga]<[AR_SUPER], [A_SUPER]>`
+ * @return new Saga of type `[Saga]<[AR_SUPER], [A_SUPER]>`
  */
 @FlowPreview
-inline infix fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> _Saga<AR?, A>.combine(
-    y: _Saga<AR2?, A2>
-): _Saga<AR_SUPER, A_SUPER> {
+inline infix fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> Saga<AR?, A>.combine(
+    y: Saga<AR2?, A2>
+): Saga<AR_SUPER, A_SUPER> {
 
     val sagaX = this.mapLeftOnActionResult<AR_SUPER> { it as? AR }.mapOnAction<A_SUPER> { it }
 
     val sagaY = y.mapLeftOnActionResult<AR_SUPER> { it as? AR2 }.mapOnAction<A_SUPER> { it }
 
-    return _Saga(react = { eitherAr -> flowOf(sagaX.react(eitherAr), (sagaY.react(eitherAr))).flattenConcat() })
+    return Saga(react = { eitherAr -> flowOf(sagaX.react(eitherAr), (sagaY.react(eitherAr))).flattenConcat() })
 }
 

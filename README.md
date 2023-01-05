@@ -4,17 +4,10 @@ When you’re developing an information system to automate the activities of the
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
 the business — together, they constitute the model of the domain.
 
-![event-modeling](.assets/event-modeling.png)
-
-## Multiplatform
-
-Support for multiplatform programming is one of Kotlin’s key benefits. It reduces time spent writing and maintaining the
-same code for different platforms while retaining the flexibility and benefits of native programming.
-
 ## `IOR<Library, Inspiration>`
 
-This project can be used as a multiplatform library, or as an inspiration, or both. It provides just enough tactical
-Domain-Driven Design patterns, optimised for Event Sourcing and CQRS.
+This project can be used as a multiplatform library, or as an inspiration, or both. **It provides just enough tactical
+Domain-Driven Design patterns, optimised for Event Sourcing and CQRS.**
 
 - The `domain` model library is fully isolated from the application layer and API-related concerns. It represents a pure
   declaration of the program logic. It is written in [Kotlin](https://kotlinlang.org/) programming language, without
@@ -34,9 +27,12 @@ The libraries are non-intrusive, and you can select any flavor, or choose both (
 only `domain` library and model the orchestration (`application` library) on your own. Or, you can simply be inspired by
 this project :)
 
+![event-modeling](.assets/event-modeling.png)
+
 ## Table of Contents
 
 * [<strong>f(model)</strong> - Functional domain modeling](#fmodel---functional-domain-modeling)
+    * [Multiplatform](#multiplatform)
     * [Abstraction and generalization](#abstraction-and-generalization)
     * [decide: (C, S) -&gt; Flow&lt;E&gt;](#decide-c-s---flowe)
     * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
@@ -54,6 +50,11 @@ this project :)
     * [Kotlin](#kotlin)
     * [Examples](#start-using-the-libraries)
     * [References and further reading](#references-and-further-reading)
+
+## Multiplatform
+
+Support for multiplatform programming is one of Kotlin’s key benefits. It reduces time spent writing and maintaining the
+same code for different platforms while retaining the flexibility and benefits of native programming.
 
 ## Abstraction and generalization
 
@@ -138,31 +139,23 @@ data class Decider<C, S, E>(
 
 ## Decider
 
-`_Decider` is a datatype that represents the main decision-making algorithm. It belongs to the Domain layer. It has five
-generic parameters `C`, `Si`, `So`, `Ei`, `Eo` , representing the type of the values that `_Decider` may contain or use.
-`_Decider` can be specialized for any type `C` or `Si` or `So` or `Ei` or `Eo` because these types do not affect its
-behavior. `_Decider` behaves the same for `C`=`Int` or `C`=`YourCustomType`, for example.
+`Decider` is a datatype that represents the main decision-making algorithm. It belongs to the Domain layer. It has three
+generic parameters `C`, `S`, `E` , representing the type of the values that `Decider` may contain or use.
+`Decider` can be specialized for any type `C` or `S` or `E` because these types do not affect its
+behavior. `Decider` behaves the same for `C`=`Int` or `C`=`YourCustomType`, for example.
 
-`_Decider` is a pure domain component.
+`Decider` is a pure domain component.
 
 - `C` - Command
-- `Si` - input State
-- `So` - output State
-- `Ei` - input Event
-- `Eo` - output Event
-
-We make a difference between input and output types, and we are more general in this case. We can always specialize down
-to the 3 generic parameters: `typealias Decider<C, S, E> = _Decider<C, S, S, E, E>`
+- `S` - State
+- `E` - Event
 
 ```kotlin
-data class _Decider<C, Si, So, Ei, Eo>(
-    val decide: (C, Si) -> Flow<Eo>,
-    val evolve: (Si, Ei) -> So,
-    val initialState: So
-) : I_Decider<C, Si, So, Ei, Eo>
-
-typealias Decider<C, S, E> = _Decider<C, S, S, E, E>
-typealias IDecider<C, S, E> = I_Decider<C, S, S, E, E>
+data class Decider<in C, S, E>(
+    override val decide: (C, S) -> Flow<E>,
+    override val evolve: (S, E) -> S,
+    override val initialState: S
+) : IDecider<C, S, E> 
 ```
 
 Additionally, `initialState` of the Decider is introduced to gain more control over the initial state of the Decider.
@@ -216,39 +209,28 @@ fun restaurantOrderDecider() = Decider<RestaurantOrderCommand?, RestaurantOrder?
 
 #### Contravariant
 
-- `Decider<C, Si, So, Ei, Eo>.mapLeftOnCommand(f: (Cn) -> C): Decider<Cn, Si, So, Ei, Eo>`
+- `Decider<C, S, E>.mapLeftOnCommand(f: (Cn) -> C): Decider<Cn, S, E>`
 
 #### Profunctor (Contravariant and Covariant)
 
-- `Decider<C, Si, So, Ei, Eo>.dimapOnEvent(
-  fl: (Ein) -> Ei, fr: (Eo) -> Eon
-  ): Decider<C, Si, So, Ein, Eon>`
-- `Decider<C, Si, So, Ei, Eo>.mapLeftOnEvent(f: (Ein) -> Ei): Decider<C, Si, So, Ein, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.mapOnEvent(f: (Eo) -> Eon): Decider<C, Si, So, Ei, Eon>`
-- `Decider<C, Si, So, Ei, Eo>.dimapOnState(
-  fl: (Sin) -> Si, fr: (So) -> Son
-  ): Decider<C, Sin, Son, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.mapLeftOnState(f: (Sin) -> Si): Decider<C, Sin, So, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.mapOnState(f: (So) -> Son): Decider<C, Si, Son, Ei, Eo>`
+- `Decider<C, S, E>.dimapOnEvent(fl: (En) -> E, fr: (E) -> En): Decider<C, S, En>`
+- `Decider<C, S, E>.dimapOnState(fl: (Sn) -> S, fr: (S) -> Sn): Decider<C, Sn, E>`
 
-#### Applicative
+#### *Commutative* Monoid
 
-- `rjustOnS(so: So): Decider<C, Si, So, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.applyOnState(ff: Decider<C, Si, (So) -> Son, Ei, Eo>): Decider<C, Si, Son, Ei, Eo>`
-- `Decider<C, Si, So, Ei, Eo>.productOnState(fb: Decider<C, Si, Son, Ei, Eo>): Decider<C, Si, Pair<So, Son>, Ei, Eo>`
-
-#### Monoid
-
-- `Decider<in C?, in Si, out So, in Ei?, out Eo>.combine(
-  y: Decider<in Cn?, in Sin, out Son, in Ein?, out Eon>
-  ): Decider<C_SUPER, Pair<Si, Sin>, Pair<So, Son>, Ei_SUPER, Eo_SUPER>`
+- `<reified Cx : C_SUPER, Sx, reified Ex : E_SUPER, reified Cy : C_SUPER, Sy, reified Ey : E_SUPER, C_SUPER> Decider<Cx?, Sx, Ex?>.combine(
+  y: Decider<Cy?, Sy, Ey?>
+  ): Decider<C_SUPER, Pair<Sx, Sy>, E_SUPER>`
 
 - with identity element `Decider<Nothing?, Unit, Nothing?>`
 
-> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an
+> A monoid is a type together with a binary operation (`combine`) over that type, satisfying associativity and having an
 > identity/empty element.
 > Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
 > in parallel.
+>
+> `combine` operation is also commutative. This means that the order in which deciders are combined does not affect the
+> result.
 
 
 We can now construct event-sourcing or/and state-storing aggregate by using the same `decider`.
@@ -353,31 +335,24 @@ scenarios that are offered out of the box.
 
 ## View
 
-`_View`  is a datatype that represents the event handling algorithm, responsible for translating the events into
+`View`  is a datatype that represents the event handling algorithm, responsible for translating the events into
 denormalized state, which is more adequate for querying. It belongs to the Domain layer. It is usually used to create
 the view/query side of the CQRS pattern. Obviously, the command side of the CQRS is usually event-sourced aggregate.
 
-It has three generic parameters `Si`, `So`, `E`, representing the type of the values that `_View` may contain or use.
-`_View` can be specialized for any type of `Si`, `So`, `E` because these types do not affect its behavior.
-`_View` behaves the same for `E`=`Int` or `E`=`YourCustomType`, for example.
+It has two generic parameters `S`, `E`, representing the type of the values that `View` may contain or use.
+`View` can be specialized for any type of `S`, `E` because these types do not affect its behavior.
+`View` behaves the same for `E`=`Int` or `E`=`YourCustomType`, for example.
 
-`_View` is a pure domain component.
+`View` is a pure domain component.
 
-- `Si` - input State
-- `So` - output State
-- `E`  - Event
-
-We make a difference between input and output types, and we are more general in this case. We can always specialize down
-to the 2 generic parameters: `typealias View<S, E> = _View<S, S, E>`
+- `S` - State
+- `E` - Event
 
 ```kotlin
-data class _View<Si, So, E>(
-    val evolve: (Si, E) -> So,
-    val initialState: So,
-) : I_View<Si, So, E>
-
-typealias View<S, E> = _View<S, S, E>
-typealias IView<S, E> = I_View<S, S, E>
+data class View<S, in E>(
+    override val evolve: (S, E) -> S,
+    override val initialState: S
+) : IView<S, E>
 ```
 
 Notice that `View` implements an interface `IView` to communicate the contract.
@@ -415,30 +390,25 @@ fun restaurantOrderView() = View<RestaurantOrderViewState?, RestaurantOrderEvent
 
 #### Contravariant
 
-- `View<Si, So, E>.mapLeftOnEvent(f: (En) -> E): View<Si, So, En>`
+- `View<S, E>.mapLeftOnEvent(f: (En) -> E): View<S, En>`
 
 #### Profunctor (Contravariant and Covariant)
 
-- `View<Si, So, E>.dimapOnState(
-  fl: (Sin) -> Si, fr: (So) -> Son
-  ): View<Sin, Son, E>`
-- `View<Si, So, E>.mapLeftOnState(f: (Sin) -> Si): View<Sin, So, E>`
-- `View<Si, So, E>.mapOnState(f: (So) -> Son): View<Si, Son, E>`
+- `View<S, E>.dimapOnState(fl: (Sn) -> S, fr: (S) -> Sn): View<Sn, E>`
 
-#### Applicative
+#### *Commutative* Monoid
 
-- `View<Si, So, E>.applyOnState(ff: View<Si, (So) -> Son, E>): View<Si, Son, E>`
-- `justOnState(so: So): View<Si, So, E>`
-
-#### Monoid
-
-- `View<in Si, out So, in E?>.combine(y: View<in Si2, out So2, in E2?>): View<Pair<Si, Si2>, Pair<So, So2>, E_SUPER>`
+- `<Sx, reified Ex : E_SUPER, Sy, reified Ey : E_SUPER, E_SUPER>  View<Sx, Ex?>.combine(y: View<Sy, Ey?>): View<Pair<Sx, Sy>, E_SUPER>`
 - with identity element `View<Unit, Nothing?>`
 
 > A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an
 > identity/empty element.
 > Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
 > in parallel.
+>
+> `combine` operation is also commutative. This means that the order in which views are combined does not affect the
+> result.
+
 
 We can now construct `materialized` view by using this `view`.
 
@@ -494,28 +464,25 @@ scenarios that are offered out of the box.
 
 ## Saga
 
-`_Saga` is a datatype that represents the central point of control, deciding what to execute next (`A`). It is
-responsible for mapping different events from many aggregates into action results `AR` that the `_Saga` then can use to
+`Saga` is a datatype that represents the central point of control, deciding what to execute next (`A`). It is
+responsible for mapping different events from many aggregates into action results `AR` that the `Saga` then can use to
 calculate the next actions `A` to be mapped to commands of other aggregates.
 
-`_Saga` is stateless, it does not maintain the state.
+`Saga` is stateless, it does not maintain the state.
 
-It has two generic parameters `AR`, `A`, representing the type of the values that `_Saga` may contain or use.
-`_Saga` can be specialized for any type of `AR`, `A` because these types do not affect its behavior.
-`_Saga` behaves the same for `AR`=`Int` or `AR`=`YourCustomType`, for example.
+It has two generic parameters `AR`, `A`, representing the type of the values that `Saga` may contain or use.
+`Saga` can be specialized for any type of `AR`, `A` because these types do not affect its behavior.
+`Saga` behaves the same for `AR`=`Int` or `AR`=`YourCustomType`, for example.
 
-`_Saga` is a pure domain component.
+`Saga` is a pure domain component.
 
 - `AR` - Action Result
 - `A`  - Action
 
 ```kotlin
-data class _Saga<AR, A>(
+data class Saga<AR, A>(
     val react: (AR) -> Flow<A>
 ) : I_Saga<AR, A>
-
-typealias Saga<AR, A> = _Saga<AR, A>
-typealias ISaga<AR, A> = I_Saga<AR, A>
 ```
 
 Notice that `Saga` implements an interface `ISaga` to communicate the contract.
@@ -575,8 +542,17 @@ fun restaurantSaga() = Saga<RestaurantOrderEvent?, RestaurantCommand>(
 
 #### Monoid
 
-- `Saga<in AR?, out A>.combine(y: _Saga<in ARn?, out An>): Saga<AR_SUPER, A_SUPER>`
+- `<reified ARx : AR_SUPER, Ax : A_SUPER, reified ARy : AR_SUPER, Ay : A_SUPER, AR_SUPER, A_SUPER> Saga<in ARx?, out Ax>.combine(y: Saga<in ARy?, out Ay>): Saga<AR_SUPER, A_SUPER>`
 - with identity element `Saga<Nothing?, Nothing?>`
+
+> A monoid is a type together with a binary operation (combine) over that type, satisfying associativity and having an
+> identity/empty element.
+> Associativity facilitates parallelization by giving us the freedom to break problems into chunks that can be computed
+> in parallel.
+>
+> `combine` operation is also commutative. This means that the order in which sagas are combined does not affect the
+> result.
+
 
 We can now construct `Saga Manager` by using this `saga`.
 
@@ -671,19 +647,19 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>3.2.0</version>
+    <version>3.3.0</version>
  </dependency>
 
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-vanilla</artifactId>
-    <version>3.2.0</version>
+    <version>3.3.0</version>
  </dependency>
  
  <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>application-arrow</artifactId>
-    <version>3.2.0</version>
+    <version>3.3.0</version>
  </dependency>
 ```
 
