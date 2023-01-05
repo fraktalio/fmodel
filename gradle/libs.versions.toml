@@ -5,7 +5,7 @@ dokka = "1.7.20"
 kotest = "5.5.4"
 kotest-plugin = "5.5.4"
 kotlin = "1.8.0"
-arrow = "2.0.0-SNAPSHO
+arrow = "2.0.0-SNAPSHOT"
 
 [libraries]
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
