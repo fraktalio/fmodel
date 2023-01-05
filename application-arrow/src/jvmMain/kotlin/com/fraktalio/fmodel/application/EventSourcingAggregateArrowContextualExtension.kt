@@ -14,7 +14,7 @@ fun <C, S, E> C.handleWithEffect(): Flow<Effect<Error, E>> =
         .computeNewEvents(this)
         .save()
         .map { effect<Error, E> { it } }
-        .catch { emit(effect { shift(CommandHandlingFailed(this@handleWithEffect)) }) }
+        .catch { emit(effect { raise(CommandHandlingFailed(this@handleWithEffect)) }) }
 
 context (EventComputation<C, S, E>, EventLockingRepository<C, E, V>)
 @FlowPreview
@@ -25,7 +25,7 @@ fun <C, S, E, V> C.handleOptimisticallyWithEffect(): Flow<Effect<Error, Pair<E, 
             .computeNewEvents(this@handleOptimisticallyWithEffect)
             .save(events.lastOrNull())
             .map { effect<Error, Pair<E, V>> { it } }
-            .catch { emit(effect { shift(CommandHandlingFailed(this@handleOptimisticallyWithEffect)) }) }
+            .catch { emit(effect { raise(CommandHandlingFailed(this@handleOptimisticallyWithEffect)) }) }
     )
 }
 
@@ -36,7 +36,7 @@ fun <C, S, E> C.handleWithEffect(): Flow<Effect<Error, E>> =
         .computeNewEventsByOrchestrating(this) { it.fetchEvents() }
         .save()
         .map { effect<Error, E> { it } }
-        .catch { emit(effect { shift(CommandHandlingFailed(this@handleWithEffect)) }) }
+        .catch { emit(effect { raise(CommandHandlingFailed(this@handleWithEffect)) }) }
 
 context (EventOrchestratingComputation<C, S, E>, EventLockingRepository<C, E, V>)
 @FlowPreview
@@ -45,24 +45,24 @@ fun <C, S, E, V> C.handleOptimisticallyWithEffect(): Flow<Effect<Error, Pair<E, 
         .computeNewEventsByOrchestrating(this) { it.fetchEvents().map { pair -> pair.first } }
         .save(latestVersionProvider)
         .map { effect<Error, Pair<E, V>> { it } }
-        .catch { emit(effect { shift(CommandHandlingFailed(this@handleOptimisticallyWithEffect)) }) }
+        .catch { emit(effect { raise(CommandHandlingFailed(this@handleOptimisticallyWithEffect)) }) }
 
 context (EventComputation<C, S, E>, EventRepository<C, E>)
 @FlowPreview
 fun <C, S, E> Flow<C>.handleWithEffect(): Flow<Effect<Error, E>> =
-    flatMapConcat { it.handleWithEffect() }.catch { emit(effect { shift(Error.CommandPublishingFailed(it)) }) }
+    flatMapConcat { it.handleWithEffect() }.catch { emit(effect { raise(Error.CommandPublishingFailed(it)) }) }
 
 context (EventComputation<C, S, E>, EventLockingRepository<C, E, V>)
 @FlowPreview
 fun <C, S, E, V> Flow<C>.handleOptimisticallyWithEffect(): Flow<Effect<Error, Pair<E, V>>> =
-    flatMapConcat { it.handleOptimisticallyWithEffect() }.catch { emit(effect { shift(Error.CommandPublishingFailed(it)) }) }
+    flatMapConcat { it.handleOptimisticallyWithEffect() }.catch { emit(effect { raise(Error.CommandPublishingFailed(it)) }) }
 
 context (EventOrchestratingComputation<C, S, E>, EventRepository<C, E>)
 @FlowPreview
 fun <C, S, E> Flow<C>.handleWithEffect(): Flow<Effect<Error, E>> =
-    flatMapConcat { it.handleWithEffect() }.catch { emit(effect { shift(Error.CommandPublishingFailed(it)) }) }
+    flatMapConcat { it.handleWithEffect() }.catch { emit(effect { raise(Error.CommandPublishingFailed(it)) }) }
 
 context (EventOrchestratingComputation<C, S, E>, EventLockingRepository<C, E, V>)
 @FlowPreview
 fun <C, S, E, V> Flow<C>.handleOptimisticallyWithEffect(): Flow<Effect<Error, Pair<E, V>>> =
-    flatMapConcat { it.handleOptimisticallyWithEffect() }.catch { emit(effect { shift(Error.CommandPublishingFailed(it)) }) }
+    flatMapConcat { it.handleOptimisticallyWithEffect() }.catch { emit(effect { raise(Error.CommandPublishingFailed(it)) }) }

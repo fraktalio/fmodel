@@ -2,6 +2,7 @@ package com.fraktalio.fmodel.application
 
 import arrow.core.Either
 import arrow.core.continuations.Effect
+import arrow.core.continuations.toEither
 import com.fraktalio.fmodel.application.examples.numbers.NumberStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberLockingStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberStateRepository

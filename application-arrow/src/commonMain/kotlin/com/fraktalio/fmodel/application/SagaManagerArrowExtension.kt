@@ -39,7 +39,7 @@ fun <AR, A> SagaManager<AR, A>.handleWithEffect(actionResult: AR): Flow<Effect<E
         .computeNewActions()
         .publish()
         .map { effect<Error, A> { it } }
-        .catch { emit(effect { shift(ActionResultHandlingFailed(actionResult, it)) }) }
+        .catch { emit(effect { raise(ActionResultHandlingFailed(actionResult, it)) }) }
 
 /**
  * Extension function - Handles the [Flow] of action results of type [AR].
@@ -53,7 +53,7 @@ fun <AR, A> SagaManager<AR, A>.handleWithEffect(actionResult: AR): Flow<Effect<E
 fun <AR, A> SagaManager<AR, A>.handleWithEffect(actionResults: Flow<AR>): Flow<Effect<Error, A>> =
     actionResults
         .flatMapConcat { handleWithEffect(it) }
-        .catch { emit(effect { shift(ActionResultPublishingFailed(it)) }) }
+        .catch { emit(effect { raise(ActionResultPublishingFailed(it)) }) }
 
 
 /**

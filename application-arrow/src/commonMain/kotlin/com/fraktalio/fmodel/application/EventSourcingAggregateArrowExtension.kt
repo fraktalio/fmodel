@@ -18,7 +18,8 @@ package com.fraktalio.fmodel.application
 
 import arrow.core.continuations.Effect
 import arrow.core.continuations.effect
-import com.fraktalio.fmodel.application.Error.*
+import com.fraktalio.fmodel.application.Error.CommandHandlingFailed
+import com.fraktalio.fmodel.application.Error.CommandPublishingFailed
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 
@@ -37,7 +38,7 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handleWithEffect(command: C): Flow
         .computeNewEvents(command)
         .save()
         .map { effect<Error, E> { it } }
-        .catch { emit(effect { shift(CommandHandlingFailed(command)) }) }
+        .catch { emit(effect { raise(CommandHandlingFailed(command)) }) }
 
 /**
  * Extension function - Handles the command message of type [C]
@@ -54,7 +55,7 @@ fun <C, S, E> EventSourcingOrchestratingAggregate<C, S, E>.handleWithEffect(comm
         .computeNewEventsByOrchestrating(command) { it.fetchEvents() }
         .save()
         .map { effect<Error, E> { it } }
-        .catch { emit(effect { shift(CommandHandlingFailed(command)) }) }
+        .catch { emit(effect { raise(CommandHandlingFailed(command)) }) }
 
 /**
  * Extension function - Handles the command message of type [C]
@@ -73,7 +74,7 @@ fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimisticallyW
                 .computeNewEvents(command)
                 .save(events.lastOrNull())
                 .map { effect<Error, Pair<E, V>> { it } }
-                .catch { emit(effect { shift(CommandHandlingFailed(command)) }) }
+                .catch { emit(effect { raise(CommandHandlingFailed(command)) }) }
         )
     }
 
@@ -92,32 +93,32 @@ fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOp
         .computeNewEventsByOrchestrating(command) { it.fetchEvents().map { pair -> pair.first } }
         .save(latestVersionProvider)
         .map { effect<Error, Pair<E, V>> { it } }
-        .catch { emit(effect { shift(CommandHandlingFailed(command)) }) }
+        .catch { emit(effect { raise(CommandHandlingFailed(command)) }) }
 
 
 @FlowPreview
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handleWithEffect(commands: Flow<C>): Flow<Effect<Error, E>> =
     commands
         .flatMapConcat { handleWithEffect(it) }
-        .catch { emit(effect { shift(CommandPublishingFailed(it)) }) }
+        .catch { emit(effect { raise(CommandPublishingFailed(it)) }) }
 
 @FlowPreview
 fun <C, S, E> EventSourcingOrchestratingAggregate<C, S, E>.handleWithEffect(commands: Flow<C>): Flow<Effect<Error, E>> =
     commands
         .flatMapConcat { handleWithEffect(it) }
-        .catch { emit(effect { shift(CommandPublishingFailed(it)) }) }
+        .catch { emit(effect { raise(CommandPublishingFailed(it)) }) }
 
 @FlowPreview
 fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimisticallyWithEffect(commands: Flow<C>): Flow<Effect<Error, Pair<E, V>>> =
     commands
         .flatMapConcat { handleOptimisticallyWithEffect(it) }
-        .catch { emit(effect { shift(CommandPublishingFailed(it)) }) }
+        .catch { emit(effect { raise(CommandPublishingFailed(it)) }) }
 
 @FlowPreview
 fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOptimisticallyWithEffect(commands: Flow<C>): Flow<Effect<Error, Pair<E, V>>> =
     commands
         .flatMapConcat { handleOptimisticallyWithEffect(it) }
-        .catch { emit(effect { shift(CommandPublishingFailed(it)) }) }
+        .catch { emit(effect { raise(CommandPublishingFailed(it)) }) }
 
 @FlowPreview
 fun <C, E> C.publishWithEffect(aggregate: EventSourcingAggregate<C, *, E>): Flow<Effect<Error, E>> =

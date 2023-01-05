@@ -17,12 +17,14 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.continuations.Effect
+import arrow.core.continuations.catch
 import arrow.core.continuations.effect
-import arrow.core.nonFatalOrThrow
 import com.fraktalio.fmodel.application.Error.CommandHandlingFailed
 import com.fraktalio.fmodel.application.Error.CommandPublishingFailed
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 
 /**
  * Extension function - Handles the command message of type [C]
@@ -36,10 +38,10 @@ import kotlinx.coroutines.flow.*
 suspend fun <C, S, E, I> I.handleWithEffect(command: C): Effect<Error, S> where I : StateComputation<C, S, E>,
                                                                                 I : StateRepository<C, S> =
     effect {
-        try {
+        catch({
             command.fetchState().computeNewState(command).save()
-        } catch (t: Throwable) {
-            shift(CommandHandlingFailed(this, t.nonFatalOrThrow()))
+        }) {
+            raise(CommandHandlingFailed(this@handleWithEffect, it))
 
         }
     }
@@ -56,13 +58,13 @@ suspend fun <C, S, E, I> I.handleWithEffect(command: C): Effect<Error, S> where 
 suspend fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(command: C): Effect<Error, Pair<S, V>> where I : StateComputation<C, S, E>,
                                                                                                           I : StateLockingRepository<C, S, V> =
     effect {
-        try {
+        catch({
             val (state, version) = command.fetchState()
             state
                 .computeNewState(command)
                 .save(version)
-        } catch (t: Throwable) {
-            shift(CommandHandlingFailed(this, t.nonFatalOrThrow()))
+        }) {
+            raise(CommandHandlingFailed(this@handleOptimisticallyWithEffect, it))
         }
     }
 
@@ -79,7 +81,7 @@ fun <C, S, E, I> I.handleWithEffect(commands: Flow<C>): Flow<Effect<Error, S>> w
                                                                                      I : StateRepository<C, S> =
     commands
         .map { handleWithEffect(it) }
-        .catch { emit(effect { shift(CommandPublishingFailed(it)) }) }
+        .catch { emit(effect { raise(CommandPublishingFailed(it)) }) }
 
 /**
  * Extension function - Handles the [Flow] of command messages of type [C] to the locking state stored aggregate, optimistically
@@ -94,7 +96,7 @@ fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(commands: Flow<C>): Flow<Ef
                                                                                                                I : StateLockingRepository<C, S, V> =
     commands
         .map { handleOptimisticallyWithEffect(it) }
-        .catch { emit(effect { shift(CommandPublishingFailed(it)) }) }
+        .catch { emit(effect { raise(CommandPublishingFailed(it)) }) }
 
 /**
  * Extension function - Publishes the command of type [C] to the state stored aggregate

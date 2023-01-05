@@ -49,12 +49,14 @@ fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEven
                         c.value
                     )
                 )
+
                 is SubtractOddNumber -> flowOf(
                     OddNumberSubtracted(
                         c.description,
                         c.value
                     )
                 )
+
                 null -> emptyFlow()
             }
         },
@@ -64,10 +66,12 @@ fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEven
                     e.description,
                     NumberValue(s.value.get + e.value.get)
                 )
+
                 is OddNumberSubtracted -> OddNumberState(
                     e.description,
                     NumberValue(s.value.get - e.value.get)
                 )
+
                 null -> s
             }
         }

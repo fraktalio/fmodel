@@ -41,10 +41,12 @@ fun oddNumberView(): View<OddNumberState?, OddNumberEvent?> = View(
                 Description(oddNumberState.description.get + ", " + e.description.get),
                 NumberValue(oddNumberState.value.get + e.value.get)
             )
+
             e is OddNumberSubtracted && (oddNumberState != null) -> OddNumberState(
                 Description(oddNumberState.description.get + ", " + e.description.get),
                 NumberValue(oddNumberState.value.get - e.value.get)
             )
+
             else -> oddNumberState
         }
     }

@@ -17,9 +17,10 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.continuations.Effect
+import arrow.core.continuations.catch
 import arrow.core.continuations.effect
-import arrow.core.nonFatalOrThrow
-import com.fraktalio.fmodel.application.Error.*
+import com.fraktalio.fmodel.application.Error.EventHandlingFailed
+import com.fraktalio.fmodel.application.Error.EventPublishingFailed
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -34,10 +35,10 @@ import kotlinx.coroutines.flow.map
  */
 suspend fun <S, E, I> I.handleWithEffect(event: E): Effect<Error, S> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> =
     effect {
-        try {
+        catch({
             event.fetchState().computeNewState(event).save()
-        } catch (t: Throwable) {
-            shift(EventHandlingFailed(event, t.nonFatalOrThrow()))
+        }) {
+            raise(EventHandlingFailed(event, it))
         }
     }
 
@@ -51,11 +52,11 @@ suspend fun <S, E, I> I.handleWithEffect(event: E): Effect<Error, S> where I : V
  */
 suspend fun <S, E, V, I> I.handleOptimisticallyWithEffect(event: E): Effect<Error, Pair<S, V>> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> =
     effect {
-        try {
+        catch({
             val (state, version) = event.fetchState()
             state.computeNewState(event).save(version)
-        } catch (t: Throwable) {
-            shift(EventHandlingFailed(event, t.nonFatalOrThrow()))
+        }) {
+            raise(EventHandlingFailed(event, it))
         }
     }
 
@@ -73,11 +74,11 @@ suspend fun <S, E, V, I> I.handleOptimisticallyWithEffect(event: E): Effect<Erro
 suspend fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplicationWithEffect(eventAndVersion: Pair<E, EV>): Effect<Error, Pair<S, SV>> where I : ViewStateComputation<S, E>, I : ViewStateLockingDeduplicationRepository<E, S, EV, SV> {
     return effect {
         val (event, eventVersion) = eventAndVersion
-        try {
+        catch({
             val (state, currentStateVersion) = event.fetchState()
             state.computeNewState(event).save(eventVersion, currentStateVersion)
-        } catch (t: Throwable) {
-            shift(EventHandlingFailed(event, t.nonFatalOrThrow()))
+        }) {
+            raise(EventHandlingFailed(event, it))
         }
     }
 }
@@ -93,7 +94,7 @@ suspend fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplicationWithEffect(
 fun <S, E, I> I.handleWithEffect(events: Flow<E>): Flow<Effect<Error, S>> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> =
     events
         .map { handleWithEffect(it) }
-        .catch { emit(effect { shift(EventPublishingFailed(it)) }) }
+        .catch { emit(effect { raise(EventPublishingFailed(it)) }) }
 
 /**
  * Extension function - Handles the flow of events of type [E]
@@ -106,7 +107,7 @@ fun <S, E, I> I.handleWithEffect(events: Flow<E>): Flow<Effect<Error, S>> where 
 fun <S, E, V, I> I.handleOptimisticallyWithEffect(events: Flow<E>): Flow<Effect<Error, Pair<S, V>>> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> =
     events
         .map { handleOptimisticallyWithEffect(it) }
-        .catch { emit(effect { shift(EventPublishingFailed(it)) }) }
+        .catch { emit(effect { raise(EventPublishingFailed(it)) }) }
 
 /**
  * Extension function - Handles the flow of events of type [Pair]<[E], [EV]>
@@ -119,7 +120,7 @@ fun <S, E, V, I> I.handleOptimisticallyWithEffect(events: Flow<E>): Flow<Effect<
 fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplicationWithEffect(eventsAndVersions: Flow<Pair<E, EV>>): Flow<Effect<Error, Pair<S, SV>>> where I : ViewStateComputation<S, E>, I : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
     eventsAndVersions
         .map { handleOptimisticallyWithDeduplicationWithEffect(it) }
-        .catch { emit(effect { shift(EventPublishingFailed(it)) }) }
+        .catch { emit(effect { raise(EventPublishingFailed(it)) }) }
 
 
 /**

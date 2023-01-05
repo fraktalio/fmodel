@@ -55,12 +55,14 @@ fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, NumberEven
                             c.value
                         )
                     )
+
                     is SubtractEvenNumber -> flowOf(
                         EvenNumberSubtracted(
                             c.description,
                             c.value
                         )
                     )
+
                     null -> emptyFlow()
                 }
         },
@@ -70,10 +72,12 @@ fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, NumberEven
                     e.description,
                     NumberValue(s.value.get + e.value.get)
                 )
+
                 is EvenNumberSubtracted -> EvenNumberState(
                     e.description,
                     NumberValue(s.value.get - e.value.get)
                 )
+
                 null -> s
             }
         }

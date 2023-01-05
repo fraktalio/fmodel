@@ -68,4 +68,5 @@ fun <S, E, V> Flow<E>.handleOptimistically(): Flow<Pair<S, V>> = map { it.handle
  * @receiver events of type Flow<E> to be handled
  */
 context (ViewStateComputation<S, E>, ViewStateLockingDeduplicationRepository<E, S, EV, SV>)
-fun <S, E, EV, SV> Flow<E>.handleOptimisticallyWithDeduplication(eventAndVersion: Pair<E, EV>): Flow<Pair<S, SV>> = map { it.handleOptimisticallyWithDeduplication(eventAndVersion) }
+fun <S, E, EV, SV> Flow<E>.handleOptimisticallyWithDeduplication(eventAndVersion: Pair<E, EV>): Flow<Pair<S, SV>> =
+    map { it.handleOptimisticallyWithDeduplication(eventAndVersion) }

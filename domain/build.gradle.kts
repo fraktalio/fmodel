@@ -47,6 +47,7 @@ kotlin {
                 arch == "aarch64" || arch.startsWith("arm") -> macosArm64()
                 else -> macosX64()
             }
+
         hostOs == "Linux" -> linuxX64()
         isMingwX64 -> mingwX64()
         else -> throw GradleException("Host OS is not supported in Kotlin/Native.")

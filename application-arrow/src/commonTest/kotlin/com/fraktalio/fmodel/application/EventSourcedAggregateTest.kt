@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.Either.Left
 import arrow.core.Either.Right
 import arrow.core.continuations.Effect
+import arrow.core.continuations.toEither
 import com.fraktalio.fmodel.application.examples.numbers.NumberRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberLockingRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberRepository

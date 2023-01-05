@@ -15,9 +15,9 @@ fun <AR, A> AR.handleWithEffect(): Flow<Effect<Error, A>> =
     computeNewActions()
         .publish()
         .map { effect<Error, A> { it } }
-        .catch { emit(effect { shift(ActionResultHandlingFailed(this@handleWithEffect, it)) }) }
+        .catch { emit(effect { raise(ActionResultHandlingFailed(this@handleWithEffect, it)) }) }
 
 context (SagaManager<AR, A>)
 @FlowPreview
 fun <AR, A> Flow<AR>.handleWithEffect(): Flow<Effect<Error, A>> =
-    flatMapConcat { it.handleWithEffect() }.catch { emit(effect { shift(ActionResultPublishingFailed(it)) }) }
+    flatMapConcat { it.handleWithEffect() }.catch { emit(effect { raise(ActionResultPublishingFailed(it)) }) }
