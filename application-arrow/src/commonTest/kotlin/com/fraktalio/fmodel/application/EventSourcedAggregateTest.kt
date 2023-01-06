@@ -3,8 +3,6 @@ package com.fraktalio.fmodel.application
 import arrow.core.Either
 import arrow.core.Either.Left
 import arrow.core.Either.Right
-import arrow.core.continuations.Effect
-import arrow.core.continuations.toEither
 import com.fraktalio.fmodel.application.examples.numbers.NumberRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberLockingRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberRepository
@@ -23,7 +21,6 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 
 /**
@@ -33,7 +30,7 @@ import kotlinx.coroutines.flow.toList
 private fun <C, S, E> IDecider<C, S, E>.given(
     repository: EventRepository<C, E>,
     command: () -> C
-): Flow<Effect<Error, E>> =
+): Flow<Either<Error, E>> =
     eventSourcingAggregate(
         decider = this,
         eventRepository = repository
@@ -43,7 +40,7 @@ private fun <C, S, E> IDecider<C, S, E>.given(
 private fun <C, S, E, V> IDecider<C, S, E>.given(
     repository: EventLockingRepository<C, E, V>,
     command: () -> C
-): Flow<Effect<Error, Pair<E, V>>> =
+): Flow<Either<Error, Pair<E, V>>> =
     eventSourcingLockingAggregate(
         decider = this,
         eventRepository = repository
@@ -58,11 +55,11 @@ private fun <C, S, E> IDecider<C, S, E>.whenCommand(command: C): C = command
 /**
  * DSL - Then
  */
-private suspend infix fun <E> Flow<Effect<Error, E>>.thenEvents(expected: Iterable<Either<Error, E>>) =
-    map { it.toEither() }.toList() shouldContainExactly (expected)
+private suspend infix fun <E> Flow<Either<Error, E>>.thenEvents(expected: Iterable<Either<Error, E>>) =
+    toList() shouldContainExactly (expected)
 
-private suspend infix fun <E, V> Flow<Effect<Error, Pair<E, V>>>.thenEventPairs(expected: Iterable<Either<Error, Pair<E, V>>>) =
-    map { it.toEither() }.toList() shouldContainExactly (expected)
+private suspend infix fun <E, V> Flow<Either<Error, Pair<E, V>>>.thenEventPairs(expected: Iterable<Either<Error, Pair<E, V>>>) =
+    toList() shouldContainExactly (expected)
 
 /**
  * Event sourced aggregate test

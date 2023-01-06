@@ -16,8 +16,8 @@
 
 package com.fraktalio.fmodel.application
 
-import arrow.core.continuations.Effect
-import arrow.core.continuations.effect
+import arrow.core.Either
+import arrow.core.continuations.either
 import com.fraktalio.fmodel.application.Error.ActionResultHandlingFailed
 import com.fraktalio.fmodel.application.Error.ActionResultPublishingFailed
 import kotlinx.coroutines.FlowPreview
@@ -30,52 +30,52 @@ import kotlinx.coroutines.flow.map
  * Extension function - Handles the action result of type [AR].
  *
  * @param actionResult Action Result represent the outcome of some action you want to handle in some way
- * @return [Flow] of [Effect] (either [Error] or Actions of type [A])
+ * @return [Flow] of [Either] (either [Error] or Actions of type [A])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <AR, A> SagaManager<AR, A>.handleWithEffect(actionResult: AR): Flow<Effect<Error, A>> =
+fun <AR, A> SagaManager<AR, A>.handleWithEffect(actionResult: AR): Flow<Either<Error, A>> =
     actionResult
         .computeNewActions()
         .publish()
-        .map { effect<Error, A> { it } }
-        .catch { emit(effect { raise(ActionResultHandlingFailed(actionResult, it)) }) }
+        .map { either<Error, A> { it } }
+        .catch { emit(either { raise(ActionResultHandlingFailed(actionResult, it)) }) }
 
 /**
  * Extension function - Handles the [Flow] of action results of type [AR].
  *
  * @param actionResults Action Results represent the outcome of some action you want to handle in some way
- * @return [Flow] of [Effect] (either [Error] or Actions of type [A])
+ * @return [Flow] of [Either] (either [Error] or Actions of type [A])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-fun <AR, A> SagaManager<AR, A>.handleWithEffect(actionResults: Flow<AR>): Flow<Effect<Error, A>> =
+fun <AR, A> SagaManager<AR, A>.handleWithEffect(actionResults: Flow<AR>): Flow<Either<Error, A>> =
     actionResults
         .flatMapConcat { handleWithEffect(it) }
-        .catch { emit(effect { raise(ActionResultPublishingFailed(it)) }) }
+        .catch { emit(either { raise(ActionResultPublishingFailed(it)) }) }
 
 
 /**
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
  * @receiver action result of type [AR]
  * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @return the [Flow] of [Effect] (either [Error] or successfully published Actions of type [A])
+ * @return the [Flow] of [Either] (either [Error] or successfully published Actions of type [A])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <AR, A> AR.publishWithEffect(sagaManager: SagaManager<AR, A>): Flow<Effect<Error, A>> =
+fun <AR, A> AR.publishWithEffect(sagaManager: SagaManager<AR, A>): Flow<Either<Error, A>> =
     sagaManager.handleWithEffect(this)
 
 /**
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
  * @receiver [Flow] of action results of type [AR]
  * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @return the [Flow] of [Effect] (either [Error] or successfully published Actions of type [A])
+ * @return the [Flow] of [Either] (either [Error] or successfully published Actions of type [A])
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @FlowPreview
-fun <AR, A> Flow<AR>.publishWithEffect(sagaManager: SagaManager<AR, A>): Flow<Effect<Error, A>> =
+fun <AR, A> Flow<AR>.publishWithEffect(sagaManager: SagaManager<AR, A>): Flow<Either<Error, A>> =
     sagaManager.handleWithEffect(this)
 

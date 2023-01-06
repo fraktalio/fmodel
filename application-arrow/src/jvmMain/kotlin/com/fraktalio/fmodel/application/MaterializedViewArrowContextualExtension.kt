@@ -1,6 +1,9 @@
 package com.fraktalio.fmodel.application
 
-import arrow.core.continuations.*
+import arrow.core.Either
+import arrow.core.continuations.Raise
+import arrow.core.continuations.catch
+import arrow.core.continuations.either
 import com.fraktalio.fmodel.application.Error.EventHandlingFailed
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -34,14 +37,14 @@ suspend fun <S, E, EV, SV> E.handleOptimisticallyWithDeduplicationAndEffect(even
 }
 
 context (ViewStateComputation<S, E>, ViewStateRepository<E, S>)
-fun <S, E> Flow<E>.handleWithEffect(): Flow<Effect<Error, S>> =
-    map { effect { it.handleWithEffect() } }.catch { emit(effect { raise(Error.EventPublishingFailed(it)) }) }
+fun <S, E> Flow<E>.handleWithEffect(): Flow<Either<Error, S>> =
+    map { either { it.handleWithEffect() } }.catch { emit(either { raise(Error.EventPublishingFailed(it)) }) }
 
 context (ViewStateComputation<S, E>, ViewStateLockingRepository<E, S, V>)
-fun <S, E, V> Flow<E>.handleOptimisticallyWithEffect(): Flow<Effect<Error, Pair<S, V>>> =
-    map { effect { it.handleOptimisticallyWithEffect() } }.catch { emit(effect { raise(Error.EventPublishingFailed(it)) }) }
+fun <S, E, V> Flow<E>.handleOptimisticallyWithEffect(): Flow<Either<Error, Pair<S, V>>> =
+    map { either { it.handleOptimisticallyWithEffect() } }.catch { emit(either { raise(Error.EventPublishingFailed(it)) }) }
 
 context (ViewStateComputation<S, E>, ViewStateLockingDeduplicationRepository<E, S, EV, SV>)
-fun <S, E, EV, SV> Flow<E>.handleOptimisticallyWithDeduplicationAndEffect(eventAndVersion: Pair<E, EV>): Flow<Effect<Error, Pair<S, SV>>> =
-    map { effect { it.handleOptimisticallyWithDeduplicationAndEffect(eventAndVersion) } }
-        .catch { emit(effect { raise(Error.EventPublishingFailed(it)) }) }
+fun <S, E, EV, SV> Flow<E>.handleOptimisticallyWithDeduplicationAndEffect(eventAndVersion: Pair<E, EV>): Flow<Either<Error, Pair<S, SV>>> =
+    map { either { it.handleOptimisticallyWithDeduplicationAndEffect(eventAndVersion) } }
+        .catch { emit(either { raise(Error.EventPublishingFailed(it)) }) }

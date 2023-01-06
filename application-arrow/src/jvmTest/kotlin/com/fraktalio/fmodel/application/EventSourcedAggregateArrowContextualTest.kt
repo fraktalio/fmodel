@@ -3,8 +3,6 @@ package com.fraktalio.fmodel.application
 import arrow.core.Either
 import arrow.core.Either.Left
 import arrow.core.Either.Right
-import arrow.core.continuations.Effect
-import arrow.core.continuations.toEither
 import com.fraktalio.fmodel.application.Error.CommandPublishingFailed
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberRepository
@@ -17,11 +15,14 @@ import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecid
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.toList
 import kotlin.contracts.ExperimentalContracts
 
-private suspend infix fun <E> Flow<Effect<Error, E>>.thenEvents(expected: Iterable<Either<Error, E>>) =
-    map { it.toEither() }.toList() shouldContainExactly (expected)
+private suspend infix fun <E> Flow<Either<Error, E>>.thenEvents(expected: Iterable<Either<Error, E>>) =
+    toList() shouldContainExactly (expected)
 
 /**
  * Event sourced aggregate contextual (context receivers) test

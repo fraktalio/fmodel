@@ -16,6 +16,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.last
 import kotlin.contracts.ExperimentalContracts
 
 private suspend fun <S> Effect<Error, S>.thenError() {
@@ -26,8 +27,24 @@ private suspend fun <S> Effect<Error, S>.thenError() {
     error.shouldBeInstanceOf<Error>()
 }
 
+private fun <S> Either<Error, S>.thenError() {
+    val error = when (val result = this) {
+        is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value ${result.value}")
+        is Either.Left -> result.value
+    }
+    error.shouldBeInstanceOf<Error>()
+}
+
 private suspend infix fun <S> Effect<Error, S>.thenState(expected: S) {
     val state = when (val result = this.toEither()) {
+        is Either.Right -> result.value
+        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
+    }
+    return state shouldBe expected
+}
+
+private infix fun <S> Either<Error, S>.thenState(expected: S) {
+    val state = when (val result = this) {
         is Either.Right -> result.value
         is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
     }
@@ -64,11 +81,25 @@ class StateStoredAggregateArrowContextualTest : FunSpec({
     }
 
     test("State-stored aggregate arrow contextual - add even number - exception (large number > 1000)") {
+        evenNumberStateRepository.deleteAll()
         with(stateComputation(evenDecider)) {
             with(evenNumberStateRepository) {
                 flowOf(
-                    AddEvenNumber(Description("desc"), NumberValue(6000))
+                    AddEvenNumber(Description("desc"), NumberValue(6000)),
+                    AddEvenNumber(Description("desc"), NumberValue(6))
                 ).handleWithEffect().first().thenError()
+            }
+        }
+    }
+
+    test("State-stored aggregate arrow contextual - add even number - exception (large number > 1000) - 2") {
+        evenNumberStateRepository.deleteAll()
+        with(stateComputation(evenDecider)) {
+            with(evenNumberStateRepository) {
+                flowOf(
+                    AddEvenNumber(Description("desc"), NumberValue(6000)),
+                    AddEvenNumber(Description("desc"), NumberValue(6))
+                ).handleWithEffect().last() thenState EvenNumberState(Description("desc"), NumberValue(6))
             }
         }
     }

@@ -25,6 +25,14 @@ private suspend infix fun <S> Effect<Error, S>.thenState(expected: S) {
     return state shouldBe expected
 }
 
+private suspend infix fun <S> Either<Error, S>.thenState(expected: S) {
+    val state = when (val result = this) {
+        is Either.Right -> result.value
+        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
+    }
+    return state shouldBe expected
+}
+
 /**
  * Materialized View Contextual Test
  */
