@@ -48,7 +48,7 @@ jobs:
           arguments: --full-stacktrace mingwX64Test
 
       - name: Upload reports
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: 'reports-${{ matrix.os }}'
           path: '**/build/reports/**'
