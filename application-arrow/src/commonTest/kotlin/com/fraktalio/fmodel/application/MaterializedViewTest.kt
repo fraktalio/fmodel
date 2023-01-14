@@ -2,6 +2,7 @@ package com.fraktalio.fmodel.application
 
 import arrow.core.Either
 import arrow.core.continuations.Effect
+import arrow.core.continuations.toEither
 import com.fraktalio.fmodel.application.examples.numbers.NumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberLockingViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberViewRepository
@@ -25,7 +26,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 /**
  * DSL - Given
  */
-private suspend fun <S, E> IView<S, E>.given(repository: ViewStateRepository<E, S>, event: () -> E): Effect<Error, S> =
+private suspend fun <S, E> IView<S, E>.given(repository: ViewStateRepository<E, S>, event: () -> E): Either<Error, S> =
     materializedView(
         view = this,
         viewStateRepository = repository
@@ -34,11 +35,12 @@ private suspend fun <S, E> IView<S, E>.given(repository: ViewStateRepository<E, 
 private suspend fun <S, E, V> IView<S, E>.given(
     repository: ViewStateLockingRepository<E, S, V>,
     event: () -> E
-): Effect<Error, Pair<S, V>> =
+): Either<Error, Pair<S, V>> =
     materializedLockingView(
         view = this,
         viewStateRepository = repository
     ).handleOptimisticallyWithEffect(event())
+
 
 /**
  * DSL - When
@@ -49,16 +51,16 @@ private fun <S, E> IView<S, E>.whenEvent(event: E): E = event
 /**
  * DSL - Then
  */
-private suspend infix fun <S> Effect<Error, S>.thenState(expected: S) {
-    val state = when (val result = this.toEither()) {
+private infix fun <S> Either<Error, S>.thenState(expected: S) {
+    val state = when (val result = this) {
         is Either.Right -> result.value
         is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
     }
     return state shouldBe expected
 }
 
-private suspend infix fun <S, V> Effect<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
-    val state = when (val result = this.toEither()) {
+private infix fun <S, V> Either<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
+    val state = when (val result = this) {
         is Either.Right -> result.value
         is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
     }

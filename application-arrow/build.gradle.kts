@@ -12,6 +12,7 @@ kotlin {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
             kotlinOptions.verbose = true
+            kotlinOptions.freeCompilerArgs = kotlinOptions.freeCompilerArgs + "-Xcontext-receivers"
         }
 
         withJava()

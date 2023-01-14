@@ -1,7 +1,6 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.continuations.Effect
 import com.fraktalio.fmodel.application.examples.numbers.NumberStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberLockingStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberStateRepository
@@ -29,7 +28,7 @@ import kotlinx.coroutines.FlowPreview
 private suspend fun <C, S, E> IDecider<C, S, E>.given(
     repository: StateRepository<C, S>,
     command: () -> C
-): Effect<Error, S> =
+): Either<Error, S> =
     stateStoredAggregate(
         decider = this,
         stateRepository = repository
@@ -39,7 +38,7 @@ private suspend fun <C, S, E> IDecider<C, S, E>.given(
 private suspend fun <C, S, E, V> IDecider<C, S, E>.given(
     repository: StateLockingRepository<C, S, V>,
     command: () -> C
-): Effect<Error, Pair<S, V>> =
+): Either<Error, Pair<S, V>> =
     stateStoredLockingAggregate(
         decider = this,
         stateRepository = repository
@@ -54,16 +53,16 @@ private fun <C, S, E> IDecider<C, S, E>.whenCommand(command: C): C = command
 /**
  * DSL - Then
  */
-private suspend infix fun <S> Effect<Error, S>.thenState(expected: S) {
-    val state = when (val result = this.toEither()) {
+private infix fun <S> Either<Error, S>.thenState(expected: S) {
+    val state = when (val result = this) {
         is Either.Right -> result.value
         is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
     }
     return state shouldBe expected
 }
 
-private suspend infix fun <S, V> Effect<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
-    val state = when (val result = this.toEither()) {
+private infix fun <S, V> Either<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
+    val state = when (val result = this) {
         is Either.Right -> result.value
         is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
     }
@@ -71,8 +70,8 @@ private suspend infix fun <S, V> Effect<Error, Pair<S, V>>.thenStateAndVersion(e
 }
 
 
-private suspend fun <S> Effect<Error, S>.thenError() {
-    val error = when (val result = this.toEither()) {
+private fun <S> Either<Error, S>.thenError() {
+    val error = when (val result = this) {
         is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value ${result.value}")
         is Either.Left -> result.value
     }
@@ -119,9 +118,7 @@ class StateStoredAggregateTest : FunSpec({
             given(evenNumberStateRepository) {
                 whenCommand(command)
             }.thenError()
-
         }
-
     }
 
     test("Combined State-stored aggregate - add even number") {
