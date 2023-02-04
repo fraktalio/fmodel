@@ -18,6 +18,7 @@ package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 
 /**
  * Saga manager - Stateless process orchestrator.
@@ -35,7 +36,7 @@ interface SagaManager<AR, A> : ISaga<AR, A>, ActionPublisher<A> {
      *
      * @return The newly computed [Flow] of Actions/[A]
      */
-    fun AR.computeNewActions(): Flow<A> = react(this)
+    fun AR.computeNewActions(): Flow<A> = react(this).asFlow()
 
 }
 

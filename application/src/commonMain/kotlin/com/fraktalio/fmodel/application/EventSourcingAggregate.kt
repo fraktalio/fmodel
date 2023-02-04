@@ -29,7 +29,7 @@ interface EventComputation<C, S, E> : IDecider<C, S, E> {
     fun Flow<E>.computeNewEvents(command: C): Flow<E> = flow {
         val currentState = fold(initialState) { s, e -> evolve(s, e) }
         val resultingEvents = decide(command, currentState)
-        emitAll(resultingEvents)
+        emitAll(resultingEvents.asFlow())
     }
 }
 
@@ -41,10 +41,10 @@ interface EventOrchestratingComputation<C, S, E> : ISaga<E, C>, IDecider<C, S, E
     @FlowPreview
     fun Flow<E>.computeNewEventsByOrchestrating(command: C, fetchEvents: (C) -> Flow<E>): Flow<E> = flow {
         val currentState = fold(initialState) { s, e -> evolve(s, e) }
-        var resultingEvents = decide(command, currentState)
+        var resultingEvents = decide(command, currentState).asFlow()
 
         resultingEvents
-            .flatMapConcat { react(it) }
+            .flatMapConcat { react(it).asFlow() }
             .onEach { c ->
                 val newEvents = flowOf(fetchEvents(c), resultingEvents)
                     .flattenConcat()

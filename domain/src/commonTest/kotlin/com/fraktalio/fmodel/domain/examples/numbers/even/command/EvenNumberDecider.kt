@@ -28,9 +28,6 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.EvenNumberEv
 import com.fraktalio.fmodel.domain.examples.numbers.api.evenNumberAdded
 import com.fraktalio.fmodel.domain.examples.numbers.api.evenNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.api.evenNumberSubtracted
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 
 /**
  * Even number decider - pure declaration of our program logic
@@ -46,23 +43,23 @@ fun evenNumberDecider(): Decider<EvenNumberCommand?, EvenNumberState, EvenNumber
             }
         }
         decide { c, s ->
-            if (c != null && c.value.get > 1000) flow<EvenNumberEvent> { throw UnsupportedOperationException("Sorry") } else
+            if (c != null && c.value.get > 1000) sequence<EvenNumberEvent> { throw UnsupportedOperationException("Sorry") } else
                 when (c) {
-                    is AddEvenNumber -> flowOf(
+                    is AddEvenNumber -> sequenceOf(
                         evenNumberAdded {
                             description { c.description }
                             value { s.value + c.value }
                         }
                     )
 
-                    is SubtractEvenNumber -> flowOf(
+                    is SubtractEvenNumber -> sequenceOf(
                         evenNumberSubtracted {
                             description { c.description }
                             value { s.value - c.value }
                         }
                     )
 
-                    null -> emptyFlow()
+                    null -> emptySequence()
                 }
         }
         evolve { s, e ->

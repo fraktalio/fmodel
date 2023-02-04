@@ -26,8 +26,6 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEve
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberSubtracted
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
 
 /**
  * Odd number decider - pure declaration of our program logic
@@ -39,9 +37,9 @@ fun oddNumberDecider(): Decider<OddNumberCommand?, OddNumberState, OddNumberEven
         initialState = OddNumberState(Description("Initial state"), NumberValue(0)),
         decide = { c, s ->
             when (c) {
-                is AddOddNumber -> flowOf(OddNumberAdded(c.description, s.value + c.value))
-                is SubtractOddNumber -> flowOf(OddNumberSubtracted(c.description, s.value - c.value))
-                null -> emptyFlow()
+                is AddOddNumber -> sequenceOf(OddNumberAdded(c.description, s.value + c.value))
+                is SubtractOddNumber -> sequenceOf(OddNumberSubtracted(c.description, s.value - c.value))
+                null -> emptySequence()
             }
         },
         evolve = { s, e ->

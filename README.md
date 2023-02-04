@@ -34,7 +34,7 @@ this project :)
 * [<strong>f(model)</strong> - Functional domain modeling](#fmodel---functional-domain-modeling)
     * [Multiplatform](#multiplatform)
     * [Abstraction and generalization](#abstraction-and-generalization)
-    * [decide: (C, S) -&gt; Flow&lt;E&gt;](#decide-c-s---flowe)
+    * [decide: (C, S) -&gt; Sequence&lt;E&gt;](#decide-c-s---sequencee)
     * [evolve: (S, E) -&gt; S](#evolve-s-e---s)
     * [Event-sourced or State-stored systems](#event-sourced-or-state-stored-systems)
     * [Decider](#decider)
@@ -67,14 +67,14 @@ construct.
 Abstraction and generalization are often used together. Abstracts are generalized through parameterization to provide
 more excellent utility.
 
-## `decide: (C, S) -> Flow<E>`
+## `decide: (C, S) -> Sequence<E>`
 
 On a higher level of abstraction, any information system is responsible for handling the intent (`Command`) and based on
 the current `State`, produce new facts (`Events`):
 
 - given the current `State/S` *on the input*,
 - when `Command/C` is handled *on the input*,
-- expect `flow` of new `Events/E` to be published/emitted *on the output*
+- expect `sequence` of new `Events/E` to be published/emitted *on the output*
 
 ## `evolve: (S, E) -> S`
 
@@ -94,7 +94,7 @@ The new state is always evolved out of the current state `S` and the current eve
 
 Both types of systems can be designed by using only these two functions and three generic parameters:
 
-- `decide: (C, S) -> Flow<E>`
+- `decide: (C, S) -> Sequence<E>`
 - `evolve: (S, E) -> S`
 
 ![event sourced vs state stored](.assets/es-ss-system.png)
@@ -105,20 +105,22 @@ landscape.
 <details>
   <summary>A proof</summary>
 
-We can fold/recreate the new state out of the flow of events by using `evolve` function `(S, E) -> S` and providing the
+We can fold/recreate the new state out of the sequence of events by using `evolve` function `(S, E) -> S` and providing
+the
 initialState of type S as a starting point.
 
-- `Flow<E>.fold(initialState: S, ((S, E) -> S)): S`
+- `Sequence<E>.fold(initialState: S, ((S, E) -> S)): S`
 
-Essentially, this `fold` is a function that is mapping a flow of Events to the State:
+Essentially, this `fold` is a function that is mapping a sequence of Events to the State:
 
-- `(Flow<E>) -> S`
+- `(Sequence<E>) -> S`
 
-We can now use this function `(Flow<E>) -> S` to:
+We can now use this function `(Sequence<E>) -> S` to:
 
-- contra-map our `decide` function (`(C, S) -> Flow<E>`) over `S` type to: `(C, Flow<E>) -> Flow<E>`  - **this is an
+- contra-map our `decide` function (`(C, S) -> Sequence<E>`) over `S` type to: `(C, Sequence<E>) -> Sequence<E>`  - **
+  this is an
   event-sourced system**
-- or to map our `decide` function (`(C, S) -> Flow<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored
+- or to map our `decide` function (`(C, S) -> Sequence<E>`) over `E` type to: `(C, S) -> S` - **this is a state-stored
   system**
 
 </details>
@@ -128,7 +130,7 @@ parameters:
 
 ```kotlin
 data class Decider<C, S, E>(
-    val decide: (C, S) -> Flow<E>,
+    val decide: (C, S) -> Sequence<E>,
     val evolve: (S, E) -> S,
 )
 ```
@@ -152,7 +154,7 @@ behavior. `Decider` behaves the same for `C`=`Int` or `C`=`YourCustomType`, for 
 
 ```kotlin
 data class Decider<in C, S, E>(
-    override val decide: (C, S) -> Flow<E>,
+    override val decide: (C, S) -> Sequence<E>,
     override val evolve: (S, E) -> S,
     override val initialState: S
 ) : IDecider<C, S, E> 
@@ -172,21 +174,27 @@ fun restaurantOrderDecider() = Decider<RestaurantOrderCommand?, RestaurantOrder?
     decide = { c, s ->
         when (c) {
             is CreateRestaurantOrderCommand ->
-                // ** positive flow **
-                if (s == null) flowOf(RestaurantOrderCreatedEvent(c.identifier, c.lineItems, c.restaurantIdentifier))
-                // ** negative flow **
-                else flowOf(RestaurantOrderRejectedEvent(c.identifier, "Restaurant order already exists"))
+                // ** positive sequence **
+                if (s == null) sequenceOf(
+                    RestaurantOrderCreatedEvent(
+                        c.identifier,
+                        c.lineItems,
+                        c.restaurantIdentifier
+                    )
+                )
+                // ** negative sequence **
+                else sequenceOf(RestaurantOrderRejectedEvent(c.identifier, "Restaurant order already exists"))
             is MarkRestaurantOrderAsPreparedCommand ->
-                // ** positive flow **
-                if ((s != null && CREATED == s.status)) flowOf(RestaurantOrderPreparedEvent(c.identifier))
-                // ** negative flow **
-                else flowOf(
+                // ** positive sequence **
+                if ((s != null && CREATED == s.status)) sequenceOf(RestaurantOrderPreparedEvent(c.identifier))
+                // ** negative sequence **
+                else sequenceOf(
                     RestaurantOrderNotPreparedEvent(
                         c.identifier,
                         "Restaurant order does not exist or not in CREATED state"
                     )
                 )
-            null -> emptyFlow() // We ignore the `null` command by emitting the empty flow. Only the Decider that can handle `null` command can be combined (Monoid) with other Deciders.
+            null -> emptySequence() // We ignore the `null` command by emitting the empty sequence. Only the Decider that can handle `null` command can be combined (Monoid) with other Deciders.
         }
     },
     // Exhaustive event-sourcing handler(s): for each event of type [RestaurantEvent] you are going to evolve from the current state/s of the [RestaurantOrder] to a new state of the [RestaurantOrder]
@@ -481,7 +489,7 @@ It has two generic parameters `AR`, `A`, representing the type of the values tha
 
 ```kotlin
 data class Saga<AR, A>(
-    val react: (AR) -> Flow<A>
+    val react: (AR) -> Sequence<A>
 ) : I_Saga<AR, A>
 ```
 
@@ -495,19 +503,19 @@ Notice that `Saga` implements an interface `ISaga` to communicate the contract.
 fun restaurantOrderSaga() = Saga<RestaurantEvent?, RestaurantOrderCommand>(
     react = { e ->
         when (e) {
-            is RestaurantOrderPlacedAtRestaurantEvent -> flowOf(
+            is RestaurantOrderPlacedAtRestaurantEvent -> sequenceOf(
                 CreateRestaurantOrderCommand(
                     e.restaurantOrderId,
                     e.identifier,
                     e.lineItems
                 )
             )
-            is RestaurantCreatedEvent -> emptyFlow() // We choose to ignore this event, in our case.
-            is RestaurantMenuActivatedEvent -> emptyFlow() // We choose to ignore this event, in our case.
-            is RestaurantMenuChangedEvent -> emptyFlow() // We choose to ignore this event, in our case.
-            is RestaurantMenuPassivatedEvent -> emptyFlow() // We choose to ignore this event, in our case.
-            is RestaurantErrorEvent -> emptyFlow() // We choose to ignore this event, in our case.
-            null -> emptyFlow() // We ignore the `null` event by returning the empty flow of commands. Only the Saga that can handle `null` event/action-result can be combined (Monoid) with other Sagas.
+            is RestaurantCreatedEvent -> emptySequence() // We choose to ignore this event, in our case.
+            is RestaurantMenuActivatedEvent -> emptySequence() // We choose to ignore this event, in our case.
+            is RestaurantMenuChangedEvent -> emptySequence() // We choose to ignore this event, in our case.
+            is RestaurantMenuPassivatedEvent -> emptySequence() // We choose to ignore this event, in our case.
+            is RestaurantErrorEvent -> emptySequence() // We choose to ignore this event, in our case.
+            null -> emptySequence() // We ignore the `null` event by returning the empty sequence of commands. Only the Saga that can handle `null` event/action-result can be combined (Monoid) with other Sagas.
         }
     }
 )
@@ -516,10 +524,10 @@ fun restaurantSaga() = Saga<RestaurantOrderEvent?, RestaurantCommand>(
     react = { e ->
         when (e) {
             //TODO evolve the example ;), it does not do much at the moment.
-            is RestaurantOrderCreatedEvent -> emptyFlow()
-            is RestaurantOrderPreparedEvent -> emptyFlow()
-            is RestaurantOrderErrorEvent -> emptyFlow()
-            null -> emptyFlow() // We ignore the `null` event by returning the empty flow of commands. Only the Saga that can handle `null` event/action-result can be combined (Monoid) with other Sagas.
+            is RestaurantOrderCreatedEvent -> emptySequence()
+            is RestaurantOrderPreparedEvent -> emptySequence()
+            is RestaurantOrderErrorEvent -> emptySequence()
+            null -> emptySequence() // We ignore the `null` event by returning the empty sequence of commands. Only the Saga that can handle `null` event/action-result can be combined (Monoid) with other Sagas.
         }
     }
 )

@@ -19,9 +19,6 @@ package com.fraktalio.fmodel.domain
 import com.fraktalio.fmodel.domain.internal.InternalDecider
 import com.fraktalio.fmodel.domain.internal.asDecider
 import com.fraktalio.fmodel.domain.internal.combine
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 
 
 /**
@@ -34,7 +31,7 @@ import kotlinx.coroutines.flow.emptyFlow
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface IDecider<in C, S, E> {
-    val decide: (C, S) -> Flow<E>
+    val decide: (C, S) -> Sequence<E>
     val evolve: (S, E) -> S
     val initialState: S
 }
@@ -53,9 +50,9 @@ interface IDecider<in C, S, E> {
  *         initialState = OddNumberState(Description("Initial state"), NumberValue(0)),
  *         decide = { c, s ->
  *             when (c) {
- *                 is AddOddNumber -> flowOf(OddNumberAdded(c.description, s.value + c.value))
- *                 is SubtractOddNumber -> flowOf(OddNumberSubtracted(c.description, s.value - c.value))
- *                 null -> emptyFlow()
+ *                 is AddOddNumber -> sequenceOf(OddNumberAdded(c.description, s.value + c.value))
+ *                 is SubtractOddNumber -> sequenceOf(OddNumberSubtracted(c.description, s.value - c.value))
+ *                 null -> emptySequence()
  *             }
  *         },
  *         evolve = { s, e ->
@@ -71,14 +68,14 @@ interface IDecider<in C, S, E> {
  * @param C Command
  * @param S State
  * @param E Event
- * @property decide A function/lambda that takes command of type [C] and input state of type [S] as parameters, and returns/emits the flow of output events [Flow]<[E]>
+ * @property decide A function/lambda that takes command of type [C] and input state of type [S] as parameters, and returns the sequence of output events [Sequence]<[E]>
  * @property evolve A function/lambda that takes input state of type [S] and input event of type [E] as parameters, and returns the output/new state [S]
  * @property initialState A starting point / An initial state of type [S]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class Decider<in C, S, E>(
-    override val decide: (C, S) -> Flow<E>,
+    override val decide: (C, S) -> Sequence<E>,
     override val evolve: (S, E) -> S,
     override val initialState: S
 ) : IDecider<C, S, E> {
@@ -139,7 +136,7 @@ data class Decider<in C, S, E>(
  * @param y second Decider
  * @return [Decider]<[C_SUPER], [Pair]<[S], [S2]>, [E_SUPER]>
  */
-@FlowPreview
+
 inline infix fun <reified C : C_SUPER, S, reified E : E_SUPER, reified C2 : C_SUPER, S2, reified E2 : E_SUPER, C_SUPER, E_SUPER> Decider<C?, S, E?>.combine(
     y: Decider<C2?, S2, E2?>
 ): Decider<C_SUPER?, Pair<S, S2>, E_SUPER?> =
@@ -158,11 +155,11 @@ inline infix fun <reified C : C_SUPER, S, reified E : E_SUPER, reified C2 : C_SU
  *    decider {
  *        initialState { EvenNumberState(Description("Initial state"), NumberValue(0)) }
  *        decide { c, s ->
- *            if (c != null && c.value.get > 1000) flow<EvenNumberEvent> { throw UnsupportedOperationException("Sorry") } else
+ *            if (c != null && c.value.get > 1000) sequence<EvenNumberEvent> { throw UnsupportedOperationException("Sorry") } else
  *                when (c) {
- *                    is AddEvenNumber -> flowOf(EvenNumberAdded(c.description, s.value + c.value))
- *                    is SubtractEvenNumber -> flowOf(EvenNumberSubtracted(c.description, s.value - c.value))
- *                    null -> emptyFlow()
+ *                    is AddEvenNumber -> sequenceOf(EvenNumberAdded(c.description, s.value + c.value))
+ *                    is SubtractEvenNumber -> sequenceOf(EvenNumberSubtracted(c.description, s.value - c.value))
+ *                    null -> emptySequence()
  *                }
  *        }
  *        evolve { s, e ->
@@ -183,11 +180,11 @@ fun <C, S, E> decider(block: DeciderBuilder<C, S, E>.() -> Unit): Decider<C, S, 
  */
 class DeciderBuilder<C, S, E> internal constructor() {
 
-    private var decide: (C, S) -> Flow<E> = { _, _ -> emptyFlow() }
+    private var decide: (C, S) -> Sequence<E> = { _, _ -> emptySequence() }
     private var evolve: (S, E) -> S = { s, _ -> s }
     private var initialState: () -> S = { error("Initial State is not initialized") }
 
-    fun decide(lambda: (C, S) -> Flow<E>) {
+    fun decide(lambda: (C, S) -> Sequence<E>) {
         decide = lambda
     }
 

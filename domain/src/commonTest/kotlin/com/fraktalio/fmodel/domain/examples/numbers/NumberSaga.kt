@@ -34,8 +34,6 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEve
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent.OddNumberSubtracted
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.saga
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
 
 /**
  * Very simple Number saga, just for fun ;)
@@ -49,35 +47,35 @@ import kotlinx.coroutines.flow.flowOf
  */
 fun numberSaga() = saga<NumberEvent, NumberCommand> { numberEvent ->
     when (numberEvent) {
-        is EvenNumberAdded -> flowOf(
+        is EvenNumberAdded -> sequenceOf(
             AddOddNumber(
                 Description("${numberEvent.value.get - 1}"),
                 NumberValue(numberEvent.value.get - 1)
             )
         )
 
-        is EvenNumberSubtracted -> flowOf(
+        is EvenNumberSubtracted -> sequenceOf(
             SubtractOddNumber(
                 Description("${numberEvent.value.get - 1}"),
                 NumberValue(numberEvent.value.get - 1)
             )
         )
 
-        is OddNumberAdded -> flowOf(
+        is OddNumberAdded -> sequenceOf(
             AddEvenNumber(
                 Description("${numberEvent.value.get + 1}"),
                 NumberValue(numberEvent.value.get + 1)
             )
         )
 
-        is OddNumberSubtracted -> flowOf(
+        is OddNumberSubtracted -> sequenceOf(
             SubtractEvenNumber(
                 Description("${numberEvent.value.get + 1}"),
                 NumberValue(numberEvent.value.get + 1)
             )
         )
 
-        else -> emptyFlow()
+        else -> emptySequence()
     }
 }
 
@@ -91,21 +89,21 @@ fun numberSaga() = saga<NumberEvent, NumberCommand> { numberEvent ->
  */
 fun evenNumberSaga() = Saga<EvenNumberEvent?, OddNumberCommand> { numberEvent ->
     when (numberEvent) {
-        is EvenNumberAdded -> flowOf(
+        is EvenNumberAdded -> sequenceOf(
             AddOddNumber(
                 Description("${numberEvent.value.get - 1}"),
                 NumberValue(numberEvent.value.get - 1)
             )
         )
 
-        is EvenNumberSubtracted -> flowOf(
+        is EvenNumberSubtracted -> sequenceOf(
             SubtractOddNumber(
                 Description("${numberEvent.value.get - 1}"),
                 NumberValue(numberEvent.value.get - 1)
             )
         )
 
-        else -> emptyFlow()
+        else -> emptySequence()
     }
 }
 
@@ -119,21 +117,21 @@ fun evenNumberSaga() = Saga<EvenNumberEvent?, OddNumberCommand> { numberEvent ->
 fun oddNumberSaga() = Saga<OddNumberEvent?, EvenNumberCommand>(
     react = { numberEvent ->
         when (numberEvent) {
-            is OddNumberAdded -> flowOf(
+            is OddNumberAdded -> sequenceOf(
                 AddEvenNumber(
                     Description("${numberEvent.value.get + 1}"),
                     NumberValue(numberEvent.value.get + 1)
                 )
             )
 
-            is OddNumberSubtracted -> flowOf(
+            is OddNumberSubtracted -> sequenceOf(
                 SubtractEvenNumber(
                     Description("${numberEvent.value.get + 1}"),
                     NumberValue(numberEvent.value.get + 1)
                 )
             )
 
-            else -> emptyFlow()
+            else -> emptySequence()
         }
     }
 )

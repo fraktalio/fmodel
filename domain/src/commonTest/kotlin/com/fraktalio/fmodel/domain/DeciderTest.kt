@@ -18,17 +18,13 @@ import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.fold
-import kotlinx.coroutines.flow.toList
 
-private fun <C, S, E> IDecider<C, S, E>.givenEvents(events: Iterable<E>, command: () -> C): Flow<E> {
+private fun <C, S, E> IDecider<C, S, E>.givenEvents(events: Iterable<E>, command: () -> C): Sequence<E> {
     val currentState = events.fold(initialState) { s, e -> evolve(s, e) }
     return decide(command(), currentState)
 }
 
-private suspend fun <C, S, E> IDecider<C, S, E>.givenState(state: S?, command: () -> C): S {
+private fun <C, S, E> IDecider<C, S, E>.givenState(state: S?, command: () -> C): S {
     val currentState = state ?: initialState
     val events = decide(command(), currentState)
     return events.fold(currentState) { s, e -> evolve(s, e) }
@@ -37,10 +33,9 @@ private suspend fun <C, S, E> IDecider<C, S, E>.givenState(state: S?, command: (
 @Suppress("unused")
 private fun <C, S, E> IDecider<C, S, E>.whenCommand(command: C): C = command
 
-private suspend infix fun <E> Flow<E>.thenEvents(expected: Iterable<E>) = toList() shouldContainExactly (expected)
+private suspend infix fun <E> Sequence<E>.thenEvents(expected: Iterable<E>) = toList() shouldContainExactly (expected)
 private infix fun <S, U : S> S.thenState(expected: U?) = shouldBe(expected)
 
-@FlowPreview
 class DeciderTest : FunSpec({
     val evenDecider = evenNumberDecider()
     val oddDecider = oddNumberDecider()

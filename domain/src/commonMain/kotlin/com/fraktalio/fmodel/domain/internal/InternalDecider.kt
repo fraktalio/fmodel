@@ -1,11 +1,6 @@
 package com.fraktalio.fmodel.domain.internal
 
 import com.fraktalio.fmodel.domain.Decider
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flattenConcat
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 
 /**
  * [InternalDecider] is a datatype that represents the main decision-making algorithm.
@@ -20,7 +15,7 @@ import kotlinx.coroutines.flow.map
  * @param So Output State type - covariant/out type parameter
  * @param Ei Input Event type - contravariant/in type parameter
  * @param Eo Output Event type - covariant/out type parameter
- * @property decide A function/lambda that takes command of type [C] and input state of type [Si] as parameters, and returns/emits the flow of output events [Flow]<[Eo]>
+ * @property decide A function/lambda that takes command of type [C] and input state of type [Si] as parameters, and returns the sequence of output events [Sequence]<[Eo]>
  * @property evolve A function/lambda that takes input state of type [Si] and input event of type [Ei] as parameters, and returns the output/new state [So]
  * @property initialState A starting point / An initial state of type [So]
  * @constructor Creates [InternalDecider]
@@ -32,7 +27,7 @@ import kotlinx.coroutines.flow.map
 
 @PublishedApi
 internal data class InternalDecider<in C, in Si, out So, in Ei, out Eo>(
-    val decide: (C, Si) -> Flow<Eo>,
+    val decide: (C, Si) -> Sequence<Eo>,
     val evolve: (Si, Ei) -> So,
     val initialState: So
 ) {
@@ -133,11 +128,10 @@ internal data class InternalDecider<in C, in Si, out So, in Ei, out Eo>(
  *
  * @return new decider of type [InternalDecider]<[C], [Si], [Son], [Ei], [Eo]>
  */
-@FlowPreview
 internal fun <C, Si, So, Ei, Eo, Son> InternalDecider<C, Si, So, Ei, Eo>.applyOnState(
     ff: InternalDecider<C, Si, (So) -> Son, Ei, Eo>
 ): InternalDecider<C, Si, Son, Ei, Eo> = InternalDecider(
-    decide = { c, si -> flowOf(ff.decide(c, si), decide(c, si)).flattenConcat() },
+    decide = { c, si -> ff.decide(c, si) + decide(c, si) },
     evolve = { si, ei -> ff.evolve(si, ei)(evolve(si, ei)) },
     initialState = ff.initialState(initialState)
 )
@@ -155,7 +149,6 @@ internal fun <C, Si, So, Ei, Eo, Son> InternalDecider<C, Si, So, Ei, Eo>.applyOn
  *
  * @return new decider of type [InternalDecider]<[C], [Si], [Pair]<[So], [Son]>, [Ei], [Eo]>
  */
-@FlowPreview
 @PublishedApi
 internal fun <C, Si, So, Ei, Eo, Son> InternalDecider<C, Si, So, Ei, Eo>.productOnState(
     fb: InternalDecider<C, Si, Son, Ei, Eo>
@@ -189,7 +182,6 @@ internal fun <C, Si, So, Ei, Eo, Son> InternalDecider<C, Si, So, Ei, Eo>.product
  */
 
 @PublishedApi
-@FlowPreview
 internal inline infix fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> InternalDecider<C?, Si, So, Ei?, Eo?>.combine(
     y: InternalDecider<C2?, Si2, So2, Ei2?, Eo2?>
 ): InternalDecider<C_SUPER?, Pair<Si, Si2>, Pair<So, So2>, Ei_SUPER, Eo_SUPER?> {

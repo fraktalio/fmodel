@@ -16,12 +16,6 @@
 
 package com.fraktalio.fmodel.domain
 
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flattenConcat
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-
 /**
  * An interface of the [Saga].
  *
@@ -31,7 +25,7 @@ import kotlinx.coroutines.flow.map
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface ISaga<in AR, out A> {
-    val react: (AR) -> Flow<A>
+    val react: (AR) -> Sequence<A>
 }
 
 /**
@@ -42,40 +36,40 @@ interface ISaga<in AR, out A> {
  * ```kotlin
  * fun numberSaga() = saga<NumberEvent, NumberCommand> { numberEvent ->
  *     when (numberEvent) {
- *         is EvenNumberAdded -> flowOf(
+ *         is EvenNumberAdded -> sequenceOf(
  *             AddOddNumber(
  *                 Description("${numberEvent.value.get - 1}"),
  *                 NumberValue(numberEvent.value.get - 1)
  *             )
  *         )
  *
- *         is EvenNumberSubtracted -> flowOf(
+ *         is EvenNumberSubtracted -> sequenceOf(
  *             SubtractOddNumber(
  *                 Description("${numberEvent.value.get - 1}"),
  *                 NumberValue(numberEvent.value.get - 1)
  *             )
  *         )
  *
- *         is OddNumberAdded -> flowOf(
+ *         is OddNumberAdded -> sequenceOf(
  *             AddEvenNumber(
  *                 Description("${numberEvent.value.get + 1}"),
  *                 NumberValue(numberEvent.value.get + 1)
  *             )
  *         )
  *
- *         is OddNumberSubtracted -> flowOf(
+ *         is OddNumberSubtracted -> sequenceOf(
  *             SubtractEvenNumber(
  *                 Description("${numberEvent.value.get + 1}"),
  *                 NumberValue(numberEvent.value.get + 1)
  *             )
  *         )
  *
- *         else -> emptyFlow()
+ *         else -> emptySequence()
  *     }
  * }
  * ```
  */
-fun <AR, A> saga(react: (AR) -> Flow<A>): Saga<AR, A> = Saga(react)
+fun <AR, A> saga(react: (AR) -> Sequence<A>): Saga<AR, A> = Saga(react)
 
 /**
  * [Saga] is a datatype that represents the central point of control deciding what to execute next ([A]).
@@ -88,34 +82,34 @@ fun <AR, A> saga(react: (AR) -> Flow<A>): Saga<AR, A> = Saga(react)
  * ```kotlin
  * fun evenNumberSaga() = Saga<EvenNumberEvent?, OddNumberCommand> { numberEvent ->
  *     when (numberEvent) {
- *         is EvenNumberAdded -> flowOf(
+ *         is EvenNumberAdded -> sequenceOf(
  *             AddOddNumber(
  *                 Description("${numberEvent.value.get - 1}"),
  *                 NumberValue(numberEvent.value.get - 1)
  *             )
  *         )
  *
- *         is EvenNumberSubtracted -> flowOf(
+ *         is EvenNumberSubtracted -> sequenceOf(
  *             SubtractOddNumber(
  *                 Description("${numberEvent.value.get - 1}"),
  *                 NumberValue(numberEvent.value.get - 1)
  *             )
  *         )
  *
- *         else -> emptyFlow()
+ *         else -> emptySequence()
  *     }
  * }
  * ```
  *
  * @param AR Action Result type
  * @param A Action type
- * @property react A function/lambda that takes input state of type [AR], and returns the flow of actions [Flow]<[A]>.
+ * @property react A function/lambda that takes input state of type [AR], and returns the sequence of actions [Sequence]<[A]>.
  * @constructor Creates [Saga]
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 data class Saga<in AR, out A>(
-    override val react: (AR) -> Flow<A>
+    override val react: (AR) -> Sequence<A>
 ) : ISaga<AR, A> {
     /**
      * Left map on AR/ActionResult parameter - Contravariant
@@ -152,7 +146,6 @@ data class Saga<in AR, out A>(
  * @param y second saga
  * @return new Saga of type `[Saga]<[AR_SUPER], [A_SUPER]>`
  */
-@FlowPreview
 inline infix fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> Saga<AR?, A>.combine(
     y: Saga<AR2?, A2>
 ): Saga<AR_SUPER, A_SUPER> {
@@ -161,6 +154,6 @@ inline infix fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2
 
     val sagaY = y.mapLeftOnActionResult<AR_SUPER> { it as? AR2 }.mapOnAction<A_SUPER> { it }
 
-    return Saga(react = { eitherAr -> flowOf(sagaX.react(eitherAr), (sagaY.react(eitherAr))).flattenConcat() })
+    return Saga(react = { eitherAr -> sequenceOf(sagaX.react(eitherAr), (sagaY.react(eitherAr))).flatten() })
 }
 

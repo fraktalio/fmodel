@@ -19,10 +19,6 @@ package com.fraktalio.fmodel.application
 import com.fraktalio.fmodel.domain.IDecider
 import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.fold
-import kotlinx.coroutines.flow.onEach
 
 /**
  * `StateComputation` interface formalizes the `State Computation` algorithm by using a `decider` of type [IDecider]<[C], [S], [E]> to handle commands based on the current state, and produce new state.
@@ -107,7 +103,7 @@ interface StateOrchestratingComputation<C, S, E> : ISaga<E, C>, StateComputation
         val currentState = this ?: initialState
         val events = decide(command, currentState)
         val newState = events.fold(currentState) { s, e -> evolve(s, e) }
-        events.flatMapConcat { react(it) }.onEach { newState.computeNewState(it) }.collect()
+        events.flatMap { react(it) }.forEach { newState.computeNewState(it) }
         return newState
     }
 }
