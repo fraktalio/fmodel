@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Fraktalio D.O.O. All rights reserved.
+ * Copyright (c) 2022 Fraktalio D.O.O. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,7 @@ import com.fraktalio.fmodel.application.EventLockingRepository
 import com.fraktalio.fmodel.application.LatestVersionProvider
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumberCommand
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 
 /**
  * A very simple event store ;)  It is initially empty.
@@ -40,25 +38,24 @@ class EvenNumberLockingRepository : EventLockingRepository<EvenNumberCommand?, N
 
         evenNumberEventStorage.asFlow()
 
-    override suspend fun NumberEvent.EvenNumberEvent?.save(latestVersion: Pair<NumberEvent.EvenNumberEvent?, Long?>?): Pair<NumberEvent.EvenNumberEvent?, Long?> {
-        val (_, version) = latestVersion ?: Pair(null, null)
-        val result = Pair(this, if (version != null) version + 1 else 1)
-
-        evenNumberEventStorage = evenNumberEventStorage.plus(result)
-
-        return result
-    }
 
     override val latestVersionProvider: LatestVersionProvider<NumberEvent.EvenNumberEvent?, Long?> =
         { evenNumberEventStorage.last() }
 
 
     override fun Flow<NumberEvent.EvenNumberEvent?>.save(latestVersion: Pair<NumberEvent.EvenNumberEvent?, Long?>?): Flow<Pair<NumberEvent.EvenNumberEvent?, Long?>> =
-        map { it.save(latestVersion) }
+        map {
+            val (_, version) = latestVersion ?: Pair(null, null)
+            val result = Pair(it, if (version != null) version + 1 else 1)
+            evenNumberEventStorage = evenNumberEventStorage.plus(result)
+            result
+        }
 
 
     override fun Flow<NumberEvent.EvenNumberEvent?>.save(latestVersionProvider: LatestVersionProvider<NumberEvent.EvenNumberEvent?, Long?>): Flow<Pair<NumberEvent.EvenNumberEvent?, Long?>> =
-        map { it.save(latestVersionProvider) }
+        flow {
+            emitAll(save(latestVersionProvider(this@save.first())))
+        }
 
     fun deleteAll() {
         evenNumberEventStorage = emptyList()
