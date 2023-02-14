@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-java@v3.8.0
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '17'
 
       - name: Test (linux, jvm, js)
         uses: gradle/gradle-build-action@v2.3.3
