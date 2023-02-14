@@ -7,6 +7,7 @@ plugins {
 }
 
 kotlin {
+    jvmToolchain(17)
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "17"
@@ -60,6 +61,11 @@ kotlin {
             System.getenv("GPG_PRIVATE_PASSWORD")
         )
         sign(publishing.publications)
+    }
+
+    val signingTasks = tasks.withType<Sign>()
+    tasks.withType<AbstractPublishToMaven>().configureEach {
+        dependsOn(signingTasks)
     }
 
     // Publishing
