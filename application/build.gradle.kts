@@ -8,35 +8,34 @@ plugins {
 
 kotlin {
     jvmToolchain(17)
-    jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = "17"
-        }
-    }
+    jvm()
+
     js(IR) {
         browser()
         nodejs()
     }
-    val hostOs = System.getProperty("os.name")
-    val arch = System.getProperty("os.arch")
-    val isMingwX64 = hostOs.startsWith("Windows")
-    val nativeTarget = when {
-        hostOs == "Mac OS X" ->
-            when {
-                arch == "aarch64" || arch.startsWith("arm") -> macosArm64()
-                else -> macosX64()
-            }
 
-        hostOs == "Linux" -> linuxX64()
-        isMingwX64 -> mingwX64()
-        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
-    }
-    nativeTarget.compilations.all {
-        kotlinOptions.verbose = true
-    }
-    nativeTarget.binaries.all {
-        freeCompilerArgs += "-Xlazy-ir-for-caches=disable"
-    }
+    linuxX64()
+
+    mingwX64()
+
+    macosX64()
+    macosArm64()
+
+    tvos()
+    tvosSimulatorArm64()
+
+    watchosArm32()
+    watchosArm64()
+    watchosX86()
+    watchosX64()
+    watchosSimulatorArm64()
+
+    iosX64()
+    iosArm64()
+    iosArm32()
+    iosSimulatorArm64()
+
     sourceSets {
         val commonMain by getting {
             dependencies {

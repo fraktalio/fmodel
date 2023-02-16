@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ 'macos-latest', 'ubuntu-latest', 'windows-latest' ]
+        os: [ 'macos-11', 'ubuntu-latest', 'windows-latest' ]
 
     steps:
       - uses: actions/checkout@v3
@@ -33,19 +33,19 @@ jobs:
           java-version: '17'
           check-latest: true
 
-      - name: Publish JVM, JS and Linux versions
+      - name: Publish JVM, JS and MacOS versions
         uses: gradle/gradle-build-action@v2.3.3
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'macos-11'
         with:
           cache-disabled: true
           arguments: --full-stacktrace test publishAllPublicationToOssrhRepository
 
-      - name: Publish MacOS version
+      - name: Publish Linux version
         uses: gradle/gradle-build-action@v2.3.3
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'ubuntu-latest'
         with:
           cache-disabled: true
-          arguments: --full-stacktrace macosX64Test publishMacosX64PublicationToOssrhRepository
+          arguments: --full-stacktrace linuxX64Test publishLinuxX64PublicationToOssrhRepository
 
       - name: Publish Windows version
         uses: gradle/gradle-build-action@v2.3.3

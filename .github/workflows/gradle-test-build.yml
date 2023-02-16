@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ 'macos-latest', 'ubuntu-latest', 'windows-latest' ]
+        os: [ 'macos-11', 'ubuntu-latest', 'windows-latest' ]
 
     steps:
       - name: Checkout
@@ -29,17 +29,17 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
-      - name: Test (linux, jvm, js)
+      - name: Test (macos, jvm, js)
         uses: gradle/gradle-build-action@v2.3.3
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'macos-11'
         with:
           arguments: --full-stacktrace build
 
-      - name: Test (macos)
+      - name: Test (linux)
         uses: gradle/gradle-build-action@v2.3.3
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'ubuntu-latest'
         with:
-          arguments: --full-stacktrace macosX64Test
+          arguments: --full-stacktrace linuxX64Test
 
       - name: Test (windows)
         uses: gradle/gradle-build-action@v2.3.3
