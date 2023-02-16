@@ -38,7 +38,7 @@ jobs:
         if: matrix.os == 'macos-11'
         with:
           cache-disabled: true
-          arguments: --full-stacktrace test publishAllPublicationToOssrhRepository
+          arguments: --full-stacktrace build publishAllPublicationToOssrhRepository
 
       - name: Publish Linux version
         uses: gradle/gradle-build-action@v2.3.3
