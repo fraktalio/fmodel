@@ -63,7 +63,7 @@ fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimistically(
     emitAll(
         events.map { it.first }
             .computeNewEvents(command)
-            .save(events.lastOrNull())
+            .save(events.map { it.second }.lastOrNull())
     )
 }
 

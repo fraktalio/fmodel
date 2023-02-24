@@ -47,9 +47,9 @@ interface EventRepository<C, E> {
 
 /**
  * A type alias for the version provider/function.
- * It provides the Pair of (Event, Version) of the last Event in the stream.
+ * It provides the Version of the last Event in the stream.
  */
-typealias LatestVersionProvider <E, V> = suspend (E) -> Pair<E, V>
+typealias LatestVersionProvider <E, V> = suspend (E) -> V?
 
 /**
  * Event locking repository interface.
@@ -97,5 +97,5 @@ interface EventLockingRepository<C, E, V> {
      * @receiver [Flow] of Events of type [E]
      * @return newly saved [Flow] of Events of type [Pair]<[E], [V]>
      */
-    fun Flow<E>.save(latestVersion: Pair<E, V>?): Flow<Pair<E, V>>
+    fun Flow<E>.save(latestVersion: V?): Flow<Pair<E, V>>
 }
