@@ -71,7 +71,7 @@ fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimisticallyW
         emitAll(
             events.map { it.first }
                 .computeNewEvents(command)
-                .save(events.lastOrNull())
+                .save(events.map { it.second }.lastOrNull())
                 .map { effect<Error, Pair<E, V>> { it } }
                 .catch { emit(effect { shift(CommandHandlingFailed(command)) }) }
         )
