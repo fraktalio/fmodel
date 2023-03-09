@@ -49,7 +49,7 @@ interface EventRepository<C, E> {
  * A type alias for the version provider/function.
  * It provides the Version of the last Event in the stream.
  */
-typealias LatestVersionProvider <E, V> = suspend (E) -> V?
+typealias LatestVersionProvider <E, V> = (E) -> V?
 
 /**
  * Event locking repository interface.
