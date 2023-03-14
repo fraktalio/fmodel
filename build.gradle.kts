@@ -9,7 +9,7 @@ plugins {
 
 allprojects {
     group = "com.fraktalio.fmodel"
-    version = "3.3.1-SNAPSHOT"
+    version = "3.4.0"
 
     repositories {
         mavenCentral()
