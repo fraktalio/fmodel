@@ -72,8 +72,13 @@ kotlin {
     }
 
     val signingTasks = tasks.withType<Sign>()
+    val testTasks = tasks.withType<AbstractTestTask>()
+
     tasks.withType<AbstractPublishToMaven>().configureEach {
         dependsOn(signingTasks)
+    }
+    signingTasks.configureEach {
+        dependsOn(testTasks)
     }
 
     // Publishing
