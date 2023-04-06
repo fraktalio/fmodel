@@ -7,6 +7,24 @@ When you’re developing an information system to automate the activities of the
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
 the business — together, they constitute the model of the domain.
 
+**Fmodel** is:
+
+- enabling functional, algebraic and reactive domain modeling with Kotlin programming language.
+- inspired by DDD, EventSourcing and Functional programming communities, yet implements these ideas and
+  concepts in idiomatic Kotlin, which in turn makes our code
+    - less error-prone,
+    - easier to understand,
+    - easier to test,
+    - type-safe and
+    - thread-safe.
+- enabling requirements illustration using examples
+    - the requirements are presented as scenarios. 
+    - a scenario is an example of the system’s behavior from the users’ perspective, 
+    - and they are specified using the Given-When-Then structure to create a testable/runnable specification
+      - Given `< some precondition(s) / events >`
+      - When `< an action/trigger occurs / commands>`
+      - Then `< some post condition / events >`
+
 <iframe width="560" height="315" src="https://www.youtube.com/embed/U8NzcWV8b4Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Table of Contents
@@ -193,7 +211,7 @@ evolve = { s, e ->
 - `Decider<C, S, E>.dimapOnEvent(fl: (En) -> E, fr: (E) -> En): Decider<C, S, En>`
 - `Decider<C, S, E>.dimapOnState(fl: (Sn) -> S, fr: (S) -> Sn): Decider<C, Sn, E>`
 
-#### Monoid
+#### *Commutative* Monoid
 
 - `<reified Cx : C_SUPER, Sx, reified Ex : E_SUPER, reified Cy : C_SUPER, Sy, reified Ey : E_SUPER, C_SUPER> Decider<Cx?, Sx, Ex?>.combine(
   y: Decider<Cy?, Sy, Ey?>
@@ -366,7 +384,7 @@ evolve = { s, e ->
 
 - `View<S, E>.dimapOnState(fl: (Sn) -> S, fr: (S) -> Sn): View<Sn, E>`
 
-#### Monoid
+#### *Commutative* Monoid
 
 - `View<Sx, Ex?>.combine(y: View<Sy, Ey?>): View<Pair<Sx, Sy>, E_SUPER>`
 - with identity element `View<Unit, Nothing?>`
@@ -496,7 +514,7 @@ fun restaurantSaga() = Saga<RestaurantOrderEvent?, RestaurantCommand>(
 
 - `Saga<AR, A>.mapOnAction(f: (A) -> An): Saga<AR, An>`
 
-#### Monoid
+#### *Commutative* Monoid
 
 - `Saga<in AR?, out A>.combine(y: _Saga<in ARn?, out An>): Saga<AR_SUPER, A_SUPER>`
 - with identity element `Saga<Nothing?, Nothing?>`
