@@ -1,0 +1,8 @@
+{
+  "label": "Composing The Application",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "The logic execution will be orchestrated by the outside components that use the domain components (decider, view, and saga) to do the computations. These components will be responsible for fetching and saving the data (suspended effects)."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "label": "Modeling The Domain",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "Model the domain effectively by using types and functions"
+  }
+}
