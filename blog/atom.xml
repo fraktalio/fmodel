@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://fraktalio.com/fmodel/blog</id>
+    <title>Fmodel Blog</title>
+    <updated>2023-04-07T00:00:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://fraktalio.com/fmodel/blog"/>
+    <subtitle>Fmodel Blog</subtitle>
+    <icon>https://fraktalio.com/fmodel/img/favicon-32x32.png</icon>
+    <entry>
+        <title type="html"><![CDATA[Welcome]]></title>
+        <id>https://fraktalio.com/fmodel/blog/welcome</id>
+        <link href="https://fraktalio.com/fmodel/blog/welcome"/>
+        <updated>2023-04-07T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Please, redirect to our blog here.]]></summary>
+        <content type="html"><![CDATA[<p>Please, redirect to our blog <a href="https://fraktalio.com/blog/" target="_blank" rel="noopener noreferrer">here</a>.</p>]]></content>
+        <author>
+            <name>Ivan Dugalic</name>
+            <uri>https://github.com/idugalic</uri>
+        </author>
+        <category label="hello" term="hello"/>
+        <category label="fmodel" term="fmodel"/>
+        <category label="domain" term="domain"/>
+        <category label="modeling" term="modeling"/>
+    </entry>
+</feed>
