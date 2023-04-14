@@ -40,6 +40,7 @@ idiomatic Kotlin, which in turn makes our code
 - event-driven - event-sourced systems / storing the `events` in immutable storage by only appending.
 - or you can have both flavors within your systems landscape, and easily transit from one to another 
 
+ <iframe width="560" height="315" src="https://www.youtube.com/embed/U8NzcWV8b4Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## What you'll need
 
