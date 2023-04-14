@@ -24,7 +24,6 @@ const config = {
     onBrokenLinks: 'throw',
     onBrokenMarkdownLinks: 'warn',
     trailingSlash: false,
-    deploymentBranch: 'doc',
 
     // Even if you don't use internalization, you can use this field to set useful
     // metadata like html lang. For example, if your site is Chinese, you may want
@@ -64,7 +63,8 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
         ({
             // Replace with your project's social card
-            image: 'img/fmodel-social.png',
+            image: 'img/fmodel-social2.png',
+            metadata: [{name: 'keywords', content: 'domain-modeling, event-sourcing, event-modeling, kotlin'}],
             navbar: {
                 title: 'Fmodel',
                 logo: {
