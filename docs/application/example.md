@@ -9,7 +9,8 @@ They are all modeling the same imaginary `restaurant and order management` infor
 
 The source code snippets in this reference guide are taken from these applications.
 
-- [https://github.com/fraktalio/fmodel-spring-demo](https://github.com/fraktalio/fmodel-spring-demo) / #EventSourcing, #SpringBoot, #Reactor, #RSocket, #R2DBC, #SQL, #Testcontainers
+- event-sourced: [https://github.com/fraktalio/fmodel-spring-demo](https://github.com/fraktalio/fmodel-spring-demo) / #EventSourcing, #SpringBoot, #Reactor, #RSocket, #R2DBC, #SQL, #Testcontainers
+- state-stored: [https://github.com/fraktalio/fmodel-spring-state-stored-demo](https://github.com/fraktalio/fmodel-spring-state-stored-demo) / #SpringBoot, #Reactor, #RSocket, #R2DBC, #SQL, #Testcontainers
 
 
 more to come...
