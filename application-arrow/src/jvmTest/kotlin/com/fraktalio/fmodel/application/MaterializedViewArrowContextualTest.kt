@@ -1,8 +1,6 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.continuations.Effect
-import arrow.core.continuations.toEither
 import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.evenNumberViewRepository
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
@@ -17,15 +15,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlin.contracts.ExperimentalContracts
 
-private suspend infix fun <S> Effect<Error, S>.thenState(expected: S) {
-    val state = when (val result = this.toEither()) {
-        is Either.Right -> result.value
-        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")
-    }
-    return state shouldBe expected
-}
 
-private suspend infix fun <S> Either<Error, S>.thenState(expected: S) {
+private infix fun <S> Either<Error, S>.thenState(expected: S) {
     val state = when (val result = this) {
         is Either.Right -> result.value
         is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${result.value}")

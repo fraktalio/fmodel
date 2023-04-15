@@ -1,8 +1,6 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.continuations.Effect
-import arrow.core.continuations.toEither
 import com.fraktalio.fmodel.application.examples.numbers.NumberViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberLockingViewRepository
 import com.fraktalio.fmodel.application.examples.numbers.even.query.EvenNumberViewRepository
@@ -21,7 +19,6 @@ import com.fraktalio.fmodel.domain.examples.numbers.even.query.evenNumberView
 import com.fraktalio.fmodel.domain.examples.numbers.odd.query.oddNumberView
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * DSL - Given
@@ -67,14 +64,6 @@ private infix fun <S, V> Either<Error, Pair<S, V>>.thenStateAndVersion(expected:
     return state shouldBe expected
 }
 
-
-private suspend fun <S> Effect<Error, S>.thenError() {
-    val error = when (val result = this.toEither()) {
-        is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value ${result.value}")
-        is Either.Left -> result.value
-    }
-    error.shouldBeInstanceOf<Error>()
-}
 
 /**
  * Materialized View Test

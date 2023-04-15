@@ -17,7 +17,7 @@
 package com.fraktalio.fmodel.application
 
 import arrow.core.Either
-import arrow.core.continuations.either
+import arrow.core.raise.either
 import com.fraktalio.fmodel.application.Error.CommandHandlingFailed
 import com.fraktalio.fmodel.application.Error.CommandPublishingFailed
 import kotlinx.coroutines.FlowPreview
@@ -37,7 +37,7 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handleWithEffect(command: C): Flow
         .fetchEvents()
         .computeNewEvents(command)
         .save()
-        .map { either<Error, E> { it } }
+        .map { either <Error, E> { it } }
         .catch { emit(either { raise(CommandHandlingFailed(command)) }) }
 
 /**
