@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkfmodel=self.webpackChunkfmodel||[]).push([[1527],{6197:e=>{e.exports=JSON.parse('{"permalink":"/fmodel/blog/tags/modeling","page":1,"postsPerPage":10,"totalPages":1,"totalCount":1,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);
