@@ -150,6 +150,15 @@ const config = {
                 theme: lightCodeTheme,
                 darkTheme: darkCodeTheme,
             },
+            algolia: {
+                // The application ID provided by Algolia
+                appId: 'L31CSXMU5C',
+
+                // Public API key: it is safe to commit it
+                apiKey: '3075093e3088b21f35004181a3e27e6d',
+
+                indexName: 'fraktalio',
+            },
         }),
 };
 
