@@ -47,7 +47,9 @@ possible
 concrete sub-classes of `Command` which are known at compile
 time: `CreateRestaurantCommand`, `ChangeRestaurantMenuCommand`, `PlaceOrderCommand`, `CreateOrderCommand`, `MarkOrderAsPreparedCommand`.
 
-Additionally, commands are categorized as Restaurant and Order commands.
+Additionally, commands are categorized as Restaurant and Order commands which are respectfully matching two concepts presented on the blueprint / swim-lanes at the bottom / yellow sticky notes.
+
+![restaurant model](/img/restaurant-model.jpg)
 
 ```kotlin
 sealed class Command
@@ -133,7 +135,9 @@ We model our events as a `Sum` type (`OR` relationship) by using `sealed` class.
 sub-classes of `Event` which are known at compile
 time: `RestaurantCreatedEvent`, `RestaurantNotCreatedEvent`, `RestaurantMenuChangedEvent`, `RestaurantMenuNotChangedEvent`, `OrderPlacedAtRestaurantEvent`, `OrderNotPlacedAtRestaurantEvent`, `OrderRejectedByRestaurantEvent`, `OrderCreatedEvent`, `OrderPreparedEvent`, `OrderRejectedEvent`.
 
-Additionally, events are categorized as Restaurant, RestaurantError, Order and OrderError events.
+Additionally, events are categorized as Restaurant and Order events which are respectfully matching two concepts presented on the blueprint / swim-lanes at the bottom / yellow sticky notes.
+
+![restaurant model](/img/restaurant-model.jpg)
 
 ```kotlin
 sealed class Event {

@@ -150,7 +150,7 @@ dependencies {
 You have great frameworks at your service to bootstrap development:
 
 - [Ktor](https://ktor.io/quickstart/)
-- [Spring](https://spring.io/guides/tutorials/spring-boot-kotlin/)
+- [Spring](https://spring.io/guides/tutorials/spring-boot-kotlin/) (check the [demo applications](https://github.com/search?q=topic%3Afmodel-demo-spring+org%3Afraktalio&type=Repositories))
 
 :::info
 Fmodel does not require usage of any framework whatsoever. It is completely up to you!
