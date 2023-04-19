@@ -303,7 +303,7 @@ typealias RestaurantDecider = Decider<RestaurantCommand?, Restaurant?, Restauran
 typealias AggregateStateRepository = StateRepository<Command?, Pair<Restaurant?,Order?>>
 
 
-val aggregate = eventSourcingAggregate(orderDecider combine restaurantDecider, aggregateStateRepository)
+val aggregate = stateStoredAggregate(orderDecider combine restaurantDecider, aggregateStateRepository)
 
 /**
  * Start handling all your commands!
@@ -338,8 +338,8 @@ typealias OrderAggregateStateRepository = StateRepository<OrderCommand?, Order?>
  */
 typealias RestaurantAggregateStateRepository = StateRepository<RestaurantCommand?, Restaurant?>
 
-val orderAggregate = eventSourcingAggregate(orderDecider, orderAggregateStateRepository)
-val restaurantAggregate = eventSourcingAggregate(restaurantDecider, restaurantAggregateStateRepository)
+val orderAggregate = stateStoredAggregate(orderDecider, orderAggregateStateRepository)
+val restaurantAggregate = stateStoredAggregate(restaurantDecider, restaurantAggregateStateRepository)
 
 /**
  * Start handling your commands of type OrderCommand!
