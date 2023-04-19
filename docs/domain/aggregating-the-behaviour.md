@@ -58,6 +58,34 @@ val allDecider: Decider<Command?, Pair<Order?, Restaurant?>, Event?> = orderDeci
 
 If the constraints are not met, the `combine` function will not be available for usage!
 
+**Mappable**
+____________
+
+Additionally, `Decider<C, S, E>` provides map functions:
+
+```kotlin
+inline fun <Cn> mapLeftOnCommand(
+    crossinline f: (Cn) -> C
+): Decider<Cn, S, E>
+
+inline fun <En> dimapOnEvent(
+    crossinline fl: (En) -> E, crossinline fr: (E) -> En
+): Decider<C, S, En>
+
+inline fun <Sn> dimapOnState(
+    crossinline fl: (Sn) -> S, crossinline fr: (S) -> Sn
+): Decider<C, Sn, E>
+```
+
+For example the `allDecider` of type `Decider<Command?, Pair<Order?, Restaurant?>, Event?>` can be mapped into a `newAllDecider` of type `Decider<Command?, MyDomainSpecificType, Event?>`, effectively eliminating the `Pair`:
+
+```kotlin
+val newAllDecider = allDecider.dimapOnState(
+            fl = { myDomainSpecificType: MyDomainSpecificType -> Pair(myDomainSpecificType.order, myDomainSpecificType.restaurant) },
+            fr = { pair: Pair<Order?, Restaurant?> -> MyDomainSpecificType(pair.first, pair.second) }
+        )
+```
+
   </TabItem>
   <TabItem value="view" label="View">
 
@@ -91,6 +119,32 @@ val allView: View<Pair<OrderViewState?, RestaurantViewState?>, Event?> = orderVi
 ```
 
 If the constraints are not met, the `combine` function will not be available for usage!
+
+**Mappable**
+____________
+
+Additionally, `View<S, E>` provides map functions:
+
+```kotlin
+inline fun <En> mapLeftOnEvent(
+    crossinline f: (En) -> E
+): View<S, En>
+
+inline fun <Sn> dimapOnState(
+    crossinline fl: (Sn) -> S,
+    crossinline fr: (S) -> Sn
+): View<Sn, E>
+```
+
+For example the `allView` of type `View<Pair<OrderViewState?, RestaurantViewState?>, Event?>` can be mapped into a `newAllView` of type `View<MyDomainSpecificType, Event?>`, effectively eliminating the `Pair`:
+
+```kotlin
+val newAllView = allView.dimapOnState(
+            fl = { myDomainSpecificType: MyDomainSpecificType -> Pair(myDomainSpecificType.order, myDomainSpecificType.restaurant) },
+            fr = { pair: Pair<OrderViewState?, RestaurantViewState?> -> MyDomainSpecificType(pair.first, pair.second) }
+        )
+```
+
 
   </TabItem>
   <TabItem value="saga" label="Saga">
@@ -129,6 +183,17 @@ val allSaga: Saga<Event?, Command> = orderSaga combine restaurantSaga
 ```
 
 If the constraints are not met, the `combine` function will not be available for usage!
+
+**Mappable**
+____________
+
+Additionally, `Saga<AR, A>` provides map functions:
+
+```kotlin
+inline fun <ARn> mapLeftOnActionResult(crossinline f: (ARn) -> AR): Saga<ARn, A>
+
+inline fun <An> mapOnAction(crossinline f: (A) -> An): Saga<AR, An>
+```
 
   </TabItem>
 </Tabs>
