@@ -33,6 +33,10 @@ It also represents an acceptance criterion of the system, and acts as a document
 
 ## Refining specifications
 
+Let's pivot the blueprint for 90 degrees, and refine our requirements further.
+
+![restaurant model](/img/restaurant-model.jpg)
+
 We need to go through all the scenarios, successes and errors.
 For example, for an `OrderDecider` with given `OrderCreatedEvent`  event as a precondition, when
 command `MarkOrderAsPreparedCommand` is triggered, then Order is successfully prepared (`OrderPreparedEvent`).
