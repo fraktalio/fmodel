@@ -53,20 +53,20 @@ private fun <C, S, E> IDecider<C, S, E>.whenCommand(command: C): C = command
 /**
  * DSL - Then
  */
-private suspend infix fun <S> Either<Error, S>.thenState(expected: S) {
+private infix fun <S> Either<Error, S>.thenState(expected: S) {
     val state = when (this) {
         is Either.Right -> value
         is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${value}")
     }
-    return state shouldBe expected
+    state shouldBe expected
 }
 
-private suspend infix fun <S, V> Either<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
+private infix fun <S, V> Either<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
     val state = when (this) {
         is Either.Right -> value
         is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${value}")
     }
-    return state shouldBe expected
+    state shouldBe expected
 }
 
 
