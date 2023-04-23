@@ -48,24 +48,24 @@ private fun <S, E> IView<S, E>.whenEvent(event: E): E = event
 /**
  * DSL - Then
  */
-private suspend infix fun <S> Either<Error, S>.thenState(expected: S) {
+private infix fun <S> Either<Error, S>.thenState(expected: S) {
     val state = when (this) {
         is Either.Right -> value
         is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${value}")
     }
-    return state shouldBe expected
+    state shouldBe expected
 }
 
-private suspend infix fun <S, V> Either<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
+private infix fun <S, V> Either<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
     val state = when (this) {
         is Either.Right -> value
         is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${value}")
     }
-    return state shouldBe expected
+    state shouldBe expected
 }
 
 
-private suspend fun <S> Either<Error, S>.thenError() {
+private fun <S> Either<Error, S>.thenError() {
     val error = when (this) {
         is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value ${value}")
         is Either.Left -> value
