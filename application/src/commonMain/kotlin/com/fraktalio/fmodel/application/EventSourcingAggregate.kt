@@ -64,9 +64,6 @@ interface EventOrchestratingComputation<C, S, E> : ISaga<E, C>, IDecider<C, S, E
  * [EventSourcingAggregate] extends [EventComputation] and [EventRepository] interfaces,
  * clearly communicating that it is composed out of these two behaviours.
  *
- * The Delegation pattern has proven to be a good alternative to `implementation inheritance`,
- * and Kotlin supports it natively requiring zero boilerplate code. [eventSourcingAggregate] function is a good example.
- *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
  * @param E Events of type [E] that this aggregate can publish
@@ -88,9 +85,6 @@ interface EventSourcingAggregate<C, S, E> : EventComputation<C, S, E>, EventRepo
  * [EventSourcingLockingAggregate] extends [EventComputation] and [EventLockingRepository] interfaces,
  * clearly communicating that it is composed out of these two behaviours.
  *
- * The Delegation pattern has proven to be a good alternative to `implementation inheritance`,
- * and Kotlin supports it natively requiring zero boilerplate code. [eventSourcingLockingAggregate] function is a good example.
- *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
  * @param E Events of type [E] that this aggregate can publish
@@ -109,9 +103,6 @@ interface EventSourcingLockingAggregate<C, S, E, V> : EventComputation<C, S, E>,
  *
  * [EventSourcingOrchestratingAggregate] extends [EventOrchestratingComputation] and [EventRepository] interfaces,
  * clearly communicating that it is composed out of these two behaviours.
- *
- * The Delegation pattern has proven to be a good alternative to `implementation inheritance`,
- * and Kotlin supports it natively requiring zero boilerplate code. [eventSourcingOrchestratingAggregate] function is a good example.
  *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
@@ -135,9 +126,6 @@ interface EventSourcingOrchestratingAggregate<C, S, E> : EventOrchestratingCompu
  *
  * [EventSourcingLockingOrchestratingAggregate] extends [EventOrchestratingComputation] and [EventLockingRepository] interfaces,
  * clearly communicating that it is composed out of these two behaviours.
- *
- * The Delegation pattern has proven to be a good alternative to `implementation inheritance`,
- * and Kotlin supports it natively requiring zero boilerplate code. [eventSourcingLockingAggregate] function is a good example.
  *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
@@ -164,7 +152,33 @@ interface EventSourcingLockingOrchestratingAggregate<C, S, E, V> : EventOrchestr
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use EventSourcingAggregate constructor-like function instead",
+    replaceWith = ReplaceWith("EventSourcingAggregate(decider, eventRepository)")
+)
 fun <C, S, E> eventSourcingAggregate(
+    decider: IDecider<C, S, E>,
+    eventRepository: EventRepository<C, E>
+): EventSourcingAggregate<C, S, E> =
+    object : EventSourcingAggregate<C, S, E>,
+        EventRepository<C, E> by eventRepository,
+        IDecider<C, S, E> by decider {}
+
+/**
+ * Event Sourced aggregate constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param eventRepository An aggregate event repository of type [EventRepository]<[C], [E]>
+ * @return An object/instance of type [EventSourcingAggregate]<[C], [S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E> EventSourcingAggregate(
     decider: IDecider<C, S, E>,
     eventRepository: EventRepository<C, E>
 ): EventSourcingAggregate<C, S, E> =
@@ -187,7 +201,34 @@ fun <C, S, E> eventSourcingAggregate(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use EventSourcingLockingAggregate constructor-like function instead",
+    replaceWith = ReplaceWith("EventSourcingLockingAggregate(decider, eventRepository)")
+)
 fun <C, S, E, V> eventSourcingLockingAggregate(
+    decider: IDecider<C, S, E>,
+    eventRepository: EventLockingRepository<C, E, V>
+): EventSourcingLockingAggregate<C, S, E, V> =
+    object : EventSourcingLockingAggregate<C, S, E, V>,
+        EventLockingRepository<C, E, V> by eventRepository,
+        IDecider<C, S, E> by decider {}
+
+/**
+ * Event Sourced Locking aggregate constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param V Version
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param eventRepository An aggregate event repository of type [EventLockingRepository]<[C], [E], [V]>
+ * @return An object/instance of type [EventSourcingLockingAggregate]<[C], [S], [E], [V]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E, V> EventSourcingLockingAggregate(
     decider: IDecider<C, S, E>,
     eventRepository: EventLockingRepository<C, E, V>
 ): EventSourcingLockingAggregate<C, S, E, V> =
@@ -210,7 +251,36 @@ fun <C, S, E, V> eventSourcingLockingAggregate(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use EventSourcingOrchestratingAggregate constructor-like function instead",
+    replaceWith = ReplaceWith("EventSourcingOrchestratingAggregate(decider, eventRepository, saga)")
+)
 fun <C, S, E> eventSourcingOrchestratingAggregate(
+    decider: IDecider<C, S, E>,
+    eventRepository: EventRepository<C, E>,
+    saga: ISaga<E, C>
+): EventSourcingOrchestratingAggregate<C, S, E> =
+    object : EventSourcingOrchestratingAggregate<C, S, E>,
+        EventRepository<C, E> by eventRepository,
+        IDecider<C, S, E> by decider,
+        ISaga<E, C> by saga {}
+
+/**
+ * Event Sourced Orchestrating aggregate constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param eventRepository An aggregate event repository of type [EventRepository]<[C], [E]>
+ * @param saga A saga component of type [ISaga]<[E], [C]> - orchestrates the deciders
+ * @return An object/instance of type [EventSourcingOrchestratingAggregate]<[C], [S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E> EventSourcingOrchestratingAggregate(
     decider: IDecider<C, S, E>,
     eventRepository: EventRepository<C, E>,
     saga: ISaga<E, C>
@@ -236,7 +306,38 @@ fun <C, S, E> eventSourcingOrchestratingAggregate(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use EventSourcingLockingOrchestratingAggregate constructor-like function instead",
+    replaceWith = ReplaceWith("EventSourcingLockingOrchestratingAggregate(decider, eventRepository, saga)")
+)
 fun <C, S, E, V> eventSourcingLockingOrchestratingAggregate(
+    decider: IDecider<C, S, E>,
+    eventRepository: EventLockingRepository<C, E, V>,
+    saga: ISaga<E, C>
+): EventSourcingLockingOrchestratingAggregate<C, S, E, V> =
+    object : EventSourcingLockingOrchestratingAggregate<C, S, E, V>,
+        EventLockingRepository<C, E, V> by eventRepository,
+        IDecider<C, S, E> by decider,
+        ISaga<E, C> by saga {}
+
+/**
+ * Event Sourced Locking Orchestrating aggregate constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param V Version
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param eventRepository An aggregate event repository of type [EventLockingRepository]<[C], [E], [V]>
+ * @param saga A saga component of type [ISaga]<[E], [C]> - orchestrates the deciders
+ * @return An object/instance of type [EventSourcingLockingOrchestratingAggregate]<[C], [S], [E] ,[V]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+
+fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate(
     decider: IDecider<C, S, E>,
     eventRepository: EventLockingRepository<C, E, V>,
     saga: ISaga<E, C>

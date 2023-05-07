@@ -52,7 +52,31 @@ interface SagaManager<AR, A> : ISaga<AR, A>, ActionPublisher<A> {
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use SagaManager constructor-like function instead",
+    replaceWith = ReplaceWith("SagaManager(saga, actionPublisher)")
+)
 fun <AR, A> sagaManager(
+    saga: ISaga<AR, A>,
+    actionPublisher: ActionPublisher<A>
+): SagaManager<AR, A> = object : SagaManager<AR, A>,
+    ActionPublisher<A> by actionPublisher,
+    ISaga<AR, A> by saga {}
+
+/**
+ * Saga Manager constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param AR Action Result of type [AR], Action Result is usually an Event
+ * @param A An Action of type [A] to be taken. Action is usually a Command.
+ * @property saga A saga component of type [ISaga]<[AR], [A]>
+ * @property actionPublisher Interface for publishing the Actions of type [A] - dependencies by delegation
+ * @return An object/instance of type [SagaManager]<[AR], [A]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <AR, A> SagaManager(
     saga: ISaga<AR, A>,
     actionPublisher: ActionPublisher<A>
 ): SagaManager<AR, A> = object : SagaManager<AR, A>,
