@@ -50,10 +50,6 @@ interface StateComputation<C, S, E> : IDecider<C, S, E> {
  * [StateStoredAggregate] extends [StateComputation] and [StateRepository] interfaces,
  * clearly communicating that it is composed out of these two behaviours.
  *
- * The Delegation pattern has proven to be a good alternative to `implementation inheritance`,
- * and Kotlin supports it natively requiring zero boilerplate code. [stateStoredAggregate] function is a good example.
- *
- *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
  * @param E Events of type [E] that are used internally to build/fold new state
@@ -74,10 +70,6 @@ interface StateStoredAggregate<C, S, E> : StateComputation<C, S, E>, StateReposi
  *
  * [StateStoredAggregate] extends [StateComputation] and [StateLockingRepository] interfaces,
  * clearly communicating that it is composed out of these two behaviours.
- *
- * The Delegation pattern has proven to be a good alternative to `implementation inheritance`,
- * and Kotlin supports it natively requiring zero boilerplate code. [stateStoredAggregate] function is a good example.
- *
  *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
@@ -122,11 +114,6 @@ interface StateOrchestratingComputation<C, S, E> : ISaga<E, C>, StateComputation
  * [StateStoredOrchestratingAggregate] extends [StateOrchestratingComputation] and [StateStoredAggregate] interfaces,
  * clearly communicating that it is composed out of these two behaviours.
  *
- * The Delegation pattern has proven to be a good alternative to `implementation inheritance`,
- * and Kotlin supports it natively requiring zero boilerplate code.
- * [stateStoredOrchestratingAggregate] function is a good example.
- *
- *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
  * @param E Events of type [E] that are used internally to build/fold new state
@@ -148,11 +135,6 @@ interface StateStoredOrchestratingAggregate<C, S, E> : StateOrchestratingComputa
  *
  * [StateStoredOrchestratingAggregate] extends [StateOrchestratingComputation] and [StateStoredAggregate] interfaces,
  * clearly communicating that it is composed out of these two behaviours.
- *
- * The Delegation pattern has proven to be a good alternative to `implementation inheritance`,
- * and Kotlin supports it natively requiring zero boilerplate code.
- * [stateStoredOrchestratingAggregate] function is a good example.
- *
  *
  * @param C Commands of type [C] that this aggregate can handle
  * @param S Aggregate state of type [S]
@@ -178,7 +160,33 @@ interface StateStoredLockingOrchestratingAggregate<C, S, E, V> : StateOrchestrat
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use StateStoredAggregate constructor-like function instead",
+    replaceWith = ReplaceWith("StateStoredAggregate(decider, stateRepository)")
+)
 fun <C, S, E> stateStoredAggregate(
+    decider: IDecider<C, S, E>,
+    stateRepository: StateRepository<C, S>
+): StateStoredAggregate<C, S, E> =
+    object : StateStoredAggregate<C, S, E>,
+        StateRepository<C, S> by stateRepository,
+        IDecider<C, S, E> by decider {}
+
+/**
+ * State stored aggregate constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param stateRepository An aggregate state repository of type [StateRepository]<[C], [S]>
+ * @return An object/instance of type [StateStoredAggregate]<[C], [S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E> StateStoredAggregate(
     decider: IDecider<C, S, E>,
     stateRepository: StateRepository<C, S>
 ): StateStoredAggregate<C, S, E> =
@@ -201,7 +209,34 @@ fun <C, S, E> stateStoredAggregate(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use StateStoredLockingAggregate constructor-like function instead",
+    replaceWith = ReplaceWith("StateStoredLockingAggregate(decider, stateRepository)")
+)
 fun <C, S, E, V> stateStoredLockingAggregate(
+    decider: IDecider<C, S, E>,
+    stateRepository: StateLockingRepository<C, S, V>
+): StateStoredLockingAggregate<C, S, E, V> =
+    object : StateStoredLockingAggregate<C, S, E, V>,
+        StateLockingRepository<C, S, V> by stateRepository,
+        IDecider<C, S, E> by decider {}
+
+/**
+ * State stored locking aggregate constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param V Version of the aggregate/state
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param stateRepository An aggregate state repository of type [StateLockingRepository]<[C], [S], [V]>
+ * @return An object/instance of type [StateStoredLockingAggregate]<[C], [S], [E], [V]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E, V> StateStoredLockingAggregate(
     decider: IDecider<C, S, E>,
     stateRepository: StateLockingRepository<C, S, V>
 ): StateStoredLockingAggregate<C, S, E, V> =
@@ -224,7 +259,36 @@ fun <C, S, E, V> stateStoredLockingAggregate(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use StateStoredOrchestratingAggregate constructor-like function instead",
+    replaceWith = ReplaceWith("StateStoredOrchestratingAggregate(decider, stateRepository, saga)")
+)
 fun <C, S, E> stateStoredOrchestratingAggregate(
+    decider: IDecider<C, S, E>,
+    stateRepository: StateRepository<C, S>,
+    saga: ISaga<E, C>
+): StateStoredOrchestratingAggregate<C, S, E> =
+    object : StateStoredOrchestratingAggregate<C, S, E>,
+        StateRepository<C, S> by stateRepository,
+        IDecider<C, S, E> by decider,
+        ISaga<E, C> by saga {}
+
+/**
+ * State stored orchestrating aggregate constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param stateRepository An aggregate state repository of type [StateRepository]<[C], [S]>
+ * @param saga A saga component of type [ISaga]<[E], [C]>
+ * @return An object/instance of type [StateStoredOrchestratingAggregate]<[C], [S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E> StateStoredOrchestratingAggregate(
     decider: IDecider<C, S, E>,
     stateRepository: StateRepository<C, S>,
     saga: ISaga<E, C>
@@ -250,7 +314,37 @@ fun <C, S, E> stateStoredOrchestratingAggregate(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use StateStoredLockingOrchestratingAggregate constructor-like function instead",
+    replaceWith = ReplaceWith("StateStoredLockingOrchestratingAggregate(decider, stateRepository, saga)")
+)
 fun <C, S, E, V> stateStoredLockingOrchestratingAggregate(
+    decider: IDecider<C, S, E>,
+    stateRepository: StateLockingRepository<C, S, V>,
+    saga: ISaga<E, C>
+): StateStoredLockingOrchestratingAggregate<C, S, E, V> =
+    object : StateStoredLockingOrchestratingAggregate<C, S, E, V>,
+        StateLockingRepository<C, S, V> by stateRepository,
+        IDecider<C, S, E> by decider,
+        ISaga<E, C> by saga {}
+
+/**
+ * State stored orchestrating and locking aggregate constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param V Version of the aggregate/state
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param stateRepository An aggregate state repository of type [StateLockingRepository]<[C], [S], [V]>
+ * @param saga A saga component of type [ISaga]<[E], [C]>
+ * @return An object/instance of type [StateStoredLockingOrchestratingAggregate]<[C], [S], [E], [V]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E, V> StateStoredLockingOrchestratingAggregate(
     decider: IDecider<C, S, E>,
     stateRepository: StateLockingRepository<C, S, V>,
     saga: ISaga<E, C>

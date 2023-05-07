@@ -87,6 +87,10 @@ interface MaterializedLockingDeduplicationView<S, E, EV, SV> : ViewStateComputat
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use MaterializedView constructor-like function instead",
+    replaceWith = ReplaceWith("MaterializedView(view, viewStateRepository)")
+)
 fun <S, E> materializedView(
     view: IView<S, E>,
     viewStateRepository: ViewStateRepository<E, S>,
@@ -94,6 +98,28 @@ fun <S, E> materializedView(
     object : MaterializedView<S, E>,
         ViewStateRepository<E, S> by viewStateRepository,
         IView<S, E> by view {}
+
+/**
+ * Materialized View constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @property view A view component of type [IView]<[S], [E]>
+ * @property viewStateRepository Interface for [S]tate management/persistence - dependencies by delegation
+ * @return An object/instance of type [MaterializedView]<[S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <S, E> MaterializedView(
+    view: IView<S, E>,
+    viewStateRepository: ViewStateRepository<E, S>,
+): MaterializedView<S, E> =
+    object : MaterializedView<S, E>,
+        ViewStateRepository<E, S> by viewStateRepository,
+        IView<S, E> by view {}
+
 
 /**
  * Materialized Locking View factory function.
@@ -109,7 +135,33 @@ fun <S, E> materializedView(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use MaterializedLockingView constructor-like function instead",
+    replaceWith = ReplaceWith("MaterializedLockingView(view, viewStateRepository)")
+)
 fun <S, E, V> materializedLockingView(
+    view: IView<S, E>,
+    viewStateRepository: ViewStateLockingRepository<E, S, V>,
+): MaterializedLockingView<S, E, V> =
+    object : MaterializedLockingView<S, E, V>,
+        ViewStateLockingRepository<E, S, V> by viewStateRepository,
+        IView<S, E> by view {}
+
+/**
+ * Materialized Locking View constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param V Version
+ * @property view A view component of type [IView]<[S], [E]>
+ * @property viewStateRepository Interface for [S]tate management/persistence - dependencies by delegation
+ * @return An object/instance of type [MaterializedLockingView]<[S], [E], [V]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <S, E, V> MaterializedLockingView(
     view: IView<S, E>,
     viewStateRepository: ViewStateLockingRepository<E, S, V>,
 ): MaterializedLockingView<S, E, V> =
@@ -132,7 +184,34 @@ fun <S, E, V> materializedLockingView(
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@Deprecated(
+    message = "Use MaterializedLockingDeduplicationView constructor-like function instead",
+    replaceWith = ReplaceWith("MaterializedLockingDeduplicationView(view, viewStateRepository)")
+)
 fun <S, E, EV, SV> materializedLockingDeduplicationView(
+    view: IView<S, E>,
+    viewStateRepository: ViewStateLockingDeduplicationRepository<E, S, EV, SV>,
+): MaterializedLockingDeduplicationView<S, E, EV, SV> =
+    object : MaterializedLockingDeduplicationView<S, E, EV, SV>,
+        ViewStateLockingDeduplicationRepository<E, S, EV, SV> by viewStateRepository,
+        IView<S, E> by view {}
+
+/**
+ * Materialized Locking Deduplication View constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param EV Event Version
+ * @param SV State Version
+ * @property view A view component of type [IView]<[S], [E]>
+ * @property viewStateRepository Interface for [S]tate management/persistence - dependencies by delegation
+ * @return An object/instance of type [MaterializedLockingDeduplicationView]<[S], [E], [EV], [SV]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <S, E, EV, SV> MaterializedLockingDeduplicationView(
     view: IView<S, E>,
     viewStateRepository: ViewStateLockingDeduplicationRepository<E, S, EV, SV>,
 ): MaterializedLockingDeduplicationView<S, E, EV, SV> =
