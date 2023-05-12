@@ -561,7 +561,7 @@ aggregate.handle(orderCommand)
 
   </TabItem>
 
-  <TabItem value="monolith-distributed" label="monolith distributed">
+  <TabItem value="monolith-orchestrated" label="monolith orchestrated">
 
 *Example of a monolith scenario, in which Order and Restaurant deciders
 are [combined/aggregated](/domain/aggregating-the-behaviour.md?component-type=decider) in one big decider, additionally Order and Restaurant sagas are [combined](/domain/aggregating-the-behaviour.md?component-type=saga) into one orchestrating saga.
