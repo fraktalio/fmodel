@@ -34,7 +34,7 @@ private var oddNumberStateStorage: OddNumberState = OddNumberState(Description("
  */
 class OddNumberStateRepository : StateRepository<OddNumberCommand?, OddNumberState> {
 
-    override suspend fun OddNumberCommand?.fetchState(): OddNumberState? = oddNumberStateStorage
+    override suspend fun OddNumberCommand?.fetchState(): OddNumberState = oddNumberStateStorage
 
     override suspend fun OddNumberState.save(): OddNumberState {
         oddNumberStateStorage = this

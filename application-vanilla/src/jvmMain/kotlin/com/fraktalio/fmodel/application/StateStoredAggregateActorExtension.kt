@@ -111,7 +111,7 @@ private fun <C, S> CoroutineScope.commandActor(
     start: CoroutineStart = CoroutineStart.DEFAULT,
     context: CoroutineContext = EmptyCoroutineContext,
     handle: suspend (C) -> S
-) = actor<C>(context, capacity, start) {
+) = actor(context, capacity, start) {
     for (msg in channel) {
         fanInChannel.send(handle(msg))
     }

@@ -35,7 +35,7 @@ private fun <S, E> IView<S, E>.given(
     partitionKey: (E) -> Int,
     event: () -> Flow<E>
 ): Flow<S> =
-    materializedView(
+    MaterializedView(
         view = this,
         viewStateRepository = repository
     ).handleConcurrently(event()) { partitionKey(it) }

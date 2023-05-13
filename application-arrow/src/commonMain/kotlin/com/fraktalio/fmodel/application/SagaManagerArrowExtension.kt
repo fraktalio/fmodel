@@ -20,6 +20,7 @@ import arrow.core.Either
 import arrow.core.raise.either
 import com.fraktalio.fmodel.application.Error.ActionResultHandlingFailed
 import com.fraktalio.fmodel.application.Error.ActionResultPublishingFailed
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -49,6 +50,7 @@ fun <AR, A> SagaManager<AR, A>.handleWithEffect(actionResult: AR): Flow<Either<E
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ExperimentalCoroutinesApi
 @FlowPreview
 fun <AR, A> SagaManager<AR, A>.handleWithEffect(actionResults: Flow<AR>): Flow<Either<Error, A>> =
     actionResults
@@ -75,6 +77,7 @@ fun <AR, A> AR.publishWithEffect(sagaManager: SagaManager<AR, A>): Flow<Either<E
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
+@ExperimentalCoroutinesApi
 @FlowPreview
 fun <AR, A> Flow<AR>.publishWithEffect(sagaManager: SagaManager<AR, A>): Flow<Either<Error, A>> =
     sagaManager.handleWithEffect(this)

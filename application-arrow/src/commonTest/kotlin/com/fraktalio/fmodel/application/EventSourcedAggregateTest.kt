@@ -19,6 +19,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecid
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
@@ -31,7 +32,7 @@ private fun <C, S, E> IDecider<C, S, E>.given(
     repository: EventRepository<C, E>,
     command: () -> C
 ): Flow<Either<Error, E>> =
-    eventSourcingAggregate(
+    EventSourcingAggregate(
         decider = this,
         eventRepository = repository
     ).handleWithEffect(command())
@@ -41,7 +42,7 @@ private fun <C, S, E, V> IDecider<C, S, E>.given(
     repository: EventLockingRepository<C, E, V>,
     command: () -> C
 ): Flow<Either<Error, Pair<E, V>>> =
-    eventSourcingLockingAggregate(
+    EventSourcingLockingAggregate(
         decider = this,
         eventRepository = repository
     ).handleOptimisticallyWithEffect(command())
@@ -64,6 +65,7 @@ private suspend infix fun <E, V> Flow<Either<Error, Pair<E, V>>>.thenEventPairs(
 /**
  * Event sourced aggregate test
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @FlowPreview
 class EventSourcedAggregateTest : FunSpec({
     val evenDecider = evenNumberDecider()

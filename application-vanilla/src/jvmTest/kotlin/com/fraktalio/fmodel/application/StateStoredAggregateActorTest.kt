@@ -35,9 +35,9 @@ private fun <C, S, E> IDecider<C, S, E>.given(
     partitionKey: (C) -> Int,
     command: () -> Flow<C>
 ): Flow<S> =
-    stateStoredAggregate(
+    StateStoredAggregate(
         decider = this,
-        stateRepository = repository,
+        stateRepository = repository
     ).handleConcurrently(command()) { partitionKey(it) }
 
 /**

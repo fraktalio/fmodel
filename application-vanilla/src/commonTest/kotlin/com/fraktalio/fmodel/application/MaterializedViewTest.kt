@@ -20,7 +20,7 @@ import io.kotest.matchers.shouldBe
  * DSL - Given
  */
 private suspend fun <S, E> IView<S, E>.given(repository: ViewStateRepository<E, S>, event: () -> E): S =
-    materializedView(
+    MaterializedView(
         view = this,
         viewStateRepository = repository
     ).handle(event())
@@ -29,7 +29,7 @@ private suspend fun <S, E, V> IView<S, E>.given(
     repository: ViewStateLockingRepository<E, S, V>,
     event: () -> E
 ): Pair<S, V> =
-    materializedLockingView(
+    MaterializedLockingView(
         view = this,
         viewStateRepository = repository
     ).handleOptimistically(event())
@@ -38,7 +38,7 @@ private suspend fun <S, E, EV, SV> IView<S, E>.given(
     repository: ViewStateLockingDeduplicationRepository<E, S, EV, SV>,
     event: () -> Pair<E, EV>
 ): Pair<S, SV> =
-    materializedLockingDeduplicationView(
+    MaterializedLockingDeduplicationView(
         view = this,
         viewStateRepository = repository
     ).handleOptimisticallyWithDeduplication(event())
