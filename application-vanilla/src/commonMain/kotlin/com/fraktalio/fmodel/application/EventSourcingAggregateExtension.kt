@@ -17,7 +17,6 @@
 package com.fraktalio.fmodel.application
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 
 /**
@@ -28,7 +27,6 @@ import kotlinx.coroutines.flow.*
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C): Flow<E> =
     command
         .fetchEvents()
@@ -44,7 +42,6 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(command: C): Flow<E> =
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, S, E> EventSourcingOrchestratingAggregate<C, S, E>.handle(command: C): Flow<E> =
     command
         .fetchEvents()
@@ -59,7 +56,6 @@ fun <C, S, E> EventSourcingOrchestratingAggregate<C, S, E>.handle(command: C): F
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimistically(command: C): Flow<Pair<E, V>> = flow {
     val events = command.fetchEvents()
     emitAll(
@@ -78,7 +74,6 @@ fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimistically(
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOptimistically(command: C): Flow<Pair<E, V>> =
     command
         .fetchEvents().map { it.first }
@@ -87,61 +82,49 @@ fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOp
 
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E> =
     commands.flatMapConcat { handle(it) }
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, S, E> EventSourcingOrchestratingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E> =
     commands.flatMapConcat { handle(it) }
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimistically(commands: Flow<C>): Flow<Pair<E, V>> =
     commands.flatMapConcat { handleOptimistically(it) }
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOptimistically(commands: Flow<C>): Flow<Pair<E, V>> =
     commands.flatMapConcat { handleOptimistically(it) }
 
 
-@FlowPreview
 fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> =
     aggregate.handle(this)
 
-@FlowPreview
 fun <C, E, V> C.publishOptimisticallyTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, E> C.publishTo(aggregate: EventSourcingOrchestratingAggregate<C, *, E>): Flow<E> =
     aggregate.handle(this)
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, E, V> C.publishOptimisticallyTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)
 
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> =
     aggregate.handle(this)
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, E, V> Flow<C>.publishOptimisticallyTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingOrchestratingAggregate<C, *, E>): Flow<E> =
     aggregate.handle(this)
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <C, E, V> Flow<C>.publishOptimisticallyTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)

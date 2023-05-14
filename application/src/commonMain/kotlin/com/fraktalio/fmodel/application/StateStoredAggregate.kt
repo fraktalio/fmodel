@@ -19,7 +19,6 @@ package com.fraktalio.fmodel.application
 import com.fraktalio.fmodel.domain.IDecider
 import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.fold
@@ -35,7 +34,6 @@ interface StateComputation<C, S, E> : IDecider<C, S, E> {
      * @param command of type [C]
      * @return The newly computed state of type [S]
      */
-    @FlowPreview
     suspend fun S?.computeNewState(command: C): S {
         val currentState = this ?: initialState
         val events = decide(command, currentState)
@@ -96,7 +94,6 @@ interface StateOrchestratingComputation<C, S, E> : ISaga<E, C>, StateComputation
      * @return The newly computed state of type [S]
      */
     @ExperimentalCoroutinesApi
-    @FlowPreview
     override suspend fun S?.computeNewState(command: C): S {
         val currentState = this ?: initialState
         val events = decide(command, currentState)

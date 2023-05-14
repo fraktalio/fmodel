@@ -19,19 +19,16 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 
 /**
  * DSL - Given
  */
-@FlowPreview
 private suspend fun <C, S, E> IDecider<C, S, E>.given(repository: StateRepository<C, S>, command: () -> C): S =
     StateStoredAggregate(
         decider = this,
         stateRepository = repository
     ).handle(command())
 
-@FlowPreview
 private suspend fun <C, S, E, V> IDecider<C, S, E>.given(
     repository: StateLockingRepository<C, S, V>,
     command: () -> C
@@ -57,7 +54,6 @@ private infix fun <S, V> Pair<S, V>.thenStateAndVersion(expected: Pair<S, V>) = 
  * State-stored aggregate test
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-@FlowPreview
 class StateStoredAggregateTest : FunSpec({
     val evenDecider = evenNumberDecider()
     val oddDecider = oddNumberDecider()

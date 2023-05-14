@@ -18,7 +18,6 @@ package com.fraktalio.fmodel.application
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
@@ -47,7 +46,6 @@ import kotlin.math.absoluteValue
  */
 @ObsoleteCoroutinesApi
 @ExperimentalContracts
-@FlowPreview
 fun <S, E> MaterializedView<S, E>.handleConcurrently(
     events: Flow<E>,
     numberOfActors: Int = 100,
@@ -86,7 +84,6 @@ fun <S, E> MaterializedView<S, E>.handleConcurrently(
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ObsoleteCoroutinesApi
-@FlowPreview
 @ExperimentalContracts
 fun <S, E> Flow<E>.publishConcurrentlyTo(
     materializedView: MaterializedView<S, E>,

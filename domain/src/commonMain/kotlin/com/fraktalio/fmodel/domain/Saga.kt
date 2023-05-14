@@ -17,7 +17,6 @@
 package com.fraktalio.fmodel.domain
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flattenConcat
 import kotlinx.coroutines.flow.flowOf
@@ -154,7 +153,6 @@ data class Saga<in AR, out A>(
  * @return new Saga of type `[Saga]<[AR_SUPER], [A_SUPER]>`
  */
 @ExperimentalCoroutinesApi
-@FlowPreview
 inline infix fun <reified AR : AR_SUPER, A : A_SUPER, reified AR2 : AR_SUPER, A2 : A_SUPER, AR_SUPER, A_SUPER> Saga<AR?, A>.combine(
     y: Saga<AR2?, A2>
 ): Saga<AR_SUPER, A_SUPER> {

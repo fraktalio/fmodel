@@ -20,7 +20,6 @@ import arrow.core.Either
 import arrow.core.raise.catch
 import arrow.core.raise.either
 import com.fraktalio.fmodel.application.Error.*
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -33,7 +32,6 @@ import kotlinx.coroutines.flow.map
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 suspend fun <C, S, E, I> I.handleWithEffect(command: C): Either<Error, S> where I : StateComputation<C, S, E>,
                                                                                 I : StateRepository<C, S> {
     /**
@@ -97,7 +95,6 @@ suspend fun <C, S, E, I> I.handleWithEffect(command: C): Either<Error, S> where 
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 suspend fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(command: C): Either<Error, Pair<S, V>> where I : StateComputation<C, S, E>,
                                                                                                           I : StateLockingRepository<C, S, V> {
     /**
@@ -162,7 +159,6 @@ suspend fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(command: C): Either
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 fun <C, S, E, I> I.handleWithEffect(commands: Flow<C>): Flow<Either<Error, S>> where I : StateComputation<C, S, E>,
                                                                                      I : StateRepository<C, S> =
     commands
@@ -177,7 +173,6 @@ fun <C, S, E, I> I.handleWithEffect(commands: Flow<C>): Flow<Either<Error, S>> w
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(commands: Flow<C>): Flow<Either<Error, Pair<S, V>>> where I : StateComputation<C, S, E>,
                                                                                                                I : StateLockingRepository<C, S, V> =
     commands
@@ -192,7 +187,6 @@ fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(commands: Flow<C>): Flow<Ei
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 suspend fun <C, S, E, A> C.publishWithEffect(aggregate: A): Either<Error, S> where A : StateComputation<C, S, E>,
                                                                                    A : StateRepository<C, S> =
     aggregate.handleWithEffect(this)
@@ -205,7 +199,6 @@ suspend fun <C, S, E, A> C.publishWithEffect(aggregate: A): Either<Error, S> whe
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 suspend fun <C, S, E, V, A> C.publishOptimisticallyWithEffect(aggregate: A): Either<Error, Pair<S, V>> where A : StateComputation<C, S, E>,
                                                                                                              A : StateLockingRepository<C, S, V> =
     aggregate.handleOptimisticallyWithEffect(this)
@@ -218,7 +211,6 @@ suspend fun <C, S, E, V, A> C.publishOptimisticallyWithEffect(aggregate: A): Eit
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 fun <C, S, E, A> Flow<C>.publishWithEffect(aggregate: A): Flow<Either<Error, S>> where A : StateComputation<C, S, E>,
                                                                                        A : StateRepository<C, S> =
     aggregate.handleWithEffect(this)
@@ -231,7 +223,6 @@ fun <C, S, E, A> Flow<C>.publishWithEffect(aggregate: A): Flow<Either<Error, S>>
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 fun <C, S, E, V, A> Flow<C>.publishOptimisticallyWithEffect(aggregate: A): Flow<Either<Error, Pair<S, V>>> where A : StateComputation<C, S, E>,
                                                                                                                  A : StateLockingRepository<C, S, V> =
     aggregate.handleOptimisticallyWithEffect(this)

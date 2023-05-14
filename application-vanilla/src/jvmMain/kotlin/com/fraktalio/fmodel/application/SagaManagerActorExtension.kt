@@ -18,7 +18,6 @@ package com.fraktalio.fmodel.application
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
@@ -46,7 +45,6 @@ import kotlin.math.absoluteValue
  */
 @ObsoleteCoroutinesApi
 @ExperimentalContracts
-@FlowPreview
 fun <AR, A> SagaManager<AR, A>.handleConcurrently(
     actionResults: Flow<AR>,
     numberOfActors: Int = 100,
@@ -85,7 +83,6 @@ fun <AR, A> SagaManager<AR, A>.handleConcurrently(
  */
 @ObsoleteCoroutinesApi
 @ExperimentalContracts
-@FlowPreview
 fun <AR, A> Flow<AR>.publishConcurrentlyTo(
     sagaManager: SagaManager<AR, A>,
     numberOfActors: Int = 100,

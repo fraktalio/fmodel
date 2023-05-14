@@ -10,14 +10,12 @@ import com.fraktalio.fmodel.domain.examples.numbers.even.query.evenNumberView
 import com.fraktalio.fmodel.domain.examples.numbers.odd.query.oddNumberView
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.FlowPreview
 
 private fun <S, E> IView<S, E>.givenEvents(events: Iterable<E>) =
     events.fold(initialState) { s, e -> evolve(s, e) }
 
 private infix fun <S, U : S> S.thenState(expected: U?) = shouldBe(expected)
 
-@FlowPreview
 class ViewTest : FunSpec({
     val evenView = evenNumberView()
     val oddView = oddNumberView()

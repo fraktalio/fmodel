@@ -18,7 +18,6 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -30,7 +29,6 @@ import kotlin.contracts.ExperimentalContracts
  */
 @ObsoleteCoroutinesApi
 @ExperimentalContracts
-@FlowPreview
 private fun <C, S, E> IDecider<C, S, E>.given(
     repository: StateRepository<C, S>,
     partitionKey: (C) -> Int,
@@ -58,7 +56,6 @@ private suspend infix fun <S> Flow<S>.thenState(expected: Collection<S>) = toLis
  */
 @OptIn(ObsoleteCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 @ExperimentalContracts
-@FlowPreview
 class StateStoredAggregateActorTest : FunSpec({
     val evenDecider = evenNumberDecider()
     val oddDecider = oddNumberDecider()
