@@ -25,7 +25,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * DSL - Given
  */
 private suspend fun <S, E> IView<S, E>.given(repository: ViewStateRepository<E, S>, event: () -> E): Either<Error, S> =
-    materializedView(
+    MaterializedView(
         view = this,
         viewStateRepository = repository
     ).handleWithEffect(event())
@@ -34,7 +34,7 @@ private suspend fun <S, E, V> IView<S, E>.given(
     repository: ViewStateLockingRepository<E, S, V>,
     event: () -> E
 ): Either<Error, Pair<S, V>> =
-    materializedLockingView(
+    MaterializedLockingView(
         view = this,
         viewStateRepository = repository
     ).handleOptimisticallyWithEffect(event())
@@ -51,7 +51,7 @@ private fun <S, E> IView<S, E>.whenEvent(event: E): E = event
 private infix fun <S> Either<Error, S>.thenState(expected: S) {
     val state = when (this) {
         is Either.Right -> value
-        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${value}")
+        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value $value")
     }
     state shouldBe expected
 }
@@ -59,7 +59,7 @@ private infix fun <S> Either<Error, S>.thenState(expected: S) {
 private infix fun <S, V> Either<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
     val state = when (this) {
         is Either.Right -> value
-        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${value}")
+        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value $value")
     }
     state shouldBe expected
 }
@@ -67,7 +67,7 @@ private infix fun <S, V> Either<Error, Pair<S, V>>.thenStateAndVersion(expected:
 
 private fun <S> Either<Error, S>.thenError() {
     val error = when (this) {
-        is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value ${value}")
+        is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value $value")
         is Either.Left -> value
     }
     error.shouldBeInstanceOf<Error>()

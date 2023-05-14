@@ -18,6 +18,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 
 /**
@@ -25,7 +26,7 @@ import kotlinx.coroutines.FlowPreview
  */
 @FlowPreview
 private suspend fun <C, S, E> IDecider<C, S, E>.given(repository: StateRepository<C, S>, command: () -> C): S =
-    stateStoredAggregate(
+    StateStoredAggregate(
         decider = this,
         stateRepository = repository
     ).handle(command())
@@ -35,7 +36,7 @@ private suspend fun <C, S, E, V> IDecider<C, S, E>.given(
     repository: StateLockingRepository<C, S, V>,
     command: () -> C
 ): Pair<S, V> =
-    stateStoredLockingAggregate(
+    StateStoredLockingAggregate(
         decider = this,
         stateRepository = repository
     ).handleOptimistically(command())
@@ -55,6 +56,7 @@ private infix fun <S, V> Pair<S, V>.thenStateAndVersion(expected: Pair<S, V>) = 
 /**
  * State-stored aggregate test
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @FlowPreview
 class StateStoredAggregateTest : FunSpec({
     val evenDecider = evenNumberDecider()

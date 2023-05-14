@@ -1,7 +1,12 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.application.examples.numbers.NumberRepository
-import com.fraktalio.fmodel.application.examples.numbers.even.command.*
+import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberLockingRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.command.EvenNumberRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberLockingRepository
+import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberRepository
 import com.fraktalio.fmodel.application.examples.numbers.numberRepository
 import com.fraktalio.fmodel.domain.IDecider
 import com.fraktalio.fmodel.domain.ISaga
@@ -17,6 +22,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
@@ -26,7 +32,7 @@ import kotlinx.coroutines.flow.toList
  */
 @FlowPreview
 private fun <C, S, E> IDecider<C, S, E>.given(repository: EventRepository<C, E>, command: () -> C): Flow<E> =
-    eventSourcingAggregate(
+    EventSourcingAggregate(
         decider = this,
         eventRepository = repository
     ).handle(command())
@@ -36,7 +42,7 @@ private fun <C, S, E, V> IDecider<C, S, E>.given(
     repository: EventLockingRepository<C, E, V>,
     command: () -> C
 ): Flow<Pair<E, V>> =
-    eventSourcingLockingAggregate(
+    EventSourcingLockingAggregate(
         decider = this,
         eventRepository = repository
     ).handleOptimistically(command())
@@ -47,10 +53,10 @@ private fun <C, S, E> IDecider<C, S, E>.given(
     repository: EventRepository<C, E>,
     command: () -> C
 ): Flow<E> =
-    eventSourcingOrchestratingAggregate(
+    EventSourcingOrchestratingAggregate(
         decider = this,
-        saga = saga,
-        eventRepository = repository
+        eventRepository = repository,
+        saga = saga
     ).handle(command())
 
 /**
@@ -70,6 +76,7 @@ private suspend infix fun <E, V> Flow<Pair<E, V>>.thenEventPairs(expected: Itera
 /**
  * Event sourced aggregate test
  */
+@ExperimentalCoroutinesApi
 @FlowPreview
 class EventSourcedAggregateTest : FunSpec({
     val evenDecider = evenNumberDecider()

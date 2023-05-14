@@ -18,7 +18,6 @@ package com.fraktalio.fmodel.application.examples.numbers.odd.query
 
 import com.fraktalio.fmodel.application.MaterializedView
 import com.fraktalio.fmodel.application.ViewStateRepository
-import com.fraktalio.fmodel.application.materializedView
 import com.fraktalio.fmodel.domain.View
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
@@ -33,7 +32,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 fun oddNumberMaterializedView(
     view: View<OddNumberState?, OddNumberEvent?>,
     repository: ViewStateRepository<OddNumberEvent?, OddNumberState?>
-): MaterializedView<OddNumberState?, OddNumberEvent?> = materializedView(
+): MaterializedView<OddNumberState?, OddNumberEvent?> = MaterializedView(
     view = view,
     viewStateRepository = repository
 )

@@ -17,7 +17,7 @@
 package com.fraktalio.fmodel.application.examples.numbers
 
 import com.fraktalio.fmodel.application.StateRepository
-import com.fraktalio.fmodel.application.stateStoredOrchestratingAggregate
+import com.fraktalio.fmodel.application.StateStoredOrchestratingAggregate
 import com.fraktalio.fmodel.domain.Decider
 import com.fraktalio.fmodel.domain.Saga
 import com.fraktalio.fmodel.domain.combine
@@ -28,6 +28,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.OddNumberC
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 
 
@@ -41,7 +42,7 @@ import kotlinx.coroutines.FlowPreview
  * @param repository the state-stored repository for all (even and odd) numbers
  * @return the state-stored aggregate instance for all (even and odd) numbers
  */
-@OptIn(FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 fun numberStateStoredAggregate(
     evenNumberDecider: Decider<EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?>,
     oddNumberDecider: Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?>,
@@ -49,7 +50,7 @@ fun numberStateStoredAggregate(
     oddNumberSaga: Saga<OddNumberEvent?, EvenNumberCommand>,
     repository: StateRepository<NumberCommand?, Pair<EvenNumberState, OddNumberState>>
 ) =
-    stateStoredOrchestratingAggregate(
+    StateStoredOrchestratingAggregate(
         decider = evenNumberDecider.combine(oddNumberDecider),
         stateRepository = repository,
         saga = evenNumberSaga.combine(oddNumberSaga)

@@ -11,6 +11,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.evenNumberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.oddNumberSaga
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.toList
 private fun <AR, A> ISaga<AR, A>.whenActionResult(actionResults: AR) = react(actionResults)
 private suspend infix fun <A> Flow<A>.expectActions(expected: Iterable<A>) = toList() shouldContainExactly (expected)
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @FlowPreview
 class SagaTest : FunSpec({
     val evenSaga = evenNumberSaga()

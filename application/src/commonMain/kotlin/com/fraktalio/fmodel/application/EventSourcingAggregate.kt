@@ -18,6 +18,7 @@ package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.domain.IDecider
 import com.fraktalio.fmodel.domain.ISaga
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 
@@ -38,6 +39,7 @@ interface EventComputation<C, S, E> : IDecider<C, S, E> {
  * Additionally, the computation is using the [ISaga]<[E], [C]> to further orchestrate the process in were Decider could be triggered by a new Command.
  */
 interface EventOrchestratingComputation<C, S, E> : ISaga<E, C>, IDecider<C, S, E> {
+    @ExperimentalCoroutinesApi
     @FlowPreview
     fun Flow<E>.computeNewEventsByOrchestrating(command: C, fetchEvents: (C) -> Flow<E>): Flow<E> = flow {
         val currentState = fold(initialState) { s, e -> evolve(s, e) }

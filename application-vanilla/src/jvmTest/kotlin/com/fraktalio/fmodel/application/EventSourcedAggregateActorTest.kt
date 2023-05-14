@@ -30,7 +30,7 @@ private fun <C, S, E> IDecider<C, S, E>.given(
     partitionKey: (C) -> Int,
     command: () -> Flow<C>
 ): Flow<E> =
-    eventSourcingAggregate(
+    EventSourcingAggregate(
         decider = this,
         eventRepository = repository
     ).handleConcurrently(command()) { partitionKey(it) }

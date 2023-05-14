@@ -1,6 +1,7 @@
 package com.fraktalio.fmodel.domain.internal
 
 import com.fraktalio.fmodel.domain.Decider
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flattenConcat
@@ -133,6 +134,7 @@ internal data class InternalDecider<in C, in Si, out So, in Ei, out Eo>(
  *
  * @return new decider of type [InternalDecider]<[C], [Si], [Son], [Ei], [Eo]>
  */
+@ExperimentalCoroutinesApi
 @FlowPreview
 internal fun <C, Si, So, Ei, Eo, Son> InternalDecider<C, Si, So, Ei, Eo>.applyOnState(
     ff: InternalDecider<C, Si, (So) -> Son, Ei, Eo>
@@ -155,6 +157,7 @@ internal fun <C, Si, So, Ei, Eo, Son> InternalDecider<C, Si, So, Ei, Eo>.applyOn
  *
  * @return new decider of type [InternalDecider]<[C], [Si], [Pair]<[So], [Son]>, [Ei], [Eo]>
  */
+@ExperimentalCoroutinesApi
 @FlowPreview
 @PublishedApi
 internal fun <C, Si, So, Ei, Eo, Son> InternalDecider<C, Si, So, Ei, Eo>.productOnState(
@@ -188,6 +191,7 @@ internal fun <C, Si, So, Ei, Eo, Son> InternalDecider<C, Si, So, Ei, Eo>.product
  * @return [InternalDecider]<[C_SUPER], [Pair]<[Si], [Si2]>, [Pair]<[So], [So2]>, [Ei_SUPER], [Eo_SUPER]>
  */
 
+@ExperimentalCoroutinesApi
 @PublishedApi
 @FlowPreview
 internal inline infix fun <reified C : C_SUPER, Si, So, reified Ei : Ei_SUPER, Eo : Eo_SUPER, reified C2 : C_SUPER, Si2, So2, reified Ei2 : Ei_SUPER, Eo2 : Eo_SUPER, C_SUPER, Ei_SUPER, Eo_SUPER> InternalDecider<C?, Si, So, Ei?, Eo?>.combine(

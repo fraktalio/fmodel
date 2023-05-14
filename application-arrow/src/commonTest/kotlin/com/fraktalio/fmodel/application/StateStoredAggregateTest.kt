@@ -19,6 +19,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 
 /**
@@ -29,7 +30,7 @@ private suspend fun <C, S, E> IDecider<C, S, E>.given(
     repository: StateRepository<C, S>,
     command: () -> C
 ): Either<Error, S> =
-    stateStoredAggregate(
+    StateStoredAggregate(
         decider = this,
         stateRepository = repository
     ).handleWithEffect(command())
@@ -39,7 +40,7 @@ private suspend fun <C, S, E, V> IDecider<C, S, E>.given(
     repository: StateLockingRepository<C, S, V>,
     command: () -> C
 ): Either<Error, Pair<S, V>> =
-    stateStoredLockingAggregate(
+    StateStoredLockingAggregate(
         decider = this,
         stateRepository = repository
     ).handleOptimisticallyWithEffect(command())
@@ -56,7 +57,7 @@ private fun <C, S, E> IDecider<C, S, E>.whenCommand(command: C): C = command
 private infix fun <S> Either<Error, S>.thenState(expected: S) {
     val state = when (this) {
         is Either.Right -> value
-        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${value}")
+        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value $value")
     }
     state shouldBe expected
 }
@@ -64,15 +65,15 @@ private infix fun <S> Either<Error, S>.thenState(expected: S) {
 private infix fun <S, V> Either<Error, Pair<S, V>>.thenStateAndVersion(expected: Pair<S, V>) {
     val state = when (this) {
         is Either.Right -> value
-        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value ${value}")
+        is Either.Left -> throw AssertionError("Expected Either.Right, but found Either.Left with value $value")
     }
     state shouldBe expected
 }
 
 
-private suspend fun <S> Either<Error, S>.thenError() {
+private fun <S> Either<Error, S>.thenError() {
     val error = when (this) {
-        is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value ${value}")
+        is Either.Right -> throw AssertionError("Expected Either.Left, but found Either.Right with value $value")
         is Either.Left -> value
     }
     error.shouldBeInstanceOf<Error>()
@@ -81,6 +82,7 @@ private suspend fun <S> Either<Error, S>.thenError() {
 /**
  * State-stored aggregate test
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @FlowPreview
 class StateStoredAggregateTest : FunSpec({
     val evenDecider = evenNumberDecider()
