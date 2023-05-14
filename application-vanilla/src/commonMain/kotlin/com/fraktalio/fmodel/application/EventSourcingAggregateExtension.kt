@@ -86,22 +86,22 @@ fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOp
         .save(latestVersionProvider)
 
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@ExperimentalCoroutinesApi
 @FlowPreview
 fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E> =
     commands.flatMapConcat { handle(it) }
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@ExperimentalCoroutinesApi
 @FlowPreview
 fun <C, S, E> EventSourcingOrchestratingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E> =
     commands.flatMapConcat { handle(it) }
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@ExperimentalCoroutinesApi
 @FlowPreview
 fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimistically(commands: Flow<C>): Flow<Pair<E, V>> =
     commands.flatMapConcat { handleOptimistically(it) }
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@ExperimentalCoroutinesApi
 @FlowPreview
 fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOptimistically(commands: Flow<C>): Flow<Pair<E, V>> =
     commands.flatMapConcat { handleOptimistically(it) }
@@ -126,18 +126,22 @@ fun <C, E, V> C.publishOptimisticallyTo(aggregate: EventSourcingLockingOrchestra
     aggregate.handleOptimistically(this)
 
 
+@ExperimentalCoroutinesApi
 @FlowPreview
 fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> =
     aggregate.handle(this)
 
+@ExperimentalCoroutinesApi
 @FlowPreview
 fun <C, E, V> Flow<C>.publishOptimisticallyTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)
 
+@ExperimentalCoroutinesApi
 @FlowPreview
 fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingOrchestratingAggregate<C, *, E>): Flow<E> =
     aggregate.handle(this)
 
+@ExperimentalCoroutinesApi
 @FlowPreview
 fun <C, E, V> Flow<C>.publishOptimisticallyTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)

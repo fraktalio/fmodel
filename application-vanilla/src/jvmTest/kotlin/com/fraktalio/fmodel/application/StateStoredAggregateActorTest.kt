@@ -17,6 +17,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -55,7 +56,7 @@ private suspend infix fun <S> Flow<S>.thenState(expected: Collection<S>) = toLis
 /**
  * State-stored aggregate actor test
  */
-@OptIn(ObsoleteCoroutinesApi::class)
+@OptIn(ObsoleteCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 @ExperimentalContracts
 @FlowPreview
 class StateStoredAggregateActorTest : FunSpec({
