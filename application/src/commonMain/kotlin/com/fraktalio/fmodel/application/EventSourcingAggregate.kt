@@ -19,14 +19,12 @@ package com.fraktalio.fmodel.application
 import com.fraktalio.fmodel.domain.IDecider
 import com.fraktalio.fmodel.domain.ISaga
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 
 /**
  * `EventComputation` interface formalizes the `Event Computation` algorithm / event sourced system by using a `decider` of type [IDecider]<[C], [S], [E]> to handle commands based on the current events, and produce new events.
  */
 interface EventComputation<C, S, E> : IDecider<C, S, E> {
-    @FlowPreview
     fun Flow<E>.computeNewEvents(command: C): Flow<E> = flow {
         val currentState = fold(initialState) { s, e -> evolve(s, e) }
         val resultingEvents = decide(command, currentState)
@@ -40,7 +38,6 @@ interface EventComputation<C, S, E> : IDecider<C, S, E> {
  */
 interface EventOrchestratingComputation<C, S, E> : ISaga<E, C>, IDecider<C, S, E> {
     @ExperimentalCoroutinesApi
-    @FlowPreview
     fun Flow<E>.computeNewEventsByOrchestrating(command: C, fetchEvents: (C) -> Flow<E>): Flow<E> = flow {
         val currentState = fold(initialState) { s, e -> evolve(s, e) }
         var resultingEvents = decide(command, currentState)

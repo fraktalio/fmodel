@@ -29,7 +29,6 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberEvent.OddNumberEvent
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 
 
 /**
@@ -42,7 +41,7 @@ import kotlinx.coroutines.FlowPreview
  * @param repository the state-stored repository for all (even and odd) numbers
  * @return the state-stored aggregate instance for all (even and odd) numbers
  */
-@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 fun numberStateStoredAggregate(
     evenNumberDecider: Decider<EvenNumberCommand?, EvenNumberState, NumberEvent.EvenNumberEvent?>,
     oddNumberDecider: Decider<OddNumberCommand?, OddNumberState, OddNumberEvent?>,

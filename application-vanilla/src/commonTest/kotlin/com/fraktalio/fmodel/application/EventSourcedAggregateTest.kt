@@ -23,21 +23,18 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 
 /**
  * DSL - Given
  */
-@FlowPreview
 private fun <C, S, E> IDecider<C, S, E>.given(repository: EventRepository<C, E>, command: () -> C): Flow<E> =
     EventSourcingAggregate(
         decider = this,
         eventRepository = repository
     ).handle(command())
 
-@FlowPreview
 private fun <C, S, E, V> IDecider<C, S, E>.given(
     repository: EventLockingRepository<C, E, V>,
     command: () -> C
@@ -47,7 +44,6 @@ private fun <C, S, E, V> IDecider<C, S, E>.given(
         eventRepository = repository
     ).handleOptimistically(command())
 
-@FlowPreview
 private fun <C, S, E> IDecider<C, S, E>.given(
     saga: ISaga<E, C>,
     repository: EventRepository<C, E>,
@@ -77,7 +73,6 @@ private suspend infix fun <E, V> Flow<Pair<E, V>>.thenEventPairs(expected: Itera
  * Event sourced aggregate test
  */
 @ExperimentalCoroutinesApi
-@FlowPreview
 class EventSourcedAggregateTest : FunSpec({
     val evenDecider = evenNumberDecider()
     val oddDecider = oddNumberDecider()

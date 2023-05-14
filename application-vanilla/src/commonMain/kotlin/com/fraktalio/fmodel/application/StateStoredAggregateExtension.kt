@@ -16,7 +16,6 @@
 
 package com.fraktalio.fmodel.application
 
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -28,7 +27,6 @@ import kotlinx.coroutines.flow.map
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 suspend fun <C, S, E, I> I.handle(command: C): S where I : StateComputation<C, S, E>,
                                                        I : StateRepository<C, S> =
     command.fetchState().computeNewState(command).save()
@@ -41,7 +39,6 @@ suspend fun <C, S, E, I> I.handle(command: C): S where I : StateComputation<C, S
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 suspend fun <C, S, E, V, I> I.handleOptimistically(command: C): Pair<S, V> where I : StateComputation<C, S, E>,
                                                                                  I : StateLockingRepository<C, S, V> {
     val (state, version) = command.fetchState()
@@ -58,7 +55,6 @@ suspend fun <C, S, E, V, I> I.handleOptimistically(command: C): Pair<S, V> where
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 fun <C, S, E, I> I.handle(commands: Flow<C>): Flow<S> where I : StateComputation<C, S, E>,
                                                             I : StateRepository<C, S> =
     commands.map { handle(it) }
@@ -71,7 +67,6 @@ fun <C, S, E, I> I.handle(commands: Flow<C>): Flow<S> where I : StateComputation
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 fun <C, S, E, V, I> I.handleOptimistically(commands: Flow<C>): Flow<Pair<S, V>> where I : StateComputation<C, S, E>,
                                                                                       I : StateLockingRepository<C, S, V> =
     commands.map { handleOptimistically(it) }
@@ -85,7 +80,6 @@ fun <C, S, E, V, I> I.handleOptimistically(commands: Flow<C>): Flow<Pair<S, V>> 
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 suspend fun <C, S, E, A> C.publishTo(aggregate: A): S where A : StateComputation<C, S, E>,
                                                             A : StateRepository<C, S> =
     aggregate.handle(this)
@@ -98,7 +92,6 @@ suspend fun <C, S, E, A> C.publishTo(aggregate: A): S where A : StateComputation
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 suspend fun <C, S, E, V, A> C.publishOptimisticallyTo(aggregate: A): Pair<S, V> where A : StateComputation<C, S, E>,
                                                                                       A : StateLockingRepository<C, S, V> =
     aggregate.handleOptimistically(this)
@@ -111,7 +104,6 @@ suspend fun <C, S, E, V, A> C.publishOptimisticallyTo(aggregate: A): Pair<S, V> 
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 fun <C, S, E, A> Flow<C>.publishTo(aggregate: A): Flow<S> where A : StateComputation<C, S, E>,
                                                                 A : StateRepository<C, S> =
     aggregate.handle(this)
@@ -124,7 +116,6 @@ fun <C, S, E, A> Flow<C>.publishTo(aggregate: A): Flow<S> where A : StateComputa
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-@FlowPreview
 fun <C, S, E, V, A> Flow<C>.publishOptimisticallyTo(aggregate: A): Flow<Pair<S, V>> where A : StateComputation<C, S, E>,
                                                                                           A : StateLockingRepository<C, S, V> =
     aggregate.handleOptimistically(this)

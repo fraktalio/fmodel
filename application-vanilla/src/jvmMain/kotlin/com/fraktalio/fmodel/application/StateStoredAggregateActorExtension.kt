@@ -18,7 +18,6 @@ package com.fraktalio.fmodel.application
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
@@ -46,7 +45,6 @@ import kotlin.math.absoluteValue
  */
 @ObsoleteCoroutinesApi
 @ExperimentalContracts
-@FlowPreview
 fun <C, S, E> StateStoredAggregate<C, S, E>.handleConcurrently(
     commands: Flow<C>,
     numberOfActors: Int = 100,
@@ -85,7 +83,6 @@ fun <C, S, E> StateStoredAggregate<C, S, E>.handleConcurrently(
  */
 @ObsoleteCoroutinesApi
 @ExperimentalContracts
-@FlowPreview
 fun <C, S> Flow<C>.publishConcurrentlyTo(
     aggregate: StateStoredAggregate<C, S, *>,
     numberOfActors: Int = 100,

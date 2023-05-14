@@ -12,7 +12,6 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -24,7 +23,6 @@ import kotlin.contracts.ExperimentalContracts
  */
 @ObsoleteCoroutinesApi
 @ExperimentalContracts
-@FlowPreview
 private fun <C, S, E> IDecider<C, S, E>.given(
     repository: EventRepository<C, E>,
     partitionKey: (C) -> Int,
@@ -54,7 +52,6 @@ private suspend infix fun <E> Flow<E>.thenEvents(expected: Collection<E>) = toLi
  */
 @OptIn(ObsoleteCoroutinesApi::class)
 @ExperimentalContracts
-@FlowPreview
 class EventSourcedAggregateActorTest : FunSpec({
     val evenDecider = evenNumberDecider()
     val evenNumberRepository = evenNumberRepository() as EvenNumberRepository

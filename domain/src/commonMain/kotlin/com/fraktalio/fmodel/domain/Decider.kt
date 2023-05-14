@@ -20,7 +20,6 @@ import com.fraktalio.fmodel.domain.internal.InternalDecider
 import com.fraktalio.fmodel.domain.internal.asDecider
 import com.fraktalio.fmodel.domain.internal.combine
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
@@ -141,7 +140,6 @@ data class Decider<in C, S, E>(
  * @return [Decider]<[C_SUPER], [Pair]<[S], [S2]>, [E_SUPER]>
  */
 @ExperimentalCoroutinesApi
-@FlowPreview
 inline infix fun <reified C : C_SUPER, S, reified E : E_SUPER, reified C2 : C_SUPER, S2, reified E2 : E_SUPER, C_SUPER, E_SUPER> Decider<C?, S, E?>.combine(
     y: Decider<C2?, S2, E2?>
 ): Decider<C_SUPER?, Pair<S, S2>, E_SUPER?> =

@@ -17,7 +17,6 @@ import com.fraktalio.fmodel.domain.examples.numbers.odd.query.oddNumberView
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -28,7 +27,6 @@ import kotlin.contracts.ExperimentalContracts
  * DSL - Given
  */
 @ObsoleteCoroutinesApi
-@FlowPreview
 @ExperimentalContracts
 private fun <S, E> IView<S, E>.given(
     repository: ViewStateRepository<E, S>,
@@ -56,7 +54,6 @@ private suspend infix fun <S> Flow<S>.thenState(expected: Collection<S>) = toLis
  * Materialized View Actor Test
  */
 @OptIn(ObsoleteCoroutinesApi::class)
-@FlowPreview
 @ExperimentalContracts
 class MaterializedViewActorTest : FunSpec({
     val evenView = evenNumberView()
