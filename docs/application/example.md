@@ -16,8 +16,13 @@ The domain model is explicitly modeling `events` and `state`, and this is enabli
 
 The source code snippets in this reference guide are taken from these applications.
 
+## Spring
+
 - `event-sourced`: [https://github.com/fraktalio/fmodel-spring-demo](https://github.com/fraktalio/fmodel-spring-demo) / #EventSourcing, #SpringBoot, #Reactor, #RSocket, #R2DBC, #SQL, #Testcontainers
 - `state-stored`: [https://github.com/fraktalio/fmodel-spring-state-stored-demo](https://github.com/fraktalio/fmodel-spring-state-stored-demo) / #SpringBoot, #Reactor, #RSocket, #R2DBC, #SQL, #Testcontainers
 
+## Ktor
+- `event-sourced`: [https://github.com/fraktalio/fmodel-ktor-demo](https://github.com/fraktalio/fmodel-ktor-demo) / #EventSourcing, #Ktor, #R2DBC, #SQL
+- `state-stored`: TODO
 
 more to come...
