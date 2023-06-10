@@ -45,6 +45,27 @@ interface EventRepository<C, E> {
     fun Flow<E>.save(): Flow<E>
 }
 
+interface EventSnapshottingRepository<C, S, E> : EventRepository<C, E> {
+    /**
+     * Fetch events by/after the latest snapshot
+     *
+     * @receiver Command of type [C]
+     * @param latestSnapshotState Latest snapshot of type [S]
+     *
+     * @return [Flow] of Events of type [E]
+     */
+    fun C.fetchEvents(latestSnapshotState: S?): Flow<E>
+
+    /**
+     * Checks if saving of snapshot is needed
+     *
+     * @receiver State of type [S]
+     * @param latestSnapshotState Latest snapshot of type [S]
+     * @return newly saved State of type [S]
+     */
+    fun S.shouldCreateNewSnapshot(latestSnapshotState: S?): Boolean
+}
+
 /**
  * A type alias for the version provider/function.
  * It provides the Version of the last Event in the stream.
@@ -98,4 +119,27 @@ interface EventLockingRepository<C, E, V> {
      * @return newly saved [Flow] of Events of type [Pair]<[E], [V]>
      */
     fun Flow<E>.save(latestVersion: V?): Flow<Pair<E, V>>
+}
+
+interface EventSnapshottingLockingRepository<C, S, E, V> : EventLockingRepository<C, E, V> {
+    /**
+     * Fetch events by/after the latest snapshot
+     *
+     * @receiver Command of type [C]
+     * @param latestSnapshotState Latest snapshot of type [V]
+     *
+     * @return [Flow] of Events of type [Pair]<[E], [V]>
+     */
+    fun C.fetchEvents(latestSnapshotState: Pair<S?, V?>): Flow<Pair<E, V>>
+
+    /**
+     * Checks if saving of snapshot is needed
+     *
+     * @receiver State of type [S]
+     * @param latestSnapshotState Latest snapshot of type [S]
+     * @param latestSnapshotVersion Latest snapshot version of type [V]
+     * @param newSnapshotVersion New snapshot version of type [V]
+     * @return newly saved State of type [S]
+     */
+    fun S.shouldCreateNewSnapshot(latestSnapshotState: S?, latestSnapshotVersion: V?, newSnapshotVersion: V?): Boolean
 }
