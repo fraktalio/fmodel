@@ -74,22 +74,6 @@ interface EventOrchestratingComputation<C, S, E> : ISaga<E, C>, IDecider<C, S, E
 interface EventSourcingAggregate<C, S, E> : EventComputation<C, S, E>, EventRepository<C, E>
 
 /**
- * Event sourcing snapshotting aggregate is using/delegating a `decider` of type [IDecider]<[C], [S], [E]>/ [EventComputation]<[C], [S], [E]> to handle commands and produce events.
- * In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via [EventSnapshottingRepository.fetchEvents] function, and then delegate the command to the `decider` which can produce new event(s) as a result.
- * Produced events are then stored via [EventSnapshottingRepository.save] suspending function.
- *
- * [EventSourcingAggregate] extends [EventComputation] and [EventSnapshottingRepository] interfaces,
- * clearly communicating that it is composed out of these two behaviours.
- *
- * @param C Commands of type [C] that this aggregate can handle
- * @param S Aggregate state of type [S]
- * @param E Events of type [E] that this aggregate can publish
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-interface EventSourcingSnapshottingAggregate<C, S, E> : EventComputation<C, S, E>, EventSnapshottingRepository<C, S, E>
-
-/**
  * Locking Event sourcing aggregate is using/delegating a `decider` of type [IDecider]<[C], [S], [E]>/ [EventComputation]<[C], [S], [E]> to handle commands and produce events.
  * In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via [EventLockingRepository.fetchEvents] function, and then delegate the command to the `decider` which can produce new event(s) as a result.
  * Produced events are then stored via [EventLockingRepository.save] suspending function.
@@ -110,29 +94,6 @@ interface EventSourcingSnapshottingAggregate<C, S, E> : EventComputation<C, S, E
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 interface EventSourcingLockingAggregate<C, S, E, V> : EventComputation<C, S, E>, EventLockingRepository<C, E, V>
-
-/**
- * Locking Event sourcing aggregate is using/delegating a `decider` of type [IDecider]<[C], [S], [E]>/ [EventComputation]<[C], [S], [E]> to handle commands and produce events.
- * In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via [EventSnapshottingLockingRepository.fetchEvents] function, and then delegate the command to the `decider` which can produce new event(s) as a result.
- * Produced events are then stored via [EventSnapshottingLockingRepository.save] suspending function.
- *
- * Locking Event sourcing aggregate enables `optimistic locking` mechanism more explicitly.
- * If you fetch events from a storage, the application records the `version` number of that event stream.
- * You can append new events, but only if the `version` number in the storage has not changed.
- * If there is a `version` mismatch, it means that someone else has added the event(s) before you did.
- *
- * [EventSourcingLockingAggregate] extends [EventComputation] and [EventSnapshottingLockingRepository] interfaces,
- * clearly communicating that it is composed out of these two behaviours.
- *
- * @param C Commands of type [C] that this aggregate can handle
- * @param S Aggregate state of type [S]
- * @param E Events of type [E] that this aggregate can publish
- * @param V Version
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-interface EventSourcingSnapshottingLockingAggregate<C, S, E, V> : EventComputation<C, S, E>,
-    EventSnapshottingLockingRepository<C, S, E, V>
 
 /**
  * Orchestrating Event sourcing aggregate is using/delegating a `decider` of type [IDecider]<[C], [S], [E]> to handle commands and produce events.
@@ -227,28 +188,6 @@ fun <C, S, E> EventSourcingAggregate(
         IDecider<C, S, E> by decider {}
 
 /**
- * Event Sourced Snapshotting aggregate constructor-like function.
- *
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- *
- * @param C Commands of type [C] that this aggregate can handle
- * @param S Aggregate state of type [S]
- * @param E Events of type [E] that are used internally to build/fold new state
- * @param decider A decider component of type [IDecider]<[C], [S], [E]>
- * @param eventRepository An aggregate event repository of type [EventSnapshottingRepository]<[C], [S], [E]>
- * @return An object/instance of type [EventSourcingSnapshottingAggregate]<[C], [S], [E]>
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <C, S, E> EventSourcingSnapshottingAggregate(
-    decider: IDecider<C, S, E>,
-    eventRepository: EventSnapshottingRepository<C, S, E>
-): EventSourcingAggregate<C, S, E> =
-    object : EventSourcingAggregate<C, S, E>,
-        EventSnapshottingRepository<C, S, E> by eventRepository,
-        IDecider<C, S, E> by decider {}
-
-/**
  * Event Sourced Locking aggregate factory function.
  *
  * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
@@ -269,10 +208,12 @@ fun <C, S, E> EventSourcingSnapshottingAggregate(
 )
 fun <C, S, E, V> eventSourcingLockingAggregate(
     decider: IDecider<C, S, E>,
-    eventRepository: EventLockingRepository<C, E, V>
+    eventRepository: EventLockingRepository<C, E, V>,
+    stateRepository: StateRepository<C, S>
 ): EventSourcingLockingAggregate<C, S, E, V> =
     object : EventSourcingLockingAggregate<C, S, E, V>,
         EventLockingRepository<C, E, V> by eventRepository,
+        StateRepository<C, S> by stateRepository,
         IDecider<C, S, E> by decider {}
 
 /**
@@ -296,29 +237,6 @@ fun <C, S, E, V> EventSourcingLockingAggregate(
 ): EventSourcingLockingAggregate<C, S, E, V> =
     object : EventSourcingLockingAggregate<C, S, E, V>,
         EventLockingRepository<C, E, V> by eventRepository,
-        IDecider<C, S, E> by decider {}
-
-/**
- * Event Sourced Snapshotting and Locking aggregate constructor-like function.
- *
- * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
- *
- * @param C Commands of type [C] that this aggregate can handle
- * @param S Aggregate state of type [S]
- * @param E Events of type [E] that are used internally to build/fold new state
- * @param V Version
- * @param decider A decider component of type [IDecider]<[C], [S], [E]>
- * @param eventRepository An aggregate event repository of type [EventSnapshottingLockingRepository]<[C], [S], [E], [V]>
- * @return An object/instance of type [EventSourcingSnapshottingLockingAggregate]<[C], [S], [E], [V]>
- *
- * @author Иван Дугалић / Ivan Dugalic / @idugalic
- */
-fun <C, S, E, V> EventSourcingSnapshottingLockingAggregate(
-    decider: IDecider<C, S, E>,
-    eventRepository: EventSnapshottingLockingRepository<C, S, E, V>
-): EventSourcingSnapshottingLockingAggregate<C, S, E, V> =
-    object : EventSourcingSnapshottingLockingAggregate<C, S, E, V>,
-        EventSnapshottingLockingRepository<C, S, E, V> by eventRepository,
         IDecider<C, S, E> by decider {}
 
 /**

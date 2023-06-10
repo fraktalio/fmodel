@@ -51,7 +51,7 @@ fun <C, S, E, I> I.handle(command: C): Flow<E> where I : StateComputation<C, S, 
     }
 
 /**
- * Extension function - Handles the command message of type [C] to the locking state stored aggregate, optimistically
+ * Extension function - Handles the command message of type [C] to the snapshotting, locking event sourced aggregate, optimistically
  *
  * @param command Command message of type [C]
  * @return State of type [Pair]<[S], [V]>, in which [V] is the type of the Version (optimistic locking)
