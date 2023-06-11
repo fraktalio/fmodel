@@ -17,6 +17,7 @@
 package com.fraktalio.fmodel.application
 
 import com.fraktalio.fmodel.domain.IDecider
+import com.fraktalio.fmodel.domain.ISaga
 
 
 /**
@@ -70,6 +71,59 @@ interface EventSourcingSnapshottingLockingAggregate<C, S, E, V> :
     StateLockingRepository<C, S, V>
 
 /**
+ * Event sourced, snapshotting, orchestrating aggregate is using/delegating a `decider` of type [IDecider]<[C], [S], [E]> / [EventOrchestratingComputation]<[C], [S], [E]> to handle commands and produce events.
+ * In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via [EventSnapshottingRepository.fetchEvents] function, and then delegate the command to the `decider` which can produce new event(s) as a result.
+ * If the `decider` is combined out of many deciders via `combine` function, an optional `saga` of type [ISaga] could be used to react on new events and send new commands to the 'decider` recursively, in single transaction.
+ * This behaviour is formalized in [EventOrchestratingComputation].
+ * Produced events are then stored via [EventSnapshottingRepository.save] suspending function.
+ *
+ * Additionally, Event sourcing aggregate enables `snapshotting` mechanism by using [StateOrchestratingComputation] and [StateRepository] interfaces to store and fetch the current state of the aggregate from time to time, removing the need to always fetch the full list of events.
+ *
+ * [EventSourcingSnapshottingOrchestratingAggregate] extends [EventOrchestratingComputation], [StateOrchestratingComputation], [StateRepository] and [EventSnapshottingRepository] interfaces,
+ * clearly communicating that it is composed out of these behaviours.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that this aggregate can publish
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface EventSourcingSnapshottingOrchestratingAggregate<C, S, E> :
+    EventOrchestratingComputation<C, S, E>,
+    StateOrchestratingComputation<C, S, E>,
+    EventSnapshottingRepository<C, S, E>,
+    StateRepository<C, S>
+
+/**
+ * Event sourced, snapshotting, orchestrating and locking aggregate is using/delegating a `decider` of type [IDecider]<[C], [S], [E]> / [EventOrchestratingComputation]<[C], [S], [E]> to handle commands and produce events.
+ * In order to handle the command, aggregate needs to fetch the current state (represented as a list of events) via [EventSnapshottingLockingRepository.fetchEvents] function, and then delegate the command to the `decider` which can produce new event(s) as a result.
+ * If the `decider` is combined out of many deciders via `combine` function, an optional `saga` of type [ISaga]/[EventOrchestratingComputation] could be used to react on new events and send new commands to the 'decider` recursively, in single transaction.
+ * This behaviour is formalized in [EventOrchestratingComputation].
+ * Produced events are then stored via [EventSnapshottingLockingRepository.save] suspending function.
+ *
+ * Locking Orchestrating Event sourcing aggregate enables `optimistic locking` mechanism more explicitly.
+ * If you fetch events from a storage, the application records the `version` number of that event stream.
+ * You can append new events, but only if the `version` number in the storage has not changed.
+ * If there is a `version` mismatch, it means that someone else has added the event(s) before you did.
+ *
+ * [EventSourcingSnapshottingLockingOrchestratingAggregate] extends [EventOrchestratingComputation], [StateOrchestratingComputation], [StateLockingRepository] and [EventLockingRepository] interfaces,
+ * clearly communicating that it is composed out of these behaviours.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that this aggregate can publish
+ * @param V Version
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+interface EventSourcingSnapshottingLockingOrchestratingAggregate<C, S, E, V> :
+    EventOrchestratingComputation<C, S, E>,
+    StateOrchestratingComputation<C, S, E>,
+    EventSnapshottingLockingRepository<C, S, E, V>,
+    StateLockingRepository<C, S, V>
+
+
+/**
  * Event Sourced Snapshotting aggregate constructor-like function.
  *
  * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
@@ -118,3 +172,58 @@ fun <C, S, E, V> EventSourcingSnapshottingLockingAggregate(
         EventSnapshottingLockingRepository<C, S, E, V> by eventRepository,
         StateLockingRepository<C, S, V> by stateRepository,
         IDecider<C, S, E> by decider {}
+
+/**
+ * Event Sourced Snapshotting Orchestrating aggregate constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param saga A saga component of type [ISaga]<[E], [C]>
+ * @param eventRepository An aggregate event repository of type [EventSnapshottingRepository]<[C], [S], [E]>
+ * @return An object/instance of type [EventSourcingSnapshottingOrchestratingAggregate]<[C], [S], [E]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E> EventSourcingSnapshottingOrchestratingAggregate(
+    decider: IDecider<C, S, E>,
+    eventRepository: EventSnapshottingRepository<C, S, E>,
+    stateRepository: StateRepository<C, S>,
+    saga: ISaga<E, C>
+): EventSourcingSnapshottingOrchestratingAggregate<C, S, E> =
+    object : EventSourcingSnapshottingOrchestratingAggregate<C, S, E>,
+        EventSnapshottingRepository<C, S, E> by eventRepository,
+        StateRepository<C, S> by stateRepository,
+        IDecider<C, S, E> by decider,
+        ISaga<E, C> by saga {}
+
+/**
+ * Event Sourced Snapshotting Locking Orchestrating aggregate constructor-like function.
+ *
+ * The Delegation pattern has proven to be a good alternative to implementation inheritance, and Kotlin supports it natively requiring zero boilerplate code.
+ *
+ * @param C Commands of type [C] that this aggregate can handle
+ * @param S Aggregate state of type [S]
+ * @param E Events of type [E] that are used internally to build/fold new state
+ * @param V Version
+ * @param decider A decider component of type [IDecider]<[C], [S], [E]>
+ * @param saga A saga component of type [ISaga]<[E], [C]>
+ * @param eventRepository An aggregate event repository of type [EventSnapshottingLockingRepository]<[C], [S], [E], [V]>
+ * @return An object/instance of type [EventSourcingSnapshottingLockingOrchestratingAggregate]<[C], [S], [E], [V]>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <C, S, E, V> EventSourcingSnapshottingLockingOrchestratingAggregate(
+    decider: IDecider<C, S, E>,
+    eventRepository: EventSnapshottingLockingRepository<C, S, E, V>,
+    stateRepository: StateLockingRepository<C, S, V>,
+    saga: ISaga<E, C>
+): EventSourcingSnapshottingLockingOrchestratingAggregate<C, S, E, V> =
+    object : EventSourcingSnapshottingLockingOrchestratingAggregate<C, S, E, V>,
+        EventSnapshottingLockingRepository<C, S, E, V> by eventRepository,
+        StateLockingRepository<C, S, V> by stateRepository,
+        IDecider<C, S, E> by decider,
+        ISaga<E, C> by saga {}

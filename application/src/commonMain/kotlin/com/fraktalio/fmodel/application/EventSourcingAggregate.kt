@@ -40,21 +40,26 @@ interface EventComputation<C, S, E> : IDecider<C, S, E> {
  */
 interface EventOrchestratingComputation<C, S, E> : ISaga<E, C>, IDecider<C, S, E> {
     @ExperimentalCoroutinesApi
-    fun Flow<E>.computeNewEventsByOrchestrating(command: C, fetchEvents: (C) -> Flow<E>): Flow<E> = flow {
-        val currentState = fold(initialState) { s, e -> evolve(s, e) }
-        var resultingEvents = decide(command, currentState)
+    fun Flow<E>.computeNewEventsByOrchestrating(command: C, fetchEvents: (C) -> Flow<E>): Flow<E> =
+        computeNewEventsByOrchestrating(command, initialState, fetchEvents)
 
-        resultingEvents
-            .flatMapConcat { react(it) }
-            .onEach { c ->
-                val newEvents = flowOf(fetchEvents(c), resultingEvents)
-                    .flattenConcat()
-                    .computeNewEventsByOrchestrating(c, fetchEvents)
-                resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
-            }.collect()
+    @ExperimentalCoroutinesApi
+    fun Flow<E>.computeNewEventsByOrchestrating(command: C, latestSnapshot: S?, fetchEvents: (C) -> Flow<E>): Flow<E> =
+        flow {
+            val currentState = fold(latestSnapshot ?: initialState) { s, e -> evolve(s, e) }
+            var resultingEvents = decide(command, currentState)
 
-        emitAll(resultingEvents)
-    }
+            resultingEvents
+                .flatMapConcat { react(it) }
+                .onEach { c ->
+                    val newEvents = flowOf(fetchEvents(c), resultingEvents)
+                        .flattenConcat()
+                        .computeNewEventsByOrchestrating(c, latestSnapshot, fetchEvents)
+                    resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
+                }.collect()
+
+            emitAll(resultingEvents)
+        }
 }
 
 /**
