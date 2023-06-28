@@ -52,7 +52,7 @@ It means that order can be marked as prepared only if it was previously created/
 Functions/lambda offers the algebra of manipulating the data (commands, events, state) in a compositional manner,
 effectively modeling the behavior.
 This leads to modularity in design and a clear separation of the entity’s structure and functions/behaviour of the
-entity. **It makes it is easy to test!**
+entity. **It makes it easy to test!**
 
 You can create a small DSL in Kotlin to write and run specifications in `Given-When-Then` structure (testable
 specification):
