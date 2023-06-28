@@ -90,6 +90,11 @@ const config = {
                         position: 'right',
                     },
                     {
+                        href: 'https://fraktalio.com/blog/playground',
+                        label: 'Playground',
+                        position: 'right',
+                    },
+                    {
                         href: 'https://github.com/fraktalio/fmodel',
                         label: 'GitHub',
                         position: 'right',
