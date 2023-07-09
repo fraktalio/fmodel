@@ -25,7 +25,6 @@ import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.onCompletion
-import kotlin.contracts.ExperimentalContracts
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.absoluteValue
@@ -45,15 +44,14 @@ import kotlin.math.absoluteValue
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ObsoleteCoroutinesApi
-@ExperimentalContracts
-fun <S, E> MaterializedView<S, E>.handleConcurrently(
+fun <S, E, I> I.handleConcurrently(
     events: Flow<E>,
     numberOfActors: Int = 100,
     actorsCapacity: Int = Channel.BUFFERED,
     actorsStart: CoroutineStart = CoroutineStart.LAZY,
     actorsContext: CoroutineContext = EmptyCoroutineContext,
     partitionKey: (E) -> Int
-): Flow<S> = channelFlow {
+): Flow<S> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> = channelFlow {
     val actors: List<SendChannel<E>> = (1..numberOfActors).map {
         eventActor(channel, actorsCapacity, actorsStart, actorsContext) { handle(it) }
     }
@@ -70,6 +68,44 @@ fun <S, E> MaterializedView<S, E>.handleConcurrently(
 }
 
 /**
+ * Extension function - Handles the flow of events of type [E] by concurrently distributing the load across finite number of actors/handlers
+ *
+ * @param events Flow of Events of type [E] to be handled
+ * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
+ * @param actorsCapacity capacity of the actors channel's buffer
+ * @param actorsStart actors coroutine start option
+ * @param actorsContext additional to [CoroutineScope.coroutineContext] context of the actor coroutines.
+ * @param partitionKey a function that calculates the partition key/routing key of event - events with the same partition key will be handled with the same 'actor' to keep the ordering
+ * @return [Flow] of State of type `Pair<S, V>`
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@ObsoleteCoroutinesApi
+fun <S, E, V, I> I.handleConcurrentlyAndOptimistically(
+    events: Flow<E>,
+    numberOfActors: Int = 100,
+    actorsCapacity: Int = Channel.BUFFERED,
+    actorsStart: CoroutineStart = CoroutineStart.LAZY,
+    actorsContext: CoroutineContext = EmptyCoroutineContext,
+    partitionKey: (E) -> Int
+): Flow<Pair<S, V>> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> = channelFlow {
+    val actors: List<SendChannel<E>> = (1..numberOfActors).map {
+        eventActor(channel, actorsCapacity, actorsStart, actorsContext) { handleOptimistically(it) }
+    }
+    events
+        .onCompletion {
+            actors.forEach {
+                it.close()
+            }
+        }
+        .collect {
+            val partition = partitionKey(it).absoluteValue % numberOfActors.coerceAtLeast(1)
+            actors[partition].send(it)
+        }
+}
+
+
+/**
  * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]> by concurrently distributing the load across finite number of actors/handlers
  *
  * @receiver [Flow] of events of type [E]
@@ -84,23 +120,51 @@ fun <S, E> MaterializedView<S, E>.handleConcurrently(
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ObsoleteCoroutinesApi
-@ExperimentalContracts
-fun <S, E> Flow<E>.publishConcurrentlyTo(
-    materializedView: MaterializedView<S, E>,
+fun <S, E, M> Flow<E>.publishConcurrentlyTo(
+    materializedView: M,
     numberOfActors: Int = 100,
     actorsCapacity: Int = Channel.BUFFERED,
     actorsStart: CoroutineStart = CoroutineStart.LAZY,
     actorsContext: CoroutineContext = EmptyCoroutineContext,
     partitionKey: (E) -> Int
-): Flow<S> =
-    materializedView.handleConcurrently(
+): Flow<S> where M : ViewStateComputation<S, E>, M : ViewStateRepository<E, S> = materializedView.handleConcurrently(
+    this,
+    numberOfActors,
+    actorsCapacity,
+    actorsStart,
+    actorsContext
+) { partitionKey(it) }
+
+/**
+ * Extension function - Publishes the event of type [E] to the materialized view of type  [MaterializedView]<[S], [E]> by concurrently distributing the load across finite number of actors/handlers
+ *
+ * @receiver [Flow] of events of type [E]
+ * @param materializedView of type  [MaterializedView]<[S], [E]>
+ * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
+ * @param actorsCapacity capacity of the actors channel's buffer
+ * @param actorsStart actors coroutine start option
+ * @param actorsContext additional to [CoroutineScope.coroutineContext] context of the actor coroutines.
+ * @param partitionKey a function that calculates the partition key/routing key of event - events with the same partition key will be handled with the same 'actor' to keep the ordering
+ * @return [Flow] of State of type `Pair<S, V>`
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@ObsoleteCoroutinesApi
+fun <S, E, V, M> Flow<E>.publishConcurrentlyAndOptimisticallyTo(
+    materializedView: M,
+    numberOfActors: Int = 100,
+    actorsCapacity: Int = Channel.BUFFERED,
+    actorsStart: CoroutineStart = CoroutineStart.LAZY,
+    actorsContext: CoroutineContext = EmptyCoroutineContext,
+    partitionKey: (E) -> Int
+): Flow<Pair<S, V>> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
+    materializedView.handleConcurrentlyAndOptimistically(
         this,
         numberOfActors,
         actorsCapacity,
         actorsStart,
         actorsContext
     ) { partitionKey(it) }
-
 
 /**
  * Event Actor - Materialized View

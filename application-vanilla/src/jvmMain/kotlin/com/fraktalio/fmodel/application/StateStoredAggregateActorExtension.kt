@@ -25,7 +25,6 @@ import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.onCompletion
-import kotlin.contracts.ExperimentalContracts
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.absoluteValue
@@ -44,17 +43,54 @@ import kotlin.math.absoluteValue
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ObsoleteCoroutinesApi
-@ExperimentalContracts
-fun <C, S, E> StateStoredAggregate<C, S, E>.handleConcurrently(
+fun <C, S, E, I> I.handleConcurrently(
     commands: Flow<C>,
     numberOfActors: Int = 100,
     actorsCapacity: Int = Channel.BUFFERED,
     actorsStart: CoroutineStart = CoroutineStart.LAZY,
     actorsContext: CoroutineContext = EmptyCoroutineContext,
     partitionKey: (C) -> Int
-): Flow<S> = channelFlow {
+): Flow<S> where I : StateComputation<C, S, E>,
+                 I : StateRepository<C, S> = channelFlow {
     val actors: List<SendChannel<C>> = (1..numberOfActors).map {
         commandActor(channel, actorsCapacity, actorsStart, actorsContext) { handle(it) }
+    }
+    commands
+        .onCompletion {
+            actors.forEach {
+                it.close()
+            }
+        }
+        .collect {
+            val partition = partitionKey(it).absoluteValue % numberOfActors.coerceAtLeast(1)
+            actors[partition].send(it)
+        }
+}
+
+/**
+ * Extension function - Handles the [Flow] of command messages of type [C] by concurrently distributing the load across finite number of actors/handlers
+ *
+ * @param commands [Flow] of Command messages of type [C]
+ * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
+ * @param actorsCapacity capacity of the actors channel's buffer
+ * @param actorsStart actors coroutine start option
+ * @param actorsContext additional to [CoroutineScope.coroutineContext] context of the actor coroutines.
+ * @param partitionKey a function that calculates the partition key/routing key of command - commands with the same partition key will be handled with the same 'actor' to keep the ordering
+ * @return [Flow] of State of type `Pair<S, V>`
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@ObsoleteCoroutinesApi
+fun <C, S, E, V, I> I.handleConcurrentlyAndOptimistically(
+    commands: Flow<C>,
+    numberOfActors: Int = 100,
+    actorsCapacity: Int = Channel.BUFFERED,
+    actorsStart: CoroutineStart = CoroutineStart.LAZY,
+    actorsContext: CoroutineContext = EmptyCoroutineContext,
+    partitionKey: (C) -> Int
+): Flow<Pair<S, V>> where I : StateComputation<C, S, E>, I : StateLockingRepository<C, S, V> = channelFlow {
+    val actors: List<SendChannel<C>> = (1..numberOfActors).map {
+        commandActor(channel, actorsCapacity, actorsStart, actorsContext) { handleOptimistically(it) }
     }
     commands
         .onCompletion {
@@ -82,16 +118,45 @@ fun <C, S, E> StateStoredAggregate<C, S, E>.handleConcurrently(
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ObsoleteCoroutinesApi
-@ExperimentalContracts
-fun <C, S> Flow<C>.publishConcurrentlyTo(
-    aggregate: StateStoredAggregate<C, S, *>,
+fun <C, S, E, A> Flow<C>.publishConcurrentlyTo(
+    aggregate: A,
     numberOfActors: Int = 100,
     actorsCapacity: Int = Channel.BUFFERED,
     actorsStart: CoroutineStart = CoroutineStart.LAZY,
     actorsContext: CoroutineContext = EmptyCoroutineContext,
     partitionKey: (C) -> Int
-): Flow<S> =
+): Flow<S> where A : StateComputation<C, S, E>, A : StateRepository<C, S> =
     aggregate.handleConcurrently(this, numberOfActors, actorsCapacity, actorsStart, actorsContext) { partitionKey(it) }
+
+/**
+ * Extension function - Publishes the command of type [C] to the state stored aggregate of type  [StateStoredAggregate]<[C], [S], *> by concurrently distributing the load across finite number of actors/handlers
+ * @receiver [Flow] of commands of type [C]
+ * @param aggregate of type [StateStoredAggregate]<[C], [S], *>
+ * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
+ * @param actorsCapacity capacity of the actors channel's buffer
+ * @param actorsStart actors coroutine start option
+ * @param actorsContext additional to [CoroutineScope.coroutineContext] context of the actor coroutines.
+ * @param partitionKey a function that calculates the partition key/routing key of command - commands with the same partition key will be handled with the same 'actor' to keep the ordering
+ * @return the [Flow] of State of type `Pair<S, V>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@ObsoleteCoroutinesApi
+fun <C, S, E, V, A> Flow<C>.publishConcurrentlyAndOptimisticallyTo(
+    aggregate: A,
+    numberOfActors: Int = 100,
+    actorsCapacity: Int = Channel.BUFFERED,
+    actorsStart: CoroutineStart = CoroutineStart.LAZY,
+    actorsContext: CoroutineContext = EmptyCoroutineContext,
+    partitionKey: (C) -> Int
+): Flow<Pair<S, V>> where A : StateComputation<C, S, E>, A : StateLockingRepository<C, S, V> =
+    aggregate.handleConcurrentlyAndOptimistically(
+        this,
+        numberOfActors,
+        actorsCapacity,
+        actorsStart,
+        actorsContext
+    ) { partitionKey(it) }
 
 
 /**
