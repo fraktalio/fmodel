@@ -25,13 +25,12 @@ import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.onCompletion
-import kotlin.contracts.ExperimentalContracts
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.absoluteValue
 
 /**
- * Extension function - Handles the the [Flow] of action results of type [AR] by concurrently distributing the load across finite number of actors/handlers
+ * Extension function - Handles the [Flow] of action results of type [AR] by concurrently distributing the load across finite number of actors/handlers
  *
  * @param actionResults Action Results represent the outcome of some action you want to handle in some way
  * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
@@ -44,7 +43,6 @@ import kotlin.math.absoluteValue
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ObsoleteCoroutinesApi
-@ExperimentalContracts
 fun <AR, A> SagaManager<AR, A>.handleConcurrently(
     actionResults: Flow<AR>,
     numberOfActors: Int = 100,
@@ -82,7 +80,6 @@ fun <AR, A> SagaManager<AR, A>.handleConcurrently(
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ObsoleteCoroutinesApi
-@ExperimentalContracts
 fun <AR, A> Flow<AR>.publishConcurrentlyTo(
     sagaManager: SagaManager<AR, A>,
     numberOfActors: Int = 100,
