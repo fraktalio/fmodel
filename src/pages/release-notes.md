@@ -7,6 +7,103 @@ import TabItem from '@theme/TabItem';
 
 # Release Notes
 
+## 3.5.0
+
+Artifacts are available on Maven Central
+
+- [https://search.maven.org/artifact/com.fraktalio.fmodel/domain/3.5.0/jar](https://search.maven.org/artifact/com.fraktalio.fmodel/domain/3.5.0/jar)
+- [https://search.maven.org/artifact/com.fraktalio.fmodel/application-vanilla/3.5.0/jar](https://search.maven.org/artifact/com.fraktalio.fmodel/application-vanilla/3.5.0/jar)
+- [https://search.maven.org/artifact/com.fraktalio.fmodel/application-arrow/3.5.0/jar](https://search.maven.org/artifact/com.fraktalio.fmodel/application-arrow/3.5.0/jar)
+
+### What's changed
+
+In this release, we have upgraded the Kotlin Arrow library to [1.2.0](https://github.com/arrow-kt/arrow/releases/tag/1.2.0). It is a breaking change for the `application-arrow` module/extension.
+
+We have introduced and configured a binary compatibility validator into our build process.
+```
+The tool allows dumping binary API of a JVM part of a Kotlin library that is public in the sense of Kotlin visibilities and ensures that the public binary API wasn't changed in a way that makes this change binary incompatible.
+```
+
+We extended the case of using `actor` functions to parallelize the message handling processes. (available on JVM target only)
+```kotlin
+/**
+ * Extension function - Handles the flow of command messages of type [C] by concurrently distributing the load across finite number of actors/handlers
+ *
+ * @param commands [Flow] of Command messages of type [C]
+ * @param numberOfActors total number of actors/workers available for distributing the load. Minimum one.
+ * @param actorsCapacity capacity of the actors channel's buffer
+ * @param actorsStart actors coroutine start option
+ * @param actorsContext additional to [CoroutineScope.coroutineContext] context of the actor coroutines.
+ * @param partitionKey a function that calculates the partition key/routing key of command - commands with the same partition key will be handled with the same 'actor' to keep the ordering
+ * @return [Flow] of stored Events of type [E]
+ *
+ */
+fun <C, S, E> EventSourcingAggregate<C, S, E>.handleConcurrently(
+    commands: Flow<C>,
+    numberOfActors: Int = 100,
+    actorsCapacity: Int = Channel.BUFFERED,
+    actorsStart: CoroutineStart = CoroutineStart.LAZY,
+    actorsContext: CoroutineContext = EmptyCoroutineContext,
+    partitionKey: (C) -> Int
+): Flow<E>
+```
+
+Deprecating factory functions in favor of constructor-like functions.
+
+
+**Full Changelog**: https://github.com/fraktalio/fmodel/compare/v3.4.0...v3.5.0
+
+### Include the dependencies
+
+<Tabs groupId="build" queryString="build-type">
+<TabItem value="gradleKotlin" label="Gradle (Kotlin)">
+
+```kotlin
+dependencies {
+  implementation("com.fraktalio.fmodel:domain:3.5.0")
+  implementation("com.fraktalio.fmodel:application-vanilla:3.5.0")
+  implementation("com.fraktalio.fmodel:application-arrow:3.5.0")
+}
+```
+
+</TabItem>
+<TabItem value="gradleGroovy" label="Gradle (Groovy)">
+
+```groovy
+dependencies {
+  implementation 'com.fraktalio.fmodel:domain:3.5.0'
+  implementation 'com.fraktalio.fmodel:application-vanilla:3.5.0'
+  implementation 'com.fraktalio.fmodel:application-arrow:3.5.0'
+}
+```
+
+</TabItem>
+<TabItem value="maven" label="Maven">
+
+```xml
+
+<dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>domain</artifactId>
+    <version>3.5.0</version>
+</dependency>
+
+<dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>application-vanilla</artifactId>
+    <version>3.5.0</version>
+</dependency>
+
+<dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>application-arrow</artifactId>
+    <version>3.5.0</version>
+</dependency>
+```
+
+</TabItem>
+</Tabs>
+
 ## 3.4.0
 
 Artifacts are available on Maven Central
