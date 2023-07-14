@@ -50,6 +50,21 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handleConcurrently(
 
 Deprecating factory functions in favor of constructor-like functions.
 
+```kotlin
+@Deprecated(
+    message = "Use EventSourcingLockingAggregate constructor-like function instead",
+    replaceWith = ReplaceWith("EventSourcingLockingAggregate(decider, eventRepository)")
+)
+fun <C, S, E, V> eventSourcingLockingAggregate(
+    decider: IDecider<C, S, E>,
+    eventRepository: EventLockingRepository<C, E, V>
+): EventSourcingLockingAggregate<C, S, E, V> =
+    object : EventSourcingLockingAggregate<C, S, E, V>,
+        EventLockingRepository<C, E, V> by eventRepository,
+        IDecider<C, S, E> by decider {}
+
+```
+
 
 **Full Changelog**: https://github.com/fraktalio/fmodel/compare/v3.4.0...v3.5.0
 
