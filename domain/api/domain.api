@@ -1,0 +1,135 @@
+public final class com/fraktalio/fmodel/domain/Decider : com/fraktalio/fmodel/domain/IDecider {
+	public fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/lang/Object;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function2;
+	public final fun component2 ()Lkotlin/jvm/functions/Function2;
+	public final fun component3 ()Ljava/lang/Object;
+	public final fun copy (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/lang/Object;)Lcom/fraktalio/fmodel/domain/Decider;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/domain/Decider;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/lang/Object;ILjava/lang/Object;)Lcom/fraktalio/fmodel/domain/Decider;
+	public final fun dimapOnEvent (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/Decider;
+	public final fun dimapOnState (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/Decider;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDecide ()Lkotlin/jvm/functions/Function2;
+	public fun getEvolve ()Lkotlin/jvm/functions/Function2;
+	public fun getInitialState ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public final fun mapLeftOnCommand (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/Decider;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/domain/DeciderBuilder {
+	public final fun build ()Lcom/fraktalio/fmodel/domain/Decider;
+	public final fun decide (Lkotlin/jvm/functions/Function2;)V
+	public final fun evolve (Lkotlin/jvm/functions/Function2;)V
+	public final fun initialState (Lkotlin/jvm/functions/Function0;)V
+}
+
+public final class com/fraktalio/fmodel/domain/DeciderKt {
+	public static final fun decider (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/Decider;
+}
+
+public abstract interface class com/fraktalio/fmodel/domain/IDecider {
+	public abstract fun getDecide ()Lkotlin/jvm/functions/Function2;
+	public abstract fun getEvolve ()Lkotlin/jvm/functions/Function2;
+	public abstract fun getInitialState ()Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/domain/ISaga {
+	public abstract fun getReact ()Lkotlin/jvm/functions/Function1;
+}
+
+public abstract interface class com/fraktalio/fmodel/domain/IView {
+	public abstract fun getEvolve ()Lkotlin/jvm/functions/Function2;
+	public abstract fun getInitialState ()Ljava/lang/Object;
+}
+
+public final class com/fraktalio/fmodel/domain/Saga : com/fraktalio/fmodel/domain/ISaga {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function1;
+	public final fun copy (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/Saga;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/domain/Saga;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/fraktalio/fmodel/domain/Saga;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getReact ()Lkotlin/jvm/functions/Function1;
+	public fun hashCode ()I
+	public final fun mapLeftOnActionResult (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/Saga;
+	public final fun mapOnAction (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/Saga;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/domain/SagaKt {
+	public static final fun saga (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/Saga;
+}
+
+public final class com/fraktalio/fmodel/domain/View : com/fraktalio/fmodel/domain/IView {
+	public fun <init> (Lkotlin/jvm/functions/Function2;Ljava/lang/Object;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function2;
+	public final fun component2 ()Ljava/lang/Object;
+	public final fun copy (Lkotlin/jvm/functions/Function2;Ljava/lang/Object;)Lcom/fraktalio/fmodel/domain/View;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/domain/View;Lkotlin/jvm/functions/Function2;Ljava/lang/Object;ILjava/lang/Object;)Lcom/fraktalio/fmodel/domain/View;
+	public final fun dimapOnState (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/View;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getEvolve ()Lkotlin/jvm/functions/Function2;
+	public fun getInitialState ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public final fun mapLeftOnEvent (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/View;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/domain/ViewBuilder {
+	public final fun build ()Lcom/fraktalio/fmodel/domain/View;
+	public final fun evolve (Lkotlin/jvm/functions/Function2;)V
+	public final fun initialState (Lkotlin/jvm/functions/Function0;)V
+}
+
+public final class com/fraktalio/fmodel/domain/ViewKt {
+	public static final fun view (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/View;
+}
+
+public final class com/fraktalio/fmodel/domain/internal/InternalDecider {
+	public fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/lang/Object;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function2;
+	public final fun component2 ()Lkotlin/jvm/functions/Function2;
+	public final fun component3 ()Ljava/lang/Object;
+	public final fun copy (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/lang/Object;)Lcom/fraktalio/fmodel/domain/internal/InternalDecider;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/domain/internal/InternalDecider;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/lang/Object;ILjava/lang/Object;)Lcom/fraktalio/fmodel/domain/internal/InternalDecider;
+	public final fun dimapOnEvent (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/internal/InternalDecider;
+	public final fun dimapOnState (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/internal/InternalDecider;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDecide ()Lkotlin/jvm/functions/Function2;
+	public final fun getEvolve ()Lkotlin/jvm/functions/Function2;
+	public final fun getInitialState ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public final fun mapLeftOnCommand (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/internal/InternalDecider;
+	public final fun mapLeftOnEvent (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/internal/InternalDecider;
+	public final fun mapLeftOnState (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/internal/InternalDecider;
+	public final fun mapOnEvent (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/internal/InternalDecider;
+	public final fun mapOnState (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/internal/InternalDecider;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/domain/internal/InternalDeciderKt {
+	public static final fun asDecider (Lcom/fraktalio/fmodel/domain/internal/InternalDecider;)Lcom/fraktalio/fmodel/domain/Decider;
+	public static final fun productOnState (Lcom/fraktalio/fmodel/domain/internal/InternalDecider;Lcom/fraktalio/fmodel/domain/internal/InternalDecider;)Lcom/fraktalio/fmodel/domain/internal/InternalDecider;
+}
+
+public final class com/fraktalio/fmodel/domain/internal/InternalView {
+	public fun <init> (Lkotlin/jvm/functions/Function2;Ljava/lang/Object;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function2;
+	public final fun component2 ()Ljava/lang/Object;
+	public final fun copy (Lkotlin/jvm/functions/Function2;Ljava/lang/Object;)Lcom/fraktalio/fmodel/domain/internal/InternalView;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/domain/internal/InternalView;Lkotlin/jvm/functions/Function2;Ljava/lang/Object;ILjava/lang/Object;)Lcom/fraktalio/fmodel/domain/internal/InternalView;
+	public final fun dimapOnState (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/internal/InternalView;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEvolve ()Lkotlin/jvm/functions/Function2;
+	public final fun getInitialState ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public final fun mapLeftOnEvent (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/internal/InternalView;
+	public final fun mapLeftOnState (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/internal/InternalView;
+	public final fun mapOnState (Lkotlin/jvm/functions/Function1;)Lcom/fraktalio/fmodel/domain/internal/InternalView;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/domain/internal/InternalViewKt {
+	public static final fun asView (Lcom/fraktalio/fmodel/domain/internal/InternalView;)Lcom/fraktalio/fmodel/domain/View;
+	public static final fun productOnState (Lcom/fraktalio/fmodel/domain/internal/InternalView;Lcom/fraktalio/fmodel/domain/internal/InternalView;)Lcom/fraktalio/fmodel/domain/internal/InternalView;
+}
+
