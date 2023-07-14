@@ -1,0 +1,350 @@
+public abstract interface class com/fraktalio/fmodel/application/ActionPublisher {
+	public abstract fun publish (Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract class com/fraktalio/fmodel/application/Error : com/fraktalio/fmodel/application/Result {
+	public abstract fun getThrowable ()Ljava/lang/Throwable;
+}
+
+public final class com/fraktalio/fmodel/application/Error$ActionResultHandlingFailed : com/fraktalio/fmodel/application/Error {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Object;Ljava/lang/Throwable;)Lcom/fraktalio/fmodel/application/Error$ActionResultHandlingFailed;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/application/Error$ActionResultHandlingFailed;Ljava/lang/Object;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/fraktalio/fmodel/application/Error$ActionResultHandlingFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getActionResult ()Ljava/lang/Object;
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/application/Error$ActionResultPublishingFailed : com/fraktalio/fmodel/application/Error {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Throwable;)Lcom/fraktalio/fmodel/application/Error$ActionResultPublishingFailed;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/application/Error$ActionResultPublishingFailed;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/fraktalio/fmodel/application/Error$ActionResultPublishingFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/application/Error$CalculatingNewStateFailed : com/fraktalio/fmodel/application/Error {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Ljava/lang/Object;
+	public final fun component3 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;)Lcom/fraktalio/fmodel/application/Error$CalculatingNewStateFailed;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/application/Error$CalculatingNewStateFailed;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/fraktalio/fmodel/application/Error$CalculatingNewStateFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCommand ()Ljava/lang/Object;
+	public final fun getState ()Ljava/lang/Object;
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/application/Error$CalculatingNewViewStateFailed : com/fraktalio/fmodel/application/Error {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Ljava/lang/Object;
+	public final fun component3 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;)Lcom/fraktalio/fmodel/application/Error$CalculatingNewViewStateFailed;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/application/Error$CalculatingNewViewStateFailed;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/fraktalio/fmodel/application/Error$CalculatingNewViewStateFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEvent ()Ljava/lang/Object;
+	public final fun getState ()Ljava/lang/Object;
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/application/Error$CommandHandlingFailed : com/fraktalio/fmodel/application/Error {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Object;Ljava/lang/Throwable;)Lcom/fraktalio/fmodel/application/Error$CommandHandlingFailed;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/application/Error$CommandHandlingFailed;Ljava/lang/Object;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/fraktalio/fmodel/application/Error$CommandHandlingFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCommand ()Ljava/lang/Object;
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/application/Error$CommandPublishingFailed : com/fraktalio/fmodel/application/Error {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Throwable;)Lcom/fraktalio/fmodel/application/Error$CommandPublishingFailed;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/application/Error$CommandPublishingFailed;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/fraktalio/fmodel/application/Error$CommandPublishingFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/application/Error$EventPublishingFailed : com/fraktalio/fmodel/application/Error {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Throwable;)Lcom/fraktalio/fmodel/application/Error$EventPublishingFailed;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/application/Error$EventPublishingFailed;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/fraktalio/fmodel/application/Error$EventPublishingFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/application/Error$FetchingStateFailed : com/fraktalio/fmodel/application/Error {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Object;Ljava/lang/Throwable;)Lcom/fraktalio/fmodel/application/Error$FetchingStateFailed;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/application/Error$FetchingStateFailed;Ljava/lang/Object;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/fraktalio/fmodel/application/Error$FetchingStateFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCommand ()Ljava/lang/Object;
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/application/Error$FetchingViewStateFailed : com/fraktalio/fmodel/application/Error {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Object;Ljava/lang/Throwable;)Lcom/fraktalio/fmodel/application/Error$FetchingViewStateFailed;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/application/Error$FetchingViewStateFailed;Ljava/lang/Object;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/fraktalio/fmodel/application/Error$FetchingViewStateFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEvent ()Ljava/lang/Object;
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/fraktalio/fmodel/application/Error$StoringStateFailed : com/fraktalio/fmodel/application/Error {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Object;Ljava/lang/Throwable;)Lcom/fraktalio/fmodel/application/Error$StoringStateFailed;
+	public static synthetic fun copy$default (Lcom/fraktalio/fmodel/application/Error$StoringStateFailed;Ljava/lang/Object;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/fraktalio/fmodel/application/Error$StoringStateFailed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getState ()Ljava/lang/Object;
+	public fun getThrowable ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/EventComputation : com/fraktalio/fmodel/domain/IDecider {
+	public abstract fun computeNewEvents (Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class com/fraktalio/fmodel/application/EventComputation$DefaultImpls {
+	public static fun computeNewEvents (Lcom/fraktalio/fmodel/application/EventComputation;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/EventLockingRepository {
+	public abstract fun fetchEvents (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun getLatestVersionProvider ()Lkotlin/jvm/functions/Function1;
+	public abstract fun save (Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun save (Lkotlinx/coroutines/flow/Flow;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/EventOrchestratingComputation : com/fraktalio/fmodel/domain/IDecider, com/fraktalio/fmodel/domain/ISaga {
+	public abstract fun computeNewEventsByOrchestrating (Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class com/fraktalio/fmodel/application/EventOrchestratingComputation$DefaultImpls {
+	public static fun computeNewEventsByOrchestrating (Lcom/fraktalio/fmodel/application/EventOrchestratingComputation;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/EventRepository {
+	public abstract fun fetchEvents (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun save (Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/EventSourcingAggregate : com/fraktalio/fmodel/application/EventComputation, com/fraktalio/fmodel/application/EventRepository {
+}
+
+public final class com/fraktalio/fmodel/application/EventSourcingAggregate$DefaultImpls {
+	public static fun computeNewEvents (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class com/fraktalio/fmodel/application/EventSourcingAggregateKt {
+	public static final fun EventSourcingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/EventRepository;)Lcom/fraktalio/fmodel/application/EventSourcingAggregate;
+	public static final fun EventSourcingLockingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/EventLockingRepository;)Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;
+	public static final fun EventSourcingLockingOrchestratingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/EventLockingRepository;Lcom/fraktalio/fmodel/domain/ISaga;)Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;
+	public static final fun EventSourcingOrchestratingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/EventRepository;Lcom/fraktalio/fmodel/domain/ISaga;)Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;
+	public static final fun eventSourcingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/EventRepository;)Lcom/fraktalio/fmodel/application/EventSourcingAggregate;
+	public static final fun eventSourcingLockingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/EventLockingRepository;)Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;
+	public static final fun eventSourcingLockingOrchestratingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/EventLockingRepository;Lcom/fraktalio/fmodel/domain/ISaga;)Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;
+	public static final fun eventSourcingOrchestratingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/EventRepository;Lcom/fraktalio/fmodel/domain/ISaga;)Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/EventSourcingLockingAggregate : com/fraktalio/fmodel/application/EventComputation, com/fraktalio/fmodel/application/EventLockingRepository {
+}
+
+public final class com/fraktalio/fmodel/application/EventSourcingLockingAggregate$DefaultImpls {
+	public static fun computeNewEvents (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate : com/fraktalio/fmodel/application/EventLockingRepository, com/fraktalio/fmodel/application/EventOrchestratingComputation {
+}
+
+public final class com/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate$DefaultImpls {
+	public static fun computeNewEventsByOrchestrating (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate : com/fraktalio/fmodel/application/EventOrchestratingComputation, com/fraktalio/fmodel/application/EventRepository {
+}
+
+public final class com/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate$DefaultImpls {
+	public static fun computeNewEventsByOrchestrating (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/MaterializedLockingDeduplicationView : com/fraktalio/fmodel/application/ViewStateComputation, com/fraktalio/fmodel/application/ViewStateLockingDeduplicationRepository {
+}
+
+public final class com/fraktalio/fmodel/application/MaterializedLockingDeduplicationView$DefaultImpls {
+	public static fun computeNewState (Lcom/fraktalio/fmodel/application/MaterializedLockingDeduplicationView;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/MaterializedLockingView : com/fraktalio/fmodel/application/ViewStateComputation, com/fraktalio/fmodel/application/ViewStateLockingRepository {
+}
+
+public final class com/fraktalio/fmodel/application/MaterializedLockingView$DefaultImpls {
+	public static fun computeNewState (Lcom/fraktalio/fmodel/application/MaterializedLockingView;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/MaterializedView : com/fraktalio/fmodel/application/ViewStateComputation, com/fraktalio/fmodel/application/ViewStateRepository {
+}
+
+public final class com/fraktalio/fmodel/application/MaterializedView$DefaultImpls {
+	public static fun computeNewState (Lcom/fraktalio/fmodel/application/MaterializedView;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/fraktalio/fmodel/application/MaterializedViewKt {
+	public static final fun MaterializedLockingDeduplicationView (Lcom/fraktalio/fmodel/domain/IView;Lcom/fraktalio/fmodel/application/ViewStateLockingDeduplicationRepository;)Lcom/fraktalio/fmodel/application/MaterializedLockingDeduplicationView;
+	public static final fun MaterializedLockingView (Lcom/fraktalio/fmodel/domain/IView;Lcom/fraktalio/fmodel/application/ViewStateLockingRepository;)Lcom/fraktalio/fmodel/application/MaterializedLockingView;
+	public static final fun MaterializedView (Lcom/fraktalio/fmodel/domain/IView;Lcom/fraktalio/fmodel/application/ViewStateRepository;)Lcom/fraktalio/fmodel/application/MaterializedView;
+	public static final fun materializedLockingDeduplicationView (Lcom/fraktalio/fmodel/domain/IView;Lcom/fraktalio/fmodel/application/ViewStateLockingDeduplicationRepository;)Lcom/fraktalio/fmodel/application/MaterializedLockingDeduplicationView;
+	public static final fun materializedLockingView (Lcom/fraktalio/fmodel/domain/IView;Lcom/fraktalio/fmodel/application/ViewStateLockingRepository;)Lcom/fraktalio/fmodel/application/MaterializedLockingView;
+	public static final fun materializedView (Lcom/fraktalio/fmodel/domain/IView;Lcom/fraktalio/fmodel/application/ViewStateRepository;)Lcom/fraktalio/fmodel/application/MaterializedView;
+}
+
+public abstract class com/fraktalio/fmodel/application/Result {
+}
+
+public abstract interface class com/fraktalio/fmodel/application/SagaManager : com/fraktalio/fmodel/application/ActionPublisher, com/fraktalio/fmodel/domain/ISaga {
+	public abstract fun computeNewActions (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class com/fraktalio/fmodel/application/SagaManager$DefaultImpls {
+	public static fun computeNewActions (Lcom/fraktalio/fmodel/application/SagaManager;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class com/fraktalio/fmodel/application/SagaManagerKt {
+	public static final fun SagaManager (Lcom/fraktalio/fmodel/domain/ISaga;Lcom/fraktalio/fmodel/application/ActionPublisher;)Lcom/fraktalio/fmodel/application/SagaManager;
+	public static final fun sagaManager (Lcom/fraktalio/fmodel/domain/ISaga;Lcom/fraktalio/fmodel/application/ActionPublisher;)Lcom/fraktalio/fmodel/application/SagaManager;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/StateComputation : com/fraktalio/fmodel/domain/IDecider {
+	public abstract fun computeNewState (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/fraktalio/fmodel/application/StateComputation$DefaultImpls {
+	public static fun computeNewState (Lcom/fraktalio/fmodel/application/StateComputation;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/StateLockingRepository {
+	public abstract fun fetchState (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun save (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/StateOrchestratingComputation : com/fraktalio/fmodel/application/StateComputation, com/fraktalio/fmodel/domain/ISaga {
+	public abstract fun computeNewState (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/fraktalio/fmodel/application/StateOrchestratingComputation$DefaultImpls {
+	public static fun computeNewState (Lcom/fraktalio/fmodel/application/StateOrchestratingComputation;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/StateRepository {
+	public abstract fun fetchState (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun save (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/StateStoredAggregate : com/fraktalio/fmodel/application/StateComputation, com/fraktalio/fmodel/application/StateRepository {
+}
+
+public final class com/fraktalio/fmodel/application/StateStoredAggregate$DefaultImpls {
+	public static fun computeNewState (Lcom/fraktalio/fmodel/application/StateStoredAggregate;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/fraktalio/fmodel/application/StateStoredAggregateKt {
+	public static final fun StateStoredAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/StateRepository;)Lcom/fraktalio/fmodel/application/StateStoredAggregate;
+	public static final fun StateStoredLockingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/StateLockingRepository;)Lcom/fraktalio/fmodel/application/StateStoredLockingAggregate;
+	public static final fun StateStoredLockingOrchestratingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/StateLockingRepository;Lcom/fraktalio/fmodel/domain/ISaga;)Lcom/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate;
+	public static final fun StateStoredOrchestratingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/StateRepository;Lcom/fraktalio/fmodel/domain/ISaga;)Lcom/fraktalio/fmodel/application/StateStoredOrchestratingAggregate;
+	public static final fun stateStoredAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/StateRepository;)Lcom/fraktalio/fmodel/application/StateStoredAggregate;
+	public static final fun stateStoredLockingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/StateLockingRepository;)Lcom/fraktalio/fmodel/application/StateStoredLockingAggregate;
+	public static final fun stateStoredLockingOrchestratingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/StateLockingRepository;Lcom/fraktalio/fmodel/domain/ISaga;)Lcom/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate;
+	public static final fun stateStoredOrchestratingAggregate (Lcom/fraktalio/fmodel/domain/IDecider;Lcom/fraktalio/fmodel/application/StateRepository;Lcom/fraktalio/fmodel/domain/ISaga;)Lcom/fraktalio/fmodel/application/StateStoredOrchestratingAggregate;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/StateStoredLockingAggregate : com/fraktalio/fmodel/application/StateComputation, com/fraktalio/fmodel/application/StateLockingRepository {
+}
+
+public final class com/fraktalio/fmodel/application/StateStoredLockingAggregate$DefaultImpls {
+	public static fun computeNewState (Lcom/fraktalio/fmodel/application/StateStoredLockingAggregate;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate : com/fraktalio/fmodel/application/StateLockingRepository, com/fraktalio/fmodel/application/StateOrchestratingComputation {
+}
+
+public final class com/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate$DefaultImpls {
+	public static fun computeNewState (Lcom/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/StateStoredOrchestratingAggregate : com/fraktalio/fmodel/application/StateOrchestratingComputation, com/fraktalio/fmodel/application/StateRepository {
+}
+
+public final class com/fraktalio/fmodel/application/StateStoredOrchestratingAggregate$DefaultImpls {
+	public static fun computeNewState (Lcom/fraktalio/fmodel/application/StateStoredOrchestratingAggregate;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/ViewStateComputation : com/fraktalio/fmodel/domain/IView {
+	public abstract fun computeNewState (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/fraktalio/fmodel/application/ViewStateComputation$DefaultImpls {
+	public static fun computeNewState (Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/ViewStateLockingDeduplicationRepository {
+	public abstract fun fetchState (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun save (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/ViewStateLockingRepository {
+	public abstract fun fetchState (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun save (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/fraktalio/fmodel/application/ViewStateRepository {
+	public abstract fun fetchState (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun save (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
