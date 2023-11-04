@@ -23,7 +23,6 @@ kotlin {
     macosX64()
     macosArm64()
 
-    tvos()
     tvosSimulatorArm64()
 
     watchosArm32()
@@ -36,20 +35,20 @@ kotlin {
     iosSimulatorArm64()
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(libs.coroutines.core)
                 api(libs.arrow.core)
                 api(projects.application)
             }
         }
-        val commonTest by getting {
+        commonTest {
             dependencies {
                 implementation(libs.kotest.frameworkEngine)
                 implementation(libs.kotest.assertionsCore)
             }
         }
-        val jvmTest by getting {
+        jvmTest {
             dependencies {
                 runtimeOnly(libs.kotest.runnerJUnit5)
             }
