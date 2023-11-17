@@ -157,9 +157,18 @@ public final class com/fraktalio/fmodel/application/EventComputation$DefaultImpl
 
 public abstract interface class com/fraktalio/fmodel/application/EventLockingRepository {
 	public abstract fun fetchEvents (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun fetchEventsAndMetaData (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public abstract fun getLatestVersionProvider ()Lkotlin/jvm/functions/Function1;
 	public abstract fun save (Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public abstract fun save (Lkotlinx/coroutines/flow/Flow;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun saveWithMetaData (Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun saveWithMetaData (Lkotlinx/coroutines/flow/Flow;Lkotlin/jvm/functions/Function1;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class com/fraktalio/fmodel/application/EventLockingRepository$DefaultImpls {
+	public static fun fetchEventsAndMetaData (Lcom/fraktalio/fmodel/application/EventLockingRepository;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/EventLockingRepository;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/EventLockingRepository;Lkotlinx/coroutines/flow/Flow;Lkotlin/jvm/functions/Function1;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/EventOrchestratingComputation : com/fraktalio/fmodel/domain/IDecider, com/fraktalio/fmodel/domain/ISaga {
@@ -172,7 +181,14 @@ public final class com/fraktalio/fmodel/application/EventOrchestratingComputatio
 
 public abstract interface class com/fraktalio/fmodel/application/EventRepository {
 	public abstract fun fetchEvents (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun fetchEventsAndMetaData (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public abstract fun save (Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun saveWithMetaData (Lkotlinx/coroutines/flow/Flow;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class com/fraktalio/fmodel/application/EventRepository$DefaultImpls {
+	public static fun fetchEventsAndMetaData (Lcom/fraktalio/fmodel/application/EventRepository;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/EventRepository;Lkotlinx/coroutines/flow/Flow;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/EventSourcingAggregate : com/fraktalio/fmodel/application/EventComputation, com/fraktalio/fmodel/application/EventRepository {
@@ -180,6 +196,8 @@ public abstract interface class com/fraktalio/fmodel/application/EventSourcingAg
 
 public final class com/fraktalio/fmodel/application/EventSourcingAggregate$DefaultImpls {
 	public static fun computeNewEvents (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static fun fetchEventsAndMetaData (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public final class com/fraktalio/fmodel/application/EventSourcingAggregateKt {
@@ -198,6 +216,9 @@ public abstract interface class com/fraktalio/fmodel/application/EventSourcingLo
 
 public final class com/fraktalio/fmodel/application/EventSourcingLockingAggregate$DefaultImpls {
 	public static fun computeNewEvents (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static fun fetchEventsAndMetaData (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Lkotlinx/coroutines/flow/Flow;Lkotlin/jvm/functions/Function1;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate : com/fraktalio/fmodel/application/EventLockingRepository, com/fraktalio/fmodel/application/EventOrchestratingComputation {
@@ -205,6 +226,9 @@ public abstract interface class com/fraktalio/fmodel/application/EventSourcingLo
 
 public final class com/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate$DefaultImpls {
 	public static fun computeNewEventsByOrchestrating (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static fun fetchEventsAndMetaData (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;Lkotlin/jvm/functions/Function1;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate : com/fraktalio/fmodel/application/EventOrchestratingComputation, com/fraktalio/fmodel/application/EventRepository {
@@ -212,6 +236,8 @@ public abstract interface class com/fraktalio/fmodel/application/EventSourcingOr
 
 public final class com/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate$DefaultImpls {
 	public static fun computeNewEventsByOrchestrating (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static fun fetchEventsAndMetaData (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/MaterializedLockingDeduplicationView : com/fraktalio/fmodel/application/ViewStateComputation, com/fraktalio/fmodel/application/ViewStateLockingDeduplicationRepository {

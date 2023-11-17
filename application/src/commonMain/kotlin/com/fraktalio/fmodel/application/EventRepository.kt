@@ -17,6 +17,7 @@
 package com.fraktalio.fmodel.application
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * Event repository interface
@@ -37,12 +38,36 @@ interface EventRepository<C, E> {
     fun C.fetchEvents(): Flow<E>
 
     /**
+     * Fetch events and metadata
+     *
+     * @receiver Command of type [C]
+     *
+     * @return [Flow] of Events with metadata of type [Pair]<[E], [Map]<[String], [Any]>>>
+     *
+     * Default implementation is to fetch events without metadata
+     */
+    fun C.fetchEventsAndMetaData(): Flow<Pair<E, Map<String, Any>>> = fetchEvents().map { Pair(it, emptyMap()) }
+
+    /**
      * Save events
      *
      * @receiver [Flow] of Events of type [E]
      * @return newly saved [Flow] of Events of type [E]
      */
     fun Flow<E>.save(): Flow<E>
+
+    /**
+     * Save events
+     *
+     * @param metaData event metadata of type [Map]<[String], [Any]>
+     * @receiver [Flow] of Events of type [E]
+     * @return newly saved [Flow] of Events with metadata of type [Pair]<[E], [Map]<[String], [Any]>>>
+     *
+     * Default implementation is to save events without metadata
+     */
+    fun Flow<E>.saveWithMetaData(metaData: Map<String, Any>): Flow<Pair<E, Map<String, Any>>> =
+        save().map { Pair(it, emptyMap()) }
+
 }
 
 /**
@@ -78,6 +103,19 @@ interface EventLockingRepository<C, E, V> {
     fun C.fetchEvents(): Flow<Pair<E, V>>
 
     /**
+     * Fetch events and metadata
+     *
+     * @receiver Command of type [C]
+     *
+     * @return [Flow] of Events of type [Triple]<[E], [V], [Map]<[String], [Any]>>>
+     *
+     * Default implementation is to fetch events without metadata
+     */
+    fun C.fetchEventsAndMetaData(): Flow<Triple<E, V, Map<String, Any>>> =
+        fetchEvents().map { Triple(it.first, it.second, emptyMap()) }
+
+
+    /**
      * The latest event stream version provider
      */
     val latestVersionProvider: LatestVersionProvider<E, V>
@@ -91,6 +129,23 @@ interface EventLockingRepository<C, E, V> {
      */
     fun Flow<E>.save(latestVersionProvider: LatestVersionProvider<E, V>): Flow<Pair<E, V>>
 
+    /**
+     * Save events
+     *
+     * @param latestVersionProvider The latest event stream version provider / function that provides the latest known event stream version
+     * @param metaData event metadata of type [Map]<[String], [Any]>
+     * @receiver [Flow] of Events of type [E]
+     * @return newly saved [Flow] of Events with metadata of type [Triple]<[E], [V], [Map]<[String], [Any]>>>
+     *
+     * Default implementation is to save events without metadata
+     */
+    fun Flow<E>.saveWithMetaData(
+        latestVersionProvider: LatestVersionProvider<E, V>,
+        metaData: Map<String, Any>
+    ): Flow<Triple<E, V, Map<String, Any>>> =
+        save(latestVersionProvider).map { Triple(it.first, it.second, emptyMap()) }
+
+
     /** Save events
      *
      * @param latestVersion The latest known event stream version
@@ -98,4 +153,18 @@ interface EventLockingRepository<C, E, V> {
      * @return newly saved [Flow] of Events of type [Pair]<[E], [V]>
      */
     fun Flow<E>.save(latestVersion: V?): Flow<Pair<E, V>>
+
+    /**
+     * Save events
+     *
+     * @param latestVersion The latest known event stream version
+     * @param metaData event metadata of type [Map]<[String], [Any]>
+     * @receiver [Flow] of Events of type [E]
+     * @return newly saved [Flow] of Events with metadata of type [Triple]<[E], [V], [Map]<[String], [Any]>>>
+     *
+     * Default implementation is to save events without metadata
+     */
+    fun Flow<E>.saveWithMetaData(latestVersion: V?, metaData: Map<String, Any>): Flow<Triple<E, V, Map<String, Any>>> =
+        save(latestVersion).map { Triple(it.first, it.second, emptyMap()) }
+
 }
