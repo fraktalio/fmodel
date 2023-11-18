@@ -1,5 +1,10 @@
 public abstract interface class com/fraktalio/fmodel/application/ActionPublisher {
 	public abstract fun publish (Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun publish (Lkotlinx/coroutines/flow/Flow;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class com/fraktalio/fmodel/application/ActionPublisher$DefaultImpls {
+	public static fun publish (Lcom/fraktalio/fmodel/application/ActionPublisher;Lkotlinx/coroutines/flow/Flow;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public abstract class com/fraktalio/fmodel/application/Error : com/fraktalio/fmodel/application/Result {
@@ -279,6 +284,7 @@ public abstract interface class com/fraktalio/fmodel/application/SagaManager : c
 
 public final class com/fraktalio/fmodel/application/SagaManager$DefaultImpls {
 	public static fun computeNewActions (Lcom/fraktalio/fmodel/application/SagaManager;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static fun publish (Lcom/fraktalio/fmodel/application/SagaManager;Lkotlinx/coroutines/flow/Flow;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public final class com/fraktalio/fmodel/application/SagaManagerKt {

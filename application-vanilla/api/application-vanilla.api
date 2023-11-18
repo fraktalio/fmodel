@@ -103,9 +103,13 @@ public final class com/fraktalio/fmodel/application/SagaManagerActorExtensionKt 
 
 public final class com/fraktalio/fmodel/application/SagaManagerExtensionKt {
 	public static final fun handle (Lcom/fraktalio/fmodel/application/SagaManager;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handle (Lcom/fraktalio/fmodel/application/SagaManager;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/SagaManager;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleWithMetadata (Lcom/fraktalio/fmodel/application/SagaManager;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/SagaManager;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/SagaManager;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/SagaManager;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishWithMetadataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/SagaManager;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public final class com/fraktalio/fmodel/application/StateStoredAggregateActorExtensionKt {

@@ -24,22 +24,49 @@ import kotlinx.coroutines.flow.flatMapConcat
  * Extension function - Handles the action result of type [AR].
  *
  * @param actionResult Action Result represent the outcome of some action you want to handle in some way
- * @return [Flow] of Actions of type [A]
+ * @return a [Flow] of Actions of type [A], that are already published
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <AR, A> SagaManager<AR, A>.handle(actionResult: AR): Flow<A> = actionResult.computeNewActions().publish()
 
 /**
- * Extension function - Handles the the [Flow] of action results of type [AR].
+ * Extension function - Handles the action result of type [AR] with metadata of type [Map]<[String], [Any]>.
+ *
+ * @param actionResult Action Result represent the outcome of some action you want to handle in some way
+ * @param withMetaData metadata of type [Map]<[String], [Any]>
+ * @return a [Flow] of Actions of type [Pair]<[A], [Map]<[String], [Any]>>, that are already published
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <AR, A> SagaManager<AR, A>.handle(
+    actionResult: AR,
+    withMetaData: Map<String, Any>
+): Flow<Pair<A, Map<String, Any>>> =
+    actionResult.computeNewActions().publish(withMetaData)
+
+/**
+ * Extension function - Handles the [Flow] of action results of type [AR].
  *
  * @param actionResults Action Results represent the outcome of some action you want to handle in some way
- * @return [Flow] of Actions of type [A]
+ * @return a [Flow] of Actions of type [A], that are already published
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ExperimentalCoroutinesApi
 fun <AR, A> SagaManager<AR, A>.handle(actionResults: Flow<AR>): Flow<A> = actionResults.flatMapConcat { handle(it) }
+
+/**
+ * Extension function - Handles the [Flow] of action results (with metadata included) of type [Pair]<[AR], [Map]<[String], [Any]>>.
+ *
+ * @param actionResults Action Results (with metadata included) represent the outcome of some action you want to handle in some way
+ * @return a [Flow] of Actions of type [Pair]<[A], [Map]<[String], [Any]>>, that are already published
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@ExperimentalCoroutinesApi
+fun <AR, A> SagaManager<AR, A>.handleWithMetadata(actionResults: Flow<Pair<AR, Map<String, Any>>>): Flow<Pair<A, Map<String, Any>>> =
+    actionResults.flatMapConcat { handle(it.first, it.second) }
 
 /**
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
@@ -52,7 +79,21 @@ fun <AR, A> SagaManager<AR, A>.handle(actionResults: Flow<AR>): Flow<A> = action
 fun <AR, A> AR.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager.handle(this)
 
 /**
- * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
+ * Extension function - Publishes the action result of type [AR] with metadata of type [Map]<[String], [Any]> to the saga manager of type  [SagaManager]<[AR], [A]>
+ * @receiver action result of type [AR]
+ * @param sagaManager of type [SagaManager]<[AR], [A]>
+ * @param withMetaData metadata of type [Map]<[String], [Any]>
+ * @return the [Flow] of published Actions of type [Pair]<[A], [Map]<[String], [Any]>>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+fun <AR, A> AR.publishTo(
+    sagaManager: SagaManager<AR, A>,
+    withMetaData: Map<String, Any>
+): Flow<Pair<A, Map<String, Any>>> = sagaManager.handle(this, withMetaData)
+
+/**
+ * Extension function - Publishes the [Flow] of action results of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
  * @receiver [Flow] of action results of type [AR]
  * @param sagaManager of type [SagaManager]<[AR], [A]>
  * @return the [Flow] of published Actions of type [A]
@@ -61,3 +102,15 @@ fun <AR, A> AR.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager
  */
 @ExperimentalCoroutinesApi
 fun <AR, A> Flow<AR>.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaManager.handle(this)
+
+/**
+ * Extension function - Publishes the [Flow] of action results of type [Pair]<[AR], [Map]<[String], [Any]>> to the saga manager of type  [SagaManager]<[AR], [A]>
+ * @receiver [Flow] of action results of type [Pair]<[AR], [Map]<[String], [Any]>>
+ * @param sagaManager of type [SagaManager]<[AR], [A]>
+ * @return the [Flow] of published Actions of type [Pair]<[A], [Map]<[String], [Any]>>
+ *
+ * @author Иван Дугалић / Ivan Dugalic / @idugalic
+ */
+@ExperimentalCoroutinesApi
+fun <AR, A> Flow<Pair<AR, Map<String, Any>>>.publishWithMetadataTo(sagaManager: SagaManager<AR, A>): Flow<Pair<A, Map<String, Any>>> =
+    sagaManager.handleWithMetadata(this)

@@ -50,9 +50,13 @@ public final class com/fraktalio/fmodel/application/MaterializedViewArrowExtensi
 
 public final class com/fraktalio/fmodel/application/SagaManagerArrowExtensionKt {
 	public static final fun handleWithEffect (Lcom/fraktalio/fmodel/application/SagaManager;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleWithEffect (Lcom/fraktalio/fmodel/application/SagaManager;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handleWithEffect (Lcom/fraktalio/fmodel/application/SagaManager;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleWithEffectAndMetadata (Lcom/fraktalio/fmodel/application/SagaManager;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishWithEffect (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/SagaManager;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishWithEffect (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/SagaManager;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishWithEffect (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/SagaManager;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishWithEffectAndMetadata (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/SagaManager;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public final class com/fraktalio/fmodel/application/StateStoredAggregateArrowExtensionKt {
