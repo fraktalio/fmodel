@@ -80,18 +80,30 @@ public final class com/fraktalio/fmodel/application/MaterializedViewActorExtensi
 }
 
 public final class com/fraktalio/fmodel/application/MaterializedViewExtensionKt {
+	public static final fun handle (Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimisticallyWithDeduplication (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlin/Pair;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimisticallyWithDeduplication (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlin/Pair;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimisticallyWithDeduplication (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimisticallyWithDeduplicationAndMetadata (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimisticallyWithMetadata (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleWithMetadata (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyWithDeduplicationAndMetadataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyWithDeduplicationTo (Lkotlin/Pair;Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyWithDeduplicationTo (Lkotlin/Pair;Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyWithDeduplicationTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyWithMetadataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishWithMetadataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public final class com/fraktalio/fmodel/application/SagaManagerActorExtensionKt {
