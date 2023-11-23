@@ -136,13 +136,21 @@ public final class com/fraktalio/fmodel/application/StateStoredAggregateActorExt
 }
 
 public final class com/fraktalio/fmodel/application/StateStoredAggregateExtensionKt {
+	public static final fun handle (Lcom/fraktalio/fmodel/application/StateComputation;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/StateComputation;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/StateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/StateComputation;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/StateComputation;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/StateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimisticallyWithMetadata (Lcom/fraktalio/fmodel/application/StateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleWithMetadata (Lcom/fraktalio/fmodel/application/StateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/StateComputation;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/StateComputation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/StateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyWithMetadataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/StateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/StateComputation;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/StateComputation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/StateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishWithMetadataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/StateComputation;)Lkotlinx/coroutines/flow/Flow;
 }
 

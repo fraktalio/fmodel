@@ -87,6 +87,46 @@ suspend fun <C, S, E, I> I.handleWithEffect(command: C): Either<Error, S> where 
     }
 }
 
+suspend fun <C, S, E, I> I.handleWithEffect(
+    command: C,
+    metadata: Map<String, Any>
+): Either<Error, Pair<S, Map<String, Any>>> where I : StateComputation<C, S, E>,
+                                                  I : StateRepository<C, S> {
+    suspend fun S?.computeNewStateWithEffect(command: C): Either<Error, S> =
+        either {
+            catch({
+                computeNewState(command)
+            }) {
+                raise(CalculatingNewStateFailed(this@computeNewStateWithEffect, command, it))
+            }
+        }
+
+    suspend fun C.fetchStateWithEffectAndMetadata(): Either<Error, Pair<S?, Map<String, Any>>> =
+        either {
+            catch({
+                fetchStateAndMetadata()
+            }) {
+                raise(FetchingStateFailed(this@fetchStateWithEffectAndMetadata, it))
+            }
+        }
+
+    suspend fun S.saveWithEffectAndMetadata(metadata: Map<String, Any>): Either<Error, Pair<S, Map<String, Any>>> =
+        either {
+            catch({
+                saveWithMetadata(metadata)
+            }) {
+                raise(StoringStateFailed(this@saveWithEffectAndMetadata, it))
+            }
+        }
+
+    return either {
+        command
+            .fetchStateWithEffectAndMetadata().bind().first
+            .computeNewStateWithEffect(command).bind()
+            .saveWithEffectAndMetadata(metadata).bind()
+    }
+}
+
 /**
  * Extension function - Handles the command message of type [C] to the locking state stored aggregate, optimistically
  *
@@ -150,6 +190,49 @@ suspend fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(command: C): Either
     }
 }
 
+suspend fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(
+    command: C,
+    metadata: Map<String, Any>
+): Either<Error, Triple<S, V, Map<String, Any>>> where I : StateComputation<C, S, E>,
+                                                       I : StateLockingRepository<C, S, V> {
+
+    suspend fun S?.computeNewStateWithEffect(command: C): Either<Error, S> =
+        either {
+            catch({
+                computeNewState(command)
+            }) {
+                raise(CalculatingNewStateFailed(this@computeNewStateWithEffect, command, it))
+            }
+        }
+
+    suspend fun C.fetchStateWithEffectAndMetadata(): Either<FetchingStateFailed<C>, Triple<S?, V?, Map<String, Any>>> =
+        either {
+            catch({
+                fetchStateAndMetadata()
+            }) {
+                raise(FetchingStateFailed(this@fetchStateWithEffectAndMetadata, it))
+            }
+        }
+
+    suspend fun S.saveWithEffectAndMetadata(
+        currentStateVersion: V?,
+        metadata: Map<String, Any>
+    ): Either<StoringStateFailed<S>, Triple<S, V, Map<String, Any>>> =
+        either {
+            catch({
+                saveWithMetadata(currentStateVersion, metadata)
+            }) {
+                raise(StoringStateFailed(this@saveWithEffectAndMetadata, it))
+            }
+        }
+
+    return either {
+        val (state, version, _) = command.fetchStateWithEffectAndMetadata().bind()
+        state
+            .computeNewStateWithEffect(command).bind()
+            .saveWithEffectAndMetadata(version, metadata).bind()
+    }
+}
 
 /**
  * Extension function - Handles the [Flow] of command messages of type [C]
@@ -163,6 +246,12 @@ fun <C, S, E, I> I.handleWithEffect(commands: Flow<C>): Flow<Either<Error, S>> w
                                                                                      I : StateRepository<C, S> =
     commands
         .map { handleWithEffect(it) }
+        .catch { emit(either { raise(CommandPublishingFailed(it)) }) }
+
+fun <C, S, E, I> I.handleWithEffectAndMetadata(commands: Flow<Pair<C, Map<String, Any>>>): Flow<Either<Error, Pair<S, Map<String, Any>>>> where I : StateComputation<C, S, E>,
+                                                                                                                                                I : StateRepository<C, S> =
+    commands
+        .map { handleWithEffect(it.first, it.second) }
         .catch { emit(either { raise(CommandPublishingFailed(it)) }) }
 
 /**
@@ -179,6 +268,12 @@ fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(commands: Flow<C>): Flow<Ei
         .map { handleOptimisticallyWithEffect(it) }
         .catch { emit(either { raise(CommandPublishingFailed(it)) }) }
 
+fun <C, S, E, V, I> I.handleOptimisticallyWithEffectAndMetadata(commands: Flow<Pair<C, Map<String, Any>>>): Flow<Either<Error, Triple<S, V, Map<String, Any>>>> where I : StateComputation<C, S, E>,
+                                                                                                                                                                      I : StateLockingRepository<C, S, V> =
+    commands
+        .map { handleOptimisticallyWithEffect(it.first, it.second) }
+        .catch { emit(either { raise(CommandPublishingFailed(it)) }) }
+
 /**
  * Extension function - Publishes the command of type [C] to the state stored aggregate
  * @receiver command of type [C]
@@ -190,6 +285,13 @@ fun <C, S, E, V, I> I.handleOptimisticallyWithEffect(commands: Flow<C>): Flow<Ei
 suspend fun <C, S, E, A> C.publishWithEffect(aggregate: A): Either<Error, S> where A : StateComputation<C, S, E>,
                                                                                    A : StateRepository<C, S> =
     aggregate.handleWithEffect(this)
+
+suspend fun <C, S, E, A> C.publishWithEffectAndMetadata(
+    aggregate: A,
+    withMetadata: Map<String, Any>
+): Either<Error, Pair<S, Map<String, Any>>> where A : StateComputation<C, S, E>,
+                                                  A : StateRepository<C, S> =
+    aggregate.handleWithEffect(this, withMetadata)
 
 /**
  * Extension function - Publishes the command of type [C] to the locking state stored aggregate, optimistically
@@ -203,6 +305,13 @@ suspend fun <C, S, E, V, A> C.publishOptimisticallyWithEffect(aggregate: A): Eit
                                                                                                              A : StateLockingRepository<C, S, V> =
     aggregate.handleOptimisticallyWithEffect(this)
 
+suspend fun <C, S, E, V, A> C.publishOptimisticallyWithEffect(
+    aggregate: A,
+    withMetadata: Map<String, Any>
+): Either<Error, Triple<S, V, Map<String, Any>>> where A : StateComputation<C, S, E>,
+                                                       A : StateLockingRepository<C, S, V> =
+    aggregate.handleOptimisticallyWithEffect(this, withMetadata)
+
 /**
  * Extension function - Publishes the command of type [C] to the state stored aggregate
  * @receiver [Flow] of commands of type [C]
@@ -214,6 +323,11 @@ suspend fun <C, S, E, V, A> C.publishOptimisticallyWithEffect(aggregate: A): Eit
 fun <C, S, E, A> Flow<C>.publishWithEffect(aggregate: A): Flow<Either<Error, S>> where A : StateComputation<C, S, E>,
                                                                                        A : StateRepository<C, S> =
     aggregate.handleWithEffect(this)
+
+fun <C, S, E, A> Flow<Pair<C, Map<String, Any>>>.publishWithEffectAndMetadata(aggregate: A): Flow<Either<Error, Pair<S, Map<String, Any>>>> where A : StateComputation<C, S, E>,
+                                                                                                                                                  A : StateRepository<C, S> =
+    aggregate.handleWithEffectAndMetadata(this)
+
 
 /**
  * Extension function - Publishes the command of type [C] to the locking state stored aggregate, optimistically
@@ -227,4 +341,6 @@ fun <C, S, E, V, A> Flow<C>.publishOptimisticallyWithEffect(aggregate: A): Flow<
                                                                                                                  A : StateLockingRepository<C, S, V> =
     aggregate.handleOptimisticallyWithEffect(this)
 
-private fun <S, V> S.pairWith(version: V): Pair<S, V> = Pair(this, version)
+fun <C, S, E, V, A> Flow<Pair<C, Map<String, Any>>>.publishOptimisticallyWithEffectAndMetadata(aggregate: A): Flow<Either<Error, Triple<S, V, Map<String, Any>>>> where A : StateComputation<C, S, E>,
+                                                                                                                                                                        A : StateLockingRepository<C, S, V> =
+    aggregate.handleOptimisticallyWithEffectAndMetadata(this)
