@@ -45,18 +45,18 @@ fun <AR, A> SagaManager<AR, A>.handleWithEffect(actionResult: AR): Flow<Either<E
  * Extension function - Handles the action result of type [AR] and metadata of type [Map]<[String], [Any]>.
  *
  * @param actionResult Action Result represent the outcome of some action you want to handle in some way
- * @param withMetadata metadata of type [Map]<[String], [Any]>
+ * @param withMetaData metadata of type [Map]<[String], [Any]>
  * @return [Flow] of [Either] (either [Error] or Actions (with metadata) of type [Pair]<[A], [Map]<[String], [Any]>>)
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <AR, A> SagaManager<AR, A>.handleWithEffect(
     actionResult: AR,
-    withMetadata: Map<String, Any>
+    withMetaData: Map<String, Any>
 ): Flow<Either<Error, Pair<A, Map<String, Any>>>> =
     actionResult
         .computeNewActions()
-        .publish(withMetadata)
+        .publish(withMetaData)
         .map { either<Error, Pair<A, Map<String, Any>>> { it } }
         .catch { emit(either { raise(ActionResultHandlingFailed(actionResult)) }) }
 
@@ -83,7 +83,7 @@ fun <AR, A> SagaManager<AR, A>.handleWithEffect(actionResults: Flow<AR>): Flow<E
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ExperimentalCoroutinesApi
-fun <AR, A> SagaManager<AR, A>.handleWithEffectAndMetadata(actionResults: Flow<Pair<AR, Map<String, Any>>>): Flow<Either<Error, Pair<A, Map<String, Any>>>> =
+fun <AR, A> SagaManager<AR, A>.handleWithEffectAndMetaData(actionResults: Flow<Pair<AR, Map<String, Any>>>): Flow<Either<Error, Pair<A, Map<String, Any>>>> =
     actionResults
         .flatMapConcat { handleWithEffect(it.first, it.second) }
         .catch { emit(either { raise(ActionResultPublishingFailed(it)) }) }
@@ -103,16 +103,16 @@ fun <AR, A> AR.publishWithEffect(sagaManager: SagaManager<AR, A>): Flow<Either<E
  * Extension function - Publishes the action result of type [AR] with metadata of type [Map]<[String], [Any]> to the saga manager of type  [SagaManager]<[AR], [A]>
  * @receiver action result of type [AR]
  * @param sagaManager of type [SagaManager]<[AR], [A]>
- * @param withMetadata metadata of type [Map]<[String], [Any]>
+ * @param withMetaData metadata of type [Map]<[String], [Any]>
  * @return the [Flow] of [Either] (either [Error] or successfully published Actions of type [Pair]<[A], [Map]<[String], [Any]>>)
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 fun <AR, A> AR.publishWithEffect(
     sagaManager: SagaManager<AR, A>,
-    withMetadata: Map<String, Any>
+    withMetaData: Map<String, Any>
 ): Flow<Either<Error, Pair<A, Map<String, Any>>>> =
-    sagaManager.handleWithEffect(this, withMetadata)
+    sagaManager.handleWithEffect(this, withMetaData)
 
 /**
  * Extension function - Publishes the action result of type [AR] to the saga manager of type  [SagaManager]<[AR], [A]>
@@ -135,5 +135,5 @@ fun <AR, A> Flow<AR>.publishWithEffect(sagaManager: SagaManager<AR, A>): Flow<Ei
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ExperimentalCoroutinesApi
-fun <AR, A> Flow<Pair<AR, Map<String, Any>>>.publishWithEffectAndMetadata(sagaManager: SagaManager<AR, A>): Flow<Either<Error, Pair<A, Map<String, Any>>>> =
-    sagaManager.handleWithEffectAndMetadata(this)
+fun <AR, A> Flow<Pair<AR, Map<String, Any>>>.publishWithEffectAndMetaData(sagaManager: SagaManager<AR, A>): Flow<Either<Error, Pair<A, Map<String, Any>>>> =
+    sagaManager.handleWithEffectAndMetaData(this)

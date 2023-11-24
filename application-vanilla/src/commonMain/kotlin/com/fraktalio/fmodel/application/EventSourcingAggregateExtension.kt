@@ -179,7 +179,7 @@ fun <C, S, E> EventSourcingAggregate<C, S, E>.handle(commands: Flow<C>): Flow<E>
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ExperimentalCoroutinesApi
-fun <C, S, E> EventSourcingAggregate<C, S, E>.handleWithMetadata(commandsWithMetadata: Flow<Pair<C, Map<String, Any>>>): Flow<Pair<E, Map<String, Any>>> =
+fun <C, S, E> EventSourcingAggregate<C, S, E>.handleWithMetaData(commandsWithMetadata: Flow<Pair<C, Map<String, Any>>>): Flow<Pair<E, Map<String, Any>>> =
     commandsWithMetadata.flatMapConcat { handle(it.first, it.second) }
 
 /**
@@ -203,7 +203,7 @@ fun <C, S, E> EventSourcingOrchestratingAggregate<C, S, E>.handle(commands: Flow
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ExperimentalCoroutinesApi
-fun <C, S, E> EventSourcingOrchestratingAggregate<C, S, E>.handleWithMetadata(commandsWithMetadata: Flow<Pair<C, Map<String, Any>>>): Flow<Pair<E, Map<String, Any>>> =
+fun <C, S, E> EventSourcingOrchestratingAggregate<C, S, E>.handleWithMetaData(commandsWithMetadata: Flow<Pair<C, Map<String, Any>>>): Flow<Pair<E, Map<String, Any>>> =
     commandsWithMetadata.flatMapConcat { handle(it.first, it.second) }
 
 /**
@@ -227,7 +227,7 @@ fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimistically(
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ExperimentalCoroutinesApi
-fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimisticallyWithMetadata(commandsWithMetadata: Flow<Pair<C, Map<String, Any>>>): Flow<Triple<E, V, Map<String, Any>>> =
+fun <C, S, E, V> EventSourcingLockingAggregate<C, S, E, V>.handleOptimisticallyWithMetaData(commandsWithMetadata: Flow<Pair<C, Map<String, Any>>>): Flow<Triple<E, V, Map<String, Any>>> =
     commandsWithMetadata.flatMapConcat { handleOptimistically(it.first, it.second) }
 
 /**
@@ -251,7 +251,7 @@ fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOp
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ExperimentalCoroutinesApi
-fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOptimisticallyWithMetadata(
+fun <C, S, E, V> EventSourcingLockingOrchestratingAggregate<C, S, E, V>.handleOptimisticallyWithMetaData(
     commandsWithMetadata: Flow<Pair<C, Map<String, Any>>>
 ): Flow<Triple<E, V, Map<String, Any>>> =
     commandsWithMetadata.flatMapConcat { handleOptimistically(it.first, it.second) }
@@ -261,18 +261,18 @@ fun <C, E> C.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> =
 
 fun <C, E> C.publishTo(
     aggregate: EventSourcingAggregate<C, *, E>,
-    withMetadata: Map<String, Any>
+    withMetaData: Map<String, Any>
 ): Flow<Pair<E, Map<String, Any>>> =
-    aggregate.handle(this, withMetadata)
+    aggregate.handle(this, withMetaData)
 
 fun <C, E, V> C.publishOptimisticallyTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)
 
 fun <C, E, V> C.publishOptimisticallyTo(
     aggregate: EventSourcingLockingAggregate<C, *, E, V>,
-    withMetadata: Map<String, Any>
+    withMetaData: Map<String, Any>
 ): Flow<Triple<E, V, Map<String, Any>>> =
-    aggregate.handleOptimistically(this, withMetadata)
+    aggregate.handleOptimistically(this, withMetaData)
 
 @ExperimentalCoroutinesApi
 fun <C, E> C.publishTo(aggregate: EventSourcingOrchestratingAggregate<C, *, E>): Flow<E> =
@@ -281,9 +281,9 @@ fun <C, E> C.publishTo(aggregate: EventSourcingOrchestratingAggregate<C, *, E>):
 @ExperimentalCoroutinesApi
 fun <C, E> C.publishTo(
     aggregate: EventSourcingOrchestratingAggregate<C, *, E>,
-    withMetadata: Map<String, Any>
+    withMetaData: Map<String, Any>
 ): Flow<Pair<E, Map<String, Any>>> =
-    aggregate.handle(this, withMetadata)
+    aggregate.handle(this, withMetaData)
 
 @ExperimentalCoroutinesApi
 fun <C, E, V> C.publishOptimisticallyTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
@@ -292,40 +292,40 @@ fun <C, E, V> C.publishOptimisticallyTo(aggregate: EventSourcingLockingOrchestra
 @ExperimentalCoroutinesApi
 fun <C, E, V> C.publishOptimisticallyTo(
     aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>,
-    withMetadata: Map<String, Any>
+    withMetaData: Map<String, Any>
 ):
         Flow<Triple<E, V, Map<String, Any>>> =
-    aggregate.handleOptimistically(this, withMetadata)
+    aggregate.handleOptimistically(this, withMetaData)
 
 @ExperimentalCoroutinesApi
 fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<E> =
     aggregate.handle(this)
 
 @ExperimentalCoroutinesApi
-fun <C, E> Flow<Pair<C, Map<String, Any>>>.publishWithMetadataTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Pair<E, Map<String, Any>>> =
-    aggregate.handleWithMetadata(this)
+fun <C, E> Flow<Pair<C, Map<String, Any>>>.publishWithMetaDataTo(aggregate: EventSourcingAggregate<C, *, E>): Flow<Pair<E, Map<String, Any>>> =
+    aggregate.handleWithMetaData(this)
 
 @ExperimentalCoroutinesApi
 fun <C, E, V> Flow<C>.publishOptimisticallyTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)
 
 @ExperimentalCoroutinesApi
-fun <C, E, V> Flow<Pair<C, Map<String, Any>>>.publishOptimisticallyWithMetadataTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Triple<E, V, Map<String, Any>>> =
-    aggregate.handleOptimisticallyWithMetadata(this)
+fun <C, E, V> Flow<Pair<C, Map<String, Any>>>.publishOptimisticallyWithMetaDataTo(aggregate: EventSourcingLockingAggregate<C, *, E, V>): Flow<Triple<E, V, Map<String, Any>>> =
+    aggregate.handleOptimisticallyWithMetaData(this)
 
 @ExperimentalCoroutinesApi
 fun <C, E> Flow<C>.publishTo(aggregate: EventSourcingOrchestratingAggregate<C, *, E>): Flow<E> =
     aggregate.handle(this)
 
 @ExperimentalCoroutinesApi
-fun <C, E> Flow<Pair<C, Map<String, Any>>>.publishWithMetadataTo(aggregate: EventSourcingOrchestratingAggregate<C, *, E>): Flow<Pair<E, Map<String, Any>>> =
-    aggregate.handleWithMetadata(this)
+fun <C, E> Flow<Pair<C, Map<String, Any>>>.publishWithMetaDataTo(aggregate: EventSourcingOrchestratingAggregate<C, *, E>): Flow<Pair<E, Map<String, Any>>> =
+    aggregate.handleWithMetaData(this)
 
 @ExperimentalCoroutinesApi
 fun <C, E, V> Flow<C>.publishOptimisticallyTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>): Flow<Pair<E, V>> =
     aggregate.handleOptimistically(this)
 
 @ExperimentalCoroutinesApi
-fun <C, E, V> Flow<Pair<C, Map<String, Any>>>.publishOptimisticallyWithMetadataTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>):
+fun <C, E, V> Flow<Pair<C, Map<String, Any>>>.publishOptimisticallyWithMetaDataTo(aggregate: EventSourcingLockingOrchestratingAggregate<C, *, E, V>):
         Flow<Triple<E, V, Map<String, Any>>> =
-    aggregate.handleOptimisticallyWithMetadata(this)
+    aggregate.handleOptimisticallyWithMetaData(this)

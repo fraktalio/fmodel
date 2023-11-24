@@ -39,7 +39,7 @@ interface StateRepository<C, S> {
      * @receiver Command of type [C]
      * @return the [Pair] of current State/[S] and metadata of type [Map]<[String], [Any]>
      */
-    suspend fun C.fetchStateAndMetadata(): Pair<S?, Map<String, Any>> = Pair(fetchState(), emptyMap())
+    suspend fun C.fetchStateAndMetaData(): Pair<S?, Map<String, Any>> = Pair(fetchState(), emptyMap())
 
     /**
      * Save state
@@ -56,7 +56,7 @@ interface StateRepository<C, S> {
      * @param metaData metadata of type [Map]<[String], [Any]>
      * @return newly saved State of type [Pair]<[S], [Map]<[String], [Any]>>
      */
-    suspend fun S.saveWithMetadata(metaData: Map<String, Any>): Pair<S, Map<String, Any>> = Pair(save(), emptyMap())
+    suspend fun S.saveWithMetaData(metaData: Map<String, Any>): Pair<S, Map<String, Any>> = Pair(save(), emptyMap())
 }
 
 /**
@@ -89,7 +89,7 @@ interface StateLockingRepository<C, S, V> {
      * @receiver Command of type [C]
      * @return the [Triple] of current State/[S], current Version/[V] and metadata of type [Map]<[String], [Any]>
      */
-    suspend fun C.fetchStateAndMetadata(): Triple<S?, V?, Map<String, Any>> {
+    suspend fun C.fetchStateAndMetaData(): Triple<S?, V?, Map<String, Any>> {
         val (state, version) = fetchState()
         return Triple(state, version, emptyMap())
     }
@@ -115,7 +115,7 @@ interface StateLockingRepository<C, S, V> {
      * @param metaData metadata of type [Map]<[String], [Any]>
      * @return newly saved State of type [Triple]<[S], [V], [Map]<[String], [Any]>>
      */
-    suspend fun S.saveWithMetadata(
+    suspend fun S.saveWithMetaData(
         currentStateVersion: V?,
         metaData: Map<String, Any>
     ): Triple<S, V, Map<String, Any>> {

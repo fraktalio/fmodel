@@ -259,8 +259,8 @@ public abstract interface class com/fraktalio/fmodel/application/MaterializedLoc
 
 public final class com/fraktalio/fmodel/application/MaterializedLockingView$DefaultImpls {
 	public static fun computeNewState (Lcom/fraktalio/fmodel/application/MaterializedLockingView;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public static fun fetchStateAndMetadata (Lcom/fraktalio/fmodel/application/MaterializedLockingView;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveWithMetadata (Lcom/fraktalio/fmodel/application/MaterializedLockingView;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun fetchStateAndMetaData (Lcom/fraktalio/fmodel/application/MaterializedLockingView;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/MaterializedLockingView;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/MaterializedView : com/fraktalio/fmodel/application/ViewStateComputation, com/fraktalio/fmodel/application/ViewStateRepository {
@@ -268,8 +268,8 @@ public abstract interface class com/fraktalio/fmodel/application/MaterializedVie
 
 public final class com/fraktalio/fmodel/application/MaterializedView$DefaultImpls {
 	public static fun computeNewState (Lcom/fraktalio/fmodel/application/MaterializedView;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public static fun fetchStateWithMetadata (Lcom/fraktalio/fmodel/application/MaterializedView;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveWithMetadata (Lcom/fraktalio/fmodel/application/MaterializedView;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun fetchStateWithMetaData (Lcom/fraktalio/fmodel/application/MaterializedView;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/MaterializedView;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/fraktalio/fmodel/application/MaterializedViewKt {
@@ -308,14 +308,14 @@ public final class com/fraktalio/fmodel/application/StateComputation$DefaultImpl
 
 public abstract interface class com/fraktalio/fmodel/application/StateLockingRepository {
 	public abstract fun fetchState (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun fetchStateAndMetadata (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun fetchStateAndMetaData (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun save (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun saveWithMetadata (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun saveWithMetaData (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/fraktalio/fmodel/application/StateLockingRepository$DefaultImpls {
-	public static fun fetchStateAndMetadata (Lcom/fraktalio/fmodel/application/StateLockingRepository;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveWithMetadata (Lcom/fraktalio/fmodel/application/StateLockingRepository;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun fetchStateAndMetaData (Lcom/fraktalio/fmodel/application/StateLockingRepository;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/StateLockingRepository;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/StateOrchestratingComputation : com/fraktalio/fmodel/application/StateComputation, com/fraktalio/fmodel/domain/ISaga {
@@ -328,14 +328,14 @@ public final class com/fraktalio/fmodel/application/StateOrchestratingComputatio
 
 public abstract interface class com/fraktalio/fmodel/application/StateRepository {
 	public abstract fun fetchState (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun fetchStateAndMetadata (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun fetchStateAndMetaData (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun save (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun saveWithMetadata (Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun saveWithMetaData (Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/fraktalio/fmodel/application/StateRepository$DefaultImpls {
-	public static fun fetchStateAndMetadata (Lcom/fraktalio/fmodel/application/StateRepository;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveWithMetadata (Lcom/fraktalio/fmodel/application/StateRepository;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun fetchStateAndMetaData (Lcom/fraktalio/fmodel/application/StateRepository;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/StateRepository;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/StateStoredAggregate : com/fraktalio/fmodel/application/StateComputation, com/fraktalio/fmodel/application/StateRepository {
@@ -343,8 +343,8 @@ public abstract interface class com/fraktalio/fmodel/application/StateStoredAggr
 
 public final class com/fraktalio/fmodel/application/StateStoredAggregate$DefaultImpls {
 	public static fun computeNewState (Lcom/fraktalio/fmodel/application/StateStoredAggregate;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun fetchStateAndMetadata (Lcom/fraktalio/fmodel/application/StateStoredAggregate;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveWithMetadata (Lcom/fraktalio/fmodel/application/StateStoredAggregate;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun fetchStateAndMetaData (Lcom/fraktalio/fmodel/application/StateStoredAggregate;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/StateStoredAggregate;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/fraktalio/fmodel/application/StateStoredAggregateKt {
@@ -363,8 +363,8 @@ public abstract interface class com/fraktalio/fmodel/application/StateStoredLock
 
 public final class com/fraktalio/fmodel/application/StateStoredLockingAggregate$DefaultImpls {
 	public static fun computeNewState (Lcom/fraktalio/fmodel/application/StateStoredLockingAggregate;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun fetchStateAndMetadata (Lcom/fraktalio/fmodel/application/StateStoredLockingAggregate;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveWithMetadata (Lcom/fraktalio/fmodel/application/StateStoredLockingAggregate;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun fetchStateAndMetaData (Lcom/fraktalio/fmodel/application/StateStoredLockingAggregate;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/StateStoredLockingAggregate;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate : com/fraktalio/fmodel/application/StateLockingRepository, com/fraktalio/fmodel/application/StateOrchestratingComputation {
@@ -372,8 +372,8 @@ public abstract interface class com/fraktalio/fmodel/application/StateStoredLock
 
 public final class com/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate$DefaultImpls {
 	public static fun computeNewState (Lcom/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun fetchStateAndMetadata (Lcom/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveWithMetadata (Lcom/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun fetchStateAndMetaData (Lcom/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/StateStoredLockingOrchestratingAggregate;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/StateStoredOrchestratingAggregate : com/fraktalio/fmodel/application/StateOrchestratingComputation, com/fraktalio/fmodel/application/StateRepository {
@@ -381,8 +381,8 @@ public abstract interface class com/fraktalio/fmodel/application/StateStoredOrch
 
 public final class com/fraktalio/fmodel/application/StateStoredOrchestratingAggregate$DefaultImpls {
 	public static fun computeNewState (Lcom/fraktalio/fmodel/application/StateStoredOrchestratingAggregate;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun fetchStateAndMetadata (Lcom/fraktalio/fmodel/application/StateStoredOrchestratingAggregate;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveWithMetadata (Lcom/fraktalio/fmodel/application/StateStoredOrchestratingAggregate;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun fetchStateAndMetaData (Lcom/fraktalio/fmodel/application/StateStoredOrchestratingAggregate;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/StateStoredOrchestratingAggregate;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/ViewStateComputation : com/fraktalio/fmodel/domain/IView {
@@ -407,25 +407,25 @@ public final class com/fraktalio/fmodel/application/ViewStateLockingDeduplicatio
 
 public abstract interface class com/fraktalio/fmodel/application/ViewStateLockingRepository {
 	public abstract fun fetchState (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun fetchStateAndMetadata (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun fetchStateAndMetaData (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun save (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun saveWithMetadata (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun saveWithMetaData (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/fraktalio/fmodel/application/ViewStateLockingRepository$DefaultImpls {
-	public static fun fetchStateAndMetadata (Lcom/fraktalio/fmodel/application/ViewStateLockingRepository;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveWithMetadata (Lcom/fraktalio/fmodel/application/ViewStateLockingRepository;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun fetchStateAndMetaData (Lcom/fraktalio/fmodel/application/ViewStateLockingRepository;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/ViewStateLockingRepository;Ljava/lang/Object;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class com/fraktalio/fmodel/application/ViewStateRepository {
 	public abstract fun fetchState (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun fetchStateWithMetadata (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun fetchStateWithMetaData (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun save (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun saveWithMetadata (Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun saveWithMetaData (Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/fraktalio/fmodel/application/ViewStateRepository$DefaultImpls {
-	public static fun fetchStateWithMetadata (Lcom/fraktalio/fmodel/application/ViewStateRepository;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun saveWithMetadata (Lcom/fraktalio/fmodel/application/ViewStateRepository;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun fetchStateWithMetaData (Lcom/fraktalio/fmodel/application/ViewStateRepository;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveWithMetaData (Lcom/fraktalio/fmodel/application/ViewStateRepository;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

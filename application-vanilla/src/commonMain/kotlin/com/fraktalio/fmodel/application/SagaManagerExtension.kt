@@ -65,7 +65,7 @@ fun <AR, A> SagaManager<AR, A>.handle(actionResults: Flow<AR>): Flow<A> = action
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ExperimentalCoroutinesApi
-fun <AR, A> SagaManager<AR, A>.handleWithMetadata(actionResults: Flow<Pair<AR, Map<String, Any>>>): Flow<Pair<A, Map<String, Any>>> =
+fun <AR, A> SagaManager<AR, A>.handleWithMetaData(actionResults: Flow<Pair<AR, Map<String, Any>>>): Flow<Pair<A, Map<String, Any>>> =
     actionResults.flatMapConcat { handle(it.first, it.second) }
 
 /**
@@ -112,5 +112,5 @@ fun <AR, A> Flow<AR>.publishTo(sagaManager: SagaManager<AR, A>): Flow<A> = sagaM
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 @ExperimentalCoroutinesApi
-fun <AR, A> Flow<Pair<AR, Map<String, Any>>>.publishWithMetadataTo(sagaManager: SagaManager<AR, A>): Flow<Pair<A, Map<String, Any>>> =
-    sagaManager.handleWithMetadata(this)
+fun <AR, A> Flow<Pair<AR, Map<String, Any>>>.publishWithMetaDataTo(sagaManager: SagaManager<AR, A>): Flow<Pair<A, Map<String, Any>>> =
+    sagaManager.handleWithMetaData(this)

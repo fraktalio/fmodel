@@ -45,7 +45,7 @@ suspend fun <C, S, E, I> I.handle(
     metaData: Map<String, Any>
 ): Pair<S, Map<String, Any>> where I : StateComputation<C, S, E>,
                                    I : StateRepository<C, S> =
-    command.fetchStateAndMetadata().first.computeNewState(command).saveWithMetadata(metaData)
+    command.fetchStateAndMetaData().first.computeNewState(command).saveWithMetaData(metaData)
 
 /**
  * Extension function - Handles the command message of type [C] to the locking state stored aggregate, optimistically
@@ -77,10 +77,10 @@ suspend fun <C, S, E, V, I> I.handleOptimistically(
     metaData: Map<String, Any>
 ): Triple<S, V, Map<String, Any>> where I : StateComputation<C, S, E>,
                                         I : StateLockingRepository<C, S, V> {
-    val (state, version, _) = command.fetchStateAndMetadata()
+    val (state, version, _) = command.fetchStateAndMetaData()
     return state
         .computeNewState(command)
-        .saveWithMetadata(version, metaData)
+        .saveWithMetaData(version, metaData)
 }
 
 /**
@@ -103,7 +103,7 @@ fun <C, S, E, I> I.handle(commands: Flow<C>): Flow<S> where I : StateComputation
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <C, S, E, I> I.handleWithMetadata(commands: Flow<Pair<C, Map<String, Any>>>): Flow<Pair<S, Map<String, Any>>> where I : StateComputation<C, S, E>,
+fun <C, S, E, I> I.handleWithMetaData(commands: Flow<Pair<C, Map<String, Any>>>): Flow<Pair<S, Map<String, Any>>> where I : StateComputation<C, S, E>,
                                                                                                                         I : StateRepository<C, S> =
     commands.map { handle(it.first, it.second) }
 
@@ -127,7 +127,7 @@ fun <C, S, E, V, I> I.handleOptimistically(commands: Flow<C>): Flow<Pair<S, V>> 
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <C, S, E, V, I> I.handleOptimisticallyWithMetadata(commands: Flow<Pair<C, Map<String, Any>>>): Flow<Triple<S, V, Map<String, Any>>> where I : StateComputation<C, S, E>,
+fun <C, S, E, V, I> I.handleOptimisticallyWithMetaData(commands: Flow<Pair<C, Map<String, Any>>>): Flow<Triple<S, V, Map<String, Any>>> where I : StateComputation<C, S, E>,
                                                                                                                                               I : StateLockingRepository<C, S, V> =
     commands.map { handleOptimistically(it.first, it.second) }
 
@@ -147,17 +147,17 @@ suspend fun <C, S, E, A> C.publishTo(aggregate: A): S where A : StateComputation
  * Extension function - Publishes the command of type [C] with metadata of type [Map]<[String], [Any]> to the state stored aggregate
  * @receiver command of type [C]
  * @param aggregate of type [StateComputation]<[C], [S], [E]>, [StateRepository]<[C], [S]>
- * @param withMetadata metadata of type [Map]<[String], [Any]>
+ * @param withMetaData metadata of type [Map]<[String], [Any]>
  * @return the stored State with metadata of type [Pair]<[S], [Map]<[String], [Any]>>
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 suspend fun <C, S, E, A> C.publishTo(
     aggregate: A,
-    withMetadata: Map<String, Any>
+    withMetaData: Map<String, Any>
 ): Pair<S, Map<String, Any>> where A : StateComputation<C, S, E>,
                                    A : StateRepository<C, S> =
-    aggregate.handle(this, withMetadata)
+    aggregate.handle(this, withMetaData)
 
 /**
  * Extension function - Publishes the command of type [C] to the locking state stored aggregate, optimistically
@@ -175,17 +175,17 @@ suspend fun <C, S, E, V, A> C.publishOptimisticallyTo(aggregate: A): Pair<S, V> 
  * Extension function - Publishes the command of type [C] with metadata of type [Map]<[String], [Any]> to the locking state stored aggregate, optimistically
  * @receiver command of type [C]
  * @param aggregate of type [StateComputation]<[C], [S], [E]>, [StateLockingRepository]<[C], [S] ,[V]>
- * @param withMetadata metadata of type [Map]<[String], [Any]>
+ * @param withMetaData metadata of type [Map]<[String], [Any]>
  * @return the stored State with version and metadata of type [Triple]<[S], [V], [Map]<[String], [Any]>>
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 suspend fun <C, S, E, V, A> C.publishOptimisticallyTo(
     aggregate: A,
-    withMetadata: Map<String, Any>
+    withMetaData: Map<String, Any>
 ): Triple<S, V, Map<String, Any>> where A : StateComputation<C, S, E>,
                                         A : StateLockingRepository<C, S, V> =
-    aggregate.handleOptimistically(this, withMetadata)
+    aggregate.handleOptimistically(this, withMetaData)
 
 /**
  * Extension function - Publishes the [Flow] of commands of type [C] to the state stored aggregate
@@ -207,9 +207,9 @@ fun <C, S, E, A> Flow<C>.publishTo(aggregate: A): Flow<S> where A : StateComputa
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <C, S, E, A> Flow<Pair<C, Map<String, Any>>>.publishWithMetadataTo(aggregate: A): Flow<Pair<S, Map<String, Any>>> where A : StateComputation<C, S, E>,
+fun <C, S, E, A> Flow<Pair<C, Map<String, Any>>>.publishWithMetaDataTo(aggregate: A): Flow<Pair<S, Map<String, Any>>> where A : StateComputation<C, S, E>,
                                                                                                                             A : StateRepository<C, S> =
-    aggregate.handleWithMetadata(this)
+    aggregate.handleWithMetaData(this)
 
 /**
  * Extension function - Publishes the command of type [C] to the locking state stored aggregate, optimistically
@@ -231,6 +231,6 @@ fun <C, S, E, V, A> Flow<C>.publishOptimisticallyTo(aggregate: A): Flow<Pair<S, 
  *
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
-fun <C, S, E, V, A> Flow<Pair<C, Map<String, Any>>>.publishOptimisticallyWithMetadataTo(aggregate: A): Flow<Triple<S, V, Map<String, Any>>> where A : StateComputation<C, S, E>,
+fun <C, S, E, V, A> Flow<Pair<C, Map<String, Any>>>.publishOptimisticallyWithMetaDataTo(aggregate: A): Flow<Triple<S, V, Map<String, Any>>> where A : StateComputation<C, S, E>,
                                                                                                                                                   A : StateLockingRepository<C, S, V> =
-    aggregate.handleOptimisticallyWithMetadata(this)
+    aggregate.handleOptimisticallyWithMetaData(this)
