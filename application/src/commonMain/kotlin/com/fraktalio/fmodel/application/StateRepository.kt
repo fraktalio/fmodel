@@ -34,12 +34,29 @@ interface StateRepository<C, S> {
     suspend fun C.fetchState(): S?
 
     /**
+     * Fetch state and metadata
+     *
+     * @receiver Command of type [C]
+     * @return the [Pair] of current State/[S] and metadata of type [Map]<[String], [Any]>
+     */
+    suspend fun C.fetchStateAndMetaData(): Pair<S?, Map<String, Any>> = Pair(fetchState(), emptyMap())
+
+    /**
      * Save state
      *
      * @receiver State of type [S]
      * @return newly saved State of type [S]
      */
     suspend fun S.save(): S
+
+    /**
+     * Save state with metadata
+     *
+     * @receiver State of type [S]
+     * @param metaData metadata of type [Map]<[String], [Any]>
+     * @return newly saved State of type [Pair]<[S], [Map]<[String], [Any]>>
+     */
+    suspend fun S.saveWithMetaData(metaData: Map<String, Any>): Pair<S, Map<String, Any>> = Pair(save(), emptyMap())
 }
 
 /**
@@ -67,6 +84,17 @@ interface StateLockingRepository<C, S, V> {
     suspend fun C.fetchState(): Pair<S?, V?>
 
     /**
+     * Fetch state, version and metadata
+     *
+     * @receiver Command of type [C]
+     * @return the [Triple] of current State/[S], current Version/[V] and metadata of type [Map]<[String], [Any]>
+     */
+    suspend fun C.fetchStateAndMetaData(): Triple<S?, V?, Map<String, Any>> {
+        val (state, version) = fetchState()
+        return Triple(state, version, emptyMap())
+    }
+
+    /**
      * Save state
      *
      * You can update/save the item/state, but only if the `version` number in the storage has not changed.
@@ -76,4 +104,23 @@ interface StateLockingRepository<C, S, V> {
      * @return newly saved State of type [Pair]<[S], [V]>
      */
     suspend fun S.save(currentStateVersion: V?): Pair<S, V>
+
+    /**
+     * Save state with metadata
+     *
+     * You can update/save the item/state, but only if the `version` number in the storage has not changed.
+     *
+     * @receiver State/[S]
+     * @param currentStateVersion The current version of the state
+     * @param metaData metadata of type [Map]<[String], [Any]>
+     * @return newly saved State of type [Triple]<[S], [V], [Map]<[String], [Any]>>
+     */
+    suspend fun S.saveWithMetaData(
+        currentStateVersion: V?,
+        metaData: Map<String, Any>
+    ): Triple<S, V, Map<String, Any>> {
+        val (state, version) = save(currentStateVersion)
+        return Triple(state, version, emptyMap())
+    }
+
 }

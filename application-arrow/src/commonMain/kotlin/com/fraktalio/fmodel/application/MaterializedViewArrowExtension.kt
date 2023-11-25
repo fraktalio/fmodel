@@ -68,6 +68,45 @@ suspend fun <S, E, I> I.handleWithEffect(event: E): Either<Error, S> where I : V
     }
 }
 
+suspend fun <S, E, I> I.handleWithEffect(
+    event: E,
+    metaData: Map<String, Any>
+): Either<Error, Pair<S, Map<String, Any>>> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> {
+
+    fun S?.computeNewStateWithEffect(event: E): Either<Error, S> =
+        either {
+            catch({
+                computeNewState(event)
+            }) {
+                raise(CalculatingNewViewStateFailed(this@computeNewStateWithEffect, event, it))
+            }
+        }
+
+    suspend fun E.fetchStateWithEffectAndMetaData(): Either<Error, Pair<S?, Map<String, Any>>> =
+        either {
+            catch({
+                fetchStateWithMetaData()
+            }) {
+                raise(FetchingViewStateFailed(this@fetchStateWithEffectAndMetaData, it))
+            }
+        }
+
+    suspend fun S.saveWithEffectAndMetaData(metadata: Map<String, Any>): Either<Error, Pair<S, Map<String, Any>>> =
+        either {
+            catch({
+                saveWithMetaData(metadata)
+            }) {
+                raise(StoringStateFailed(this@saveWithEffectAndMetaData, it))
+            }
+        }
+
+    return either {
+        event.fetchStateWithEffectAndMetaData().bind().first
+            .computeNewStateWithEffect(event).bind()
+            .saveWithEffectAndMetaData(metaData).bind()
+    }
+}
+
 /**
  * Extension function - Handles the event of type [E]
  *
@@ -109,6 +148,48 @@ suspend fun <S, E, V, I> I.handleOptimisticallyWithEffect(event: E): Either<Erro
         state
             .computeNewStateWithEffect(event).bind()
             .saveWithEffect(version).bind()
+    }
+}
+
+suspend fun <S, E, V, I> I.handleOptimisticallyWithEffect(
+    event: E,
+    metaData: Map<String, Any>
+): Either<Error, Triple<S, V, Map<String, Any>>> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> {
+    fun S?.computeNewStateWithEffect(event: E): Either<Error, S> =
+        either {
+            catch({
+                computeNewState(event)
+            }) {
+                raise(CalculatingNewViewStateFailed(this@computeNewStateWithEffect, event, it))
+            }
+        }
+
+    suspend fun E.fetchStateWithEffectAndMetaData(): Either<Error, Triple<S?, V?, Map<String, Any>>> =
+        either {
+            catch({
+                fetchStateAndMetaData()
+            }) {
+                raise(FetchingViewStateFailed(this@fetchStateWithEffectAndMetaData, it))
+            }
+        }
+
+    suspend fun S.saveWithEffectAndMetaData(
+        currentVersion: V?,
+        metadata: Map<String, Any>
+    ): Either<Error, Triple<S, V, Map<String, Any>>> =
+        either {
+            catch({
+                saveWithMetaData(currentVersion, metadata)
+            }) {
+                raise(StoringStateFailed(this@saveWithEffectAndMetaData, it))
+            }
+        }
+
+    return either {
+        val (state, version, _) = event.fetchStateWithEffectAndMetaData().bind()
+        state
+            .computeNewStateWithEffect(event).bind()
+            .saveWithEffectAndMetaData(version, metaData).bind()
     }
 }
 
@@ -160,6 +241,50 @@ suspend fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplicationWithEffect(
     }
 }
 
+
+suspend fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplicationWithEffect(
+    eventAndVersionAndMetadata: Triple<E, EV, Map<String, Any>>
+): Either<Error, Triple<S, SV, Map<String, Any>>> where I : ViewStateComputation<S, E>, I : ViewStateLockingDeduplicationRepository<E, S, EV, SV> {
+    fun S?.computeNewStateWithEffect(event: E): Either<Error, S> =
+        either {
+            catch({
+                computeNewState(event)
+            }) {
+                raise(CalculatingNewViewStateFailed(this@computeNewStateWithEffect, event, it))
+            }
+        }
+
+    suspend fun E.fetchStateWithEffectAndMetaData(): Either<Error, Triple<S?, SV?, Map<String, Any>>> =
+        either {
+            catch({
+                fetchStateAndMetadata()
+            }) {
+                raise(FetchingViewStateFailed(this@fetchStateWithEffectAndMetaData, it))
+            }
+        }
+
+    suspend fun S.saveWithEffectAndMetaData(
+        entityVersion: EV,
+        currentStateVersion: SV?,
+        metadata: Map<String, Any>
+    ): Either<Error, Triple<S, SV, Map<String, Any>>> =
+        either {
+            catch({
+                saveWithMetadata(entityVersion, currentStateVersion, metadata)
+            }) {
+                raise(StoringStateFailed(this@saveWithEffectAndMetaData, it))
+            }
+        }
+
+    return either {
+        val (event, eventVersion, metadata) = eventAndVersionAndMetadata
+        val (state, currentStateVersion, _) = event.fetchStateWithEffectAndMetaData().bind()
+        state
+            .computeNewStateWithEffect(event).bind()
+            .saveWithEffectAndMetaData(eventVersion, currentStateVersion, metadata).bind()
+    }
+}
+
 /**
  * Extension function - Handles the flow of events of type [E]
  *
@@ -171,6 +296,11 @@ suspend fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplicationWithEffect(
 fun <S, E, I> I.handleWithEffect(events: Flow<E>): Flow<Either<Error, S>> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> =
     events
         .map { handleWithEffect(it) }
+        .catch { emit(either { raise(EventPublishingFailed(it)) }) }
+
+fun <S, E, I> I.handleWithEffectAndMetaData(events: Flow<Pair<E, Map<String, Any>>>): Flow<Either<Error, Pair<S, Map<String, Any>>>> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> =
+    events
+        .map { handleWithEffect(it.first, it.second) }
         .catch { emit(either { raise(EventPublishingFailed(it)) }) }
 
 /**
@@ -186,6 +316,11 @@ fun <S, E, V, I> I.handleOptimisticallyWithEffect(events: Flow<E>): Flow<Either<
         .map { handleOptimisticallyWithEffect(it) }
         .catch { emit(either { raise(EventPublishingFailed(it)) }) }
 
+fun <S, E, V, I> I.handleOptimisticallyWithEffectAndMetaData(events: Flow<Pair<E, Map<String, Any>>>): Flow<Either<Error, Triple<S, V, Map<String, Any>>>> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> =
+    events
+        .map { handleOptimisticallyWithEffect(it.first, it.second) }
+        .catch { emit(either { raise(EventPublishingFailed(it)) }) }
+
 /**
  * Extension function - Handles the flow of events of type [Pair]<[E], [EV]>
  *
@@ -199,6 +334,10 @@ fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplicationWithEffect(eventsAn
         .map { handleOptimisticallyWithDeduplicationWithEffect(it) }
         .catch { emit(either { raise(EventPublishingFailed(it)) }) }
 
+fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplicationWithEffectAndMetaData(eventsAndVersionsAndMetadata: Flow<Triple<E, EV, Map<String, Any>>>): Flow<Either<Error, Triple<S, SV, Map<String, Any>>>> where I : ViewStateComputation<S, E>, I : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
+    eventsAndVersionsAndMetadata
+        .map { handleOptimisticallyWithDeduplicationWithEffect(Triple(it.first, it.second, it.third)) }
+        .catch { emit(either { raise(EventPublishingFailed(it)) }) }
 
 /**
  * Extension function - Publishes the event of type [E] to the materialized view
@@ -211,6 +350,12 @@ fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplicationWithEffect(eventsAn
 suspend fun <S, E, M> E.publishWithEffect(materializedView: M): Either<Error, S> where M : ViewStateComputation<S, E>, M : ViewStateRepository<E, S> =
     materializedView.handleWithEffect(this)
 
+suspend fun <S, E, M> E.publishWithEffect(
+    materializedView: M,
+    withMetaData: Map<String, Any>
+): Either<Error, Pair<S, Map<String, Any>>> where M : ViewStateComputation<S, E>, M : ViewStateRepository<E, S> =
+    materializedView.handleWithEffect(this, withMetaData)
+
 /**
  * Extension function - Publishes the event of type [E] to the materialized view
  * @receiver event of type [E]
@@ -222,6 +367,12 @@ suspend fun <S, E, M> E.publishWithEffect(materializedView: M): Either<Error, S>
 suspend fun <S, E, V, M> E.publishOptimisticallyWithEffect(materializedView: M): Either<Error, Pair<S, V>> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
     materializedView.handleOptimisticallyWithEffect(this)
 
+suspend fun <S, E, V, M> E.publishOptimisticallyWithEffect(
+    materializedView: M,
+    withMetaData: Map<String, Any>
+): Either<Error, Triple<S, V, Map<String, Any>>> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
+    materializedView.handleOptimisticallyWithEffect(this, withMetaData)
+
 /**
  * Extension function - Publishes the event of type [E] to the materialized view
  * @receiver event of type [E]
@@ -231,6 +382,11 @@ suspend fun <S, E, V, M> E.publishOptimisticallyWithEffect(materializedView: M):
  * @author Иван Дугалић / Ivan Dugalic / @idugalic
  */
 suspend fun <S, E, EV, SV, M> Pair<E, EV>.publishOptimisticallyWithDeduplicationWithEffect(materializedView: M): Either<Error, Pair<S, SV>> where M : ViewStateComputation<S, E>, M : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
+    materializedView.handleOptimisticallyWithDeduplicationWithEffect(this)
+
+suspend fun <S, E, EV, SV, M> Triple<E, EV, Map<String, Any>>.publishOptimisticallyWithDeduplicationWithEffect(
+    materializedView: M
+): Either<Error, Triple<S, SV, Map<String, Any>>> where M : ViewStateComputation<S, E>, M : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
     materializedView.handleOptimisticallyWithDeduplicationWithEffect(this)
 
 /**
@@ -244,6 +400,9 @@ suspend fun <S, E, EV, SV, M> Pair<E, EV>.publishOptimisticallyWithDeduplication
 fun <S, E, M> Flow<E>.publishWithEffect(materializedView: M): Flow<Either<Error, S>> where M : ViewStateComputation<S, E>, M : ViewStateRepository<E, S> =
     materializedView.handleWithEffect(this)
 
+fun <S, E, M> Flow<Pair<E, Map<String, Any>>>.publishWithEffectAndMetaData(materializedView: M): Flow<Either<Error, Pair<S, Map<String, Any>>>> where M : ViewStateComputation<S, E>, M : ViewStateRepository<E, S> =
+    materializedView.handleWithEffectAndMetaData(this)
+
 /**
  * Extension function - Publishes the event of type [E] to the materialized view
  * @receiver [Flow] of events of type [E]
@@ -255,6 +414,9 @@ fun <S, E, M> Flow<E>.publishWithEffect(materializedView: M): Flow<Either<Error,
 fun <S, E, V, M> Flow<E>.publishOptimisticallyWithEffect(materializedView: M): Flow<Either<Error, Pair<S, V>>> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
     materializedView.handleOptimisticallyWithEffect(this)
 
+fun <S, E, V, M> Flow<Pair<E, Map<String, Any>>>.publishOptimisticallyWithEffectAndMetaData(materializedView: M): Flow<Either<Error, Triple<S, V, Map<String, Any>>>> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
+    materializedView.handleOptimisticallyWithEffectAndMetaData(this)
+
 /**
  * Extension function - Publishes the event of type [E] to the materialized view
  * @receiver [Flow] of events of type [E]
@@ -265,3 +427,8 @@ fun <S, E, V, M> Flow<E>.publishOptimisticallyWithEffect(materializedView: M): F
  */
 fun <S, E, EV, SV, M> Flow<Pair<E, EV>>.publishOptimisticallyWithDeduplicationWithEffect(materializedView: M): Flow<Either<Error, Pair<S, SV>>> where M : ViewStateComputation<S, E>, M : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
     materializedView.handleOptimisticallyWithDeduplicationWithEffect(this)
+
+fun <S, E, EV, SV, M> Flow<Triple<E, EV, Map<String, Any>>>.publishOptimisticallyWithDeduplicationWithEffectAndMetadata(
+    materializedView: M
+): Flow<Either<Error, Triple<S, SV, Map<String, Any>>>> where M : ViewStateComputation<S, E>, M : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
+    materializedView.handleOptimisticallyWithDeduplicationWithEffectAndMetaData(this)

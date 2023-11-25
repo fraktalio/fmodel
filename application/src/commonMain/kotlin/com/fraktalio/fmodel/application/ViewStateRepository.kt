@@ -34,12 +34,29 @@ interface ViewStateRepository<E, S> {
     suspend fun E.fetchState(): S?
 
     /**
+     * Fetch state and metadata
+     *
+     * @receiver Event of type [E]
+     * @return the [Pair] of current State/[S] and metadata of type [Map]<[String], [Any]>
+     */
+    suspend fun E.fetchStateWithMetaData(): Pair<S?, Map<String, Any>> = Pair(fetchState(), emptyMap())
+
+    /**
      * Save state
      *
      * @receiver State of type [S]
      * @return newly saved State of type [S]
      */
     suspend fun S.save(): S
+
+    /**
+     * Save state with metadata
+     *
+     * @receiver State of type [S]
+     * @param metaData metadata of type [Map]<[String], [Any]>
+     * @return newly saved State of type [Pair]<[S], [Map]<[String], [Any]>>
+     */
+    suspend fun S.saveWithMetaData(metaData: Map<String, Any>): Pair<S, Map<String, Any>> = Pair(save(), emptyMap())
 }
 
 /**
@@ -67,6 +84,17 @@ interface ViewStateLockingRepository<E, S, V> {
     suspend fun E.fetchState(): Pair<S?, V?>
 
     /**
+     * Fetch state, version and metadata
+     *
+     * @receiver Event of type [E]
+     * @return the [Triple] of current State/[S], current Version/[V] and metadata of type [Map]<[String], [Any]>
+     */
+    suspend fun E.fetchStateAndMetaData(): Triple<S?, V?, Map<String, Any>> {
+        val (state, version) = fetchState()
+        return Triple(state, version, emptyMap())
+    }
+
+    /**
      * Save state
      *
      * You can update/save the item/state, but only if the `version` number in the storage has not changed.
@@ -76,6 +104,24 @@ interface ViewStateLockingRepository<E, S, V> {
      * @return newly saved State of type [Pair]<[S], [V]>
      */
     suspend fun S.save(currentStateVersion: V?): Pair<S, V>
+
+    /**
+     * Save state and metadata
+     *
+     * You can update/save the item/state, but only if the `version` number in the storage has not changed.
+     *
+     * @receiver State/[S] to be saved
+     * @param currentStateVersion Current State version of type [V]?
+     * @param metaData metadata of type [Map]<[String], [Any]>
+     * @return newly saved State of type [Triple]<[S], [V], [Map]<[String], [Any]>>
+     */
+    suspend fun S.saveWithMetaData(
+        currentStateVersion: V?,
+        metaData: Map<String, Any>
+    ): Triple<S, V, Map<String, Any>> {
+        val (state, version) = save(currentStateVersion)
+        return Triple(state, version, emptyMap())
+    }
 }
 
 /**
@@ -107,6 +153,17 @@ interface ViewStateLockingDeduplicationRepository<E, S, EV, SV> {
     suspend fun E.fetchState(): Pair<S?, SV?>
 
     /**
+     * Fetch state, version and metadata
+     *
+     * @receiver Event of type [E]
+     * @return the [Triple] of current State/[S], current state Version/[SV] and metadata of type [Map]<[String], [Any]>
+     */
+    suspend fun E.fetchStateAndMetadata(): Triple<S?, SV?, Map<String, Any>> {
+        val (state, stateVersion) = fetchState()
+        return Triple(state, stateVersion, emptyMap())
+    }
+
+    /**
      * Save state and version
      *
      * You can update/save the item/state,
@@ -119,4 +176,26 @@ interface ViewStateLockingDeduplicationRepository<E, S, EV, SV> {
      * @return newly saved State of type [Pair]<[S], [SV]>
      */
     suspend fun S.save(eventVersion: EV, currentStateVersion: SV?): Pair<S, SV>
+
+    /**
+     * Save state, version and metadata
+     *
+     * You can update/save the item/state,
+     * but only if the `version` number in the storage has not changed,
+     * or you have not seen the `eventVersion` so far.
+     *
+     * @receiver State/[S] to be saved
+     * @param eventVersion Event version
+     * @param currentStateVersion Current State version of type [SV]?
+     * @param metaData metadata of type [Map]<[String], [Any]>
+     * @return newly saved State of type [Triple]<[S], [SV], [Map]<[String], [Any]>>
+     */
+    suspend fun S.saveWithMetadata(
+        eventVersion: EV,
+        currentStateVersion: SV?,
+        metaData: Map<String, Any>
+    ): Triple<S, SV, Map<String, Any>> {
+        val (state, stateVersion) = save(eventVersion, currentStateVersion)
+        return Triple(state, stateVersion, emptyMap())
+    }
 }

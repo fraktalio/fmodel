@@ -1,39 +1,71 @@
 public final class com/fraktalio/fmodel/application/EventSourcingAggregateActorExtensionKt {
 	public static final fun handleConcurrently (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleConcurrently (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handleConcurrently (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleConcurrently (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun handleConcurrently$default (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun handleConcurrently$default (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun handleConcurrently$default (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun handleConcurrently$default (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handleConcurrentlyAndOptimistically (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleConcurrentlyAndOptimistically (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handleConcurrentlyAndOptimistically (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleConcurrentlyAndOptimistically (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun handleConcurrentlyAndOptimistically$default (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun handleConcurrentlyAndOptimistically$default (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun handleConcurrentlyAndOptimistically$default (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun handleConcurrentlyAndOptimistically$default (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishConcurrentlyAndOptimisticallyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishConcurrentlyAndOptimisticallyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishConcurrentlyAndOptimisticallyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishConcurrentlyAndOptimisticallyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun publishConcurrentlyAndOptimisticallyTo$default (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun publishConcurrentlyAndOptimisticallyTo$default (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun publishConcurrentlyAndOptimisticallyTo$default (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun publishConcurrentlyAndOptimisticallyTo$default (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishConcurrentlyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishConcurrentlyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishConcurrentlyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishConcurrentlyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun publishConcurrentlyTo$default (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun publishConcurrentlyTo$default (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun publishConcurrentlyTo$default (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun publishConcurrentlyTo$default (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public final class com/fraktalio/fmodel/application/EventSourcingAggregateExtensionKt {
 	public static final fun handle (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handle (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handle (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimisticallyWithMetaData (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimisticallyWithMetaData (Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleWithMetaData (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleWithMetaData (Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishOptimisticallyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishOptimisticallyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyWithMetaDataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyWithMetaDataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingLockingOrchestratingAggregate;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/EventSourcingAggregate;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingAggregate;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishWithMetaDataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingAggregate;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishWithMetaDataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/EventSourcingOrchestratingAggregate;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public final class com/fraktalio/fmodel/application/MaterializedViewActorExtensionKt {
@@ -48,18 +80,30 @@ public final class com/fraktalio/fmodel/application/MaterializedViewActorExtensi
 }
 
 public final class com/fraktalio/fmodel/application/MaterializedViewExtensionKt {
+	public static final fun handle (Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimisticallyWithDeduplication (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlin/Pair;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimisticallyWithDeduplication (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlin/Pair;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimisticallyWithDeduplication (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimisticallyWithDeduplicationAndMetaData (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimisticallyWithMetaData (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleWithMetaData (Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyWithDeduplicationAndMetaDataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyWithDeduplicationTo (Lkotlin/Pair;Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyWithDeduplicationTo (Lkotlin/Pair;Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyWithDeduplicationTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyWithMetaDataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/ViewStateComputation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishWithMetaDataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/ViewStateComputation;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public final class com/fraktalio/fmodel/application/SagaManagerActorExtensionKt {
@@ -71,9 +115,13 @@ public final class com/fraktalio/fmodel/application/SagaManagerActorExtensionKt 
 
 public final class com/fraktalio/fmodel/application/SagaManagerExtensionKt {
 	public static final fun handle (Lcom/fraktalio/fmodel/application/SagaManager;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handle (Lcom/fraktalio/fmodel/application/SagaManager;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/SagaManager;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleWithMetaData (Lcom/fraktalio/fmodel/application/SagaManager;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/SagaManager;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/SagaManager;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun publishTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/SagaManager;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishWithMetaDataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/SagaManager;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public final class com/fraktalio/fmodel/application/StateStoredAggregateActorExtensionKt {
@@ -88,13 +136,21 @@ public final class com/fraktalio/fmodel/application/StateStoredAggregateActorExt
 }
 
 public final class com/fraktalio/fmodel/application/StateStoredAggregateExtensionKt {
+	public static final fun handle (Lcom/fraktalio/fmodel/application/StateComputation;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/StateComputation;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handle (Lcom/fraktalio/fmodel/application/StateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/StateComputation;Ljava/lang/Object;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/StateComputation;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun handleOptimistically (Lcom/fraktalio/fmodel/application/StateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleOptimisticallyWithMetaData (Lcom/fraktalio/fmodel/application/StateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun handleWithMetaData (Lcom/fraktalio/fmodel/application/StateComputation;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/StateComputation;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/StateComputation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishOptimisticallyTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/StateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishOptimisticallyWithMetaDataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/StateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/StateComputation;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishTo (Ljava/lang/Object;Lcom/fraktalio/fmodel/application/StateComputation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun publishTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/StateComputation;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun publishWithMetaDataTo (Lkotlinx/coroutines/flow/Flow;Lcom/fraktalio/fmodel/application/StateComputation;)Lkotlinx/coroutines/flow/Flow;
 }
 

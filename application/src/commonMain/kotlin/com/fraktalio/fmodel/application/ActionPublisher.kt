@@ -17,6 +17,7 @@
 package com.fraktalio.fmodel.application
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * Action publisher interface
@@ -36,4 +37,14 @@ interface ActionPublisher<A> {
      * @return [Flow] of newly published Actions of type [A]
      */
     fun Flow<A>.publish(): Flow<A>
+
+    /**
+     * Publish actions with metadata
+     *
+     * @receiver [Flow] of Actions of type [A]
+     * @param withMetaData metadata of type [Map]<[String], [Any]>
+     * @return [Flow] of newly published Actions of type [Pair]<[A], [Map]<[String], [Any]>>
+     */
+    fun Flow<A>.publish(withMetaData: Map<String, Any>): Flow<Pair<A, Map<String, Any>>> =
+        publish().map { Pair(it, emptyMap()) }
 }

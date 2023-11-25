@@ -30,6 +30,11 @@ import kotlinx.coroutines.flow.map
 suspend fun <S, E, I> I.handle(event: E): S where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> =
     event.fetchState().computeNewState(event).save()
 
+suspend fun <S, E, I> I.handle(
+    event: E,
+    metaData: Map<String, Any>
+): Pair<S, Map<String, Any>> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> =
+    event.fetchStateWithMetaData().first.computeNewState(event).saveWithMetaData(metaData)
 
 /**
  * Extension function - Handles the event of type [E]
@@ -44,6 +49,16 @@ suspend fun <S, E, V, I> I.handleOptimistically(event: E): Pair<S, V> where I : 
     return state
         .computeNewState(event)
         .save(version)
+}
+
+suspend fun <S, E, V, I> I.handleOptimistically(
+    event: E,
+    metaData: Map<String, Any>
+): Triple<S, V, Map<String, Any>> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> {
+    val (state, version, _) = event.fetchStateAndMetaData()
+    return state
+        .computeNewState(event)
+        .saveWithMetaData(version, metaData)
 }
 
 /**
@@ -62,6 +77,17 @@ suspend fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplication(eventAndVe
         .save(eventVersion, currentStateVersion)
 }
 
+suspend fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplication(
+    eventAndVersion: Pair<E, EV>,
+    metaData: Map<String, Any>
+): Triple<S, SV, Map<String, Any>> where I : ViewStateComputation<S, E>, I : ViewStateLockingDeduplicationRepository<E, S, EV, SV> {
+    val (event, eventVersion) = eventAndVersion
+    val (state, currentStateVersion, _) = event.fetchStateAndMetadata()
+    return state
+        .computeNewState(event)
+        .saveWithMetadata(eventVersion, currentStateVersion, metaData)
+}
+
 /**
  * Extension function - Handles the flow of events of type [E]
  *
@@ -72,6 +98,9 @@ suspend fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplication(eventAndVe
  */
 fun <S, E, I> I.handle(events: Flow<E>): Flow<S> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> =
     events.map { handle(it) }
+
+fun <S, E, I> I.handleWithMetaData(events: Flow<Pair<E, Map<String, Any>>>): Flow<Pair<S, Map<String, Any>>> where I : ViewStateComputation<S, E>, I : ViewStateRepository<E, S> =
+    events.map { handle(it.first, it.second) }
 
 /**
  * Extension function - Handles the flow of events of type [E]
@@ -84,6 +113,9 @@ fun <S, E, I> I.handle(events: Flow<E>): Flow<S> where I : ViewStateComputation<
 fun <S, E, V, I> I.handleOptimistically(events: Flow<E>): Flow<Pair<S, V>> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> =
     events.map { handleOptimistically(it) }
 
+fun <S, E, V, I> I.handleOptimisticallyWithMetaData(events: Flow<Pair<E, Map<String, Any>>>): Flow<Triple<S, V, Map<String, Any>>> where I : ViewStateComputation<S, E>, I : ViewStateLockingRepository<E, S, V> =
+    events.map { handleOptimistically(it.first, it.second) }
+
 /**
  * Extension function - Handles the flow of events of type [E]
  *
@@ -94,6 +126,9 @@ fun <S, E, V, I> I.handleOptimistically(events: Flow<E>): Flow<Pair<S, V>> where
  */
 fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplication(eventsAndVersions: Flow<Pair<E, EV>>): Flow<Pair<S, SV>> where I : ViewStateComputation<S, E>, I : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
     eventsAndVersions.map { handleOptimisticallyWithDeduplication(it) }
+
+fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplicationAndMetaData(eventsAndVersions: Flow<Triple<E, EV, Map<String, Any>>>): Flow<Triple<S, SV, Map<String, Any>>> where I : ViewStateComputation<S, E>, I : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
+    eventsAndVersions.map { handleOptimisticallyWithDeduplication(Pair(it.first, it.second), it.third) }
 
 /**
  * Extension function - Publishes the event of type [E] to the materialized view
@@ -106,6 +141,12 @@ fun <S, E, EV, SV, I> I.handleOptimisticallyWithDeduplication(eventsAndVersions:
 suspend fun <S, E, M> E.publishTo(materializedView: M): S where M : ViewStateComputation<S, E>, M : ViewStateRepository<E, S> =
     materializedView.handle(this)
 
+suspend fun <S, E, M> E.publishTo(
+    materializedView: M,
+    withMetaData: Map<String, Any>
+): Pair<S, Map<String, Any>> where M : ViewStateComputation<S, E>, M : ViewStateRepository<E, S> =
+    materializedView.handle(this, withMetaData)
+
 /**
  * Extension function - Publishes the event of type [E] to the materialized view
  * @receiver event of type [E]
@@ -116,6 +157,12 @@ suspend fun <S, E, M> E.publishTo(materializedView: M): S where M : ViewStateCom
  */
 suspend fun <S, E, V, M> E.publishOptimisticallyTo(materializedView: M): Pair<S, V> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
     materializedView.handleOptimistically(this)
+
+suspend fun <S, E, V, M> E.publishOptimisticallyTo(
+    materializedView: M,
+    withMetaData: Map<String, Any>
+): Triple<S, V, Map<String, Any>> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
+    materializedView.handleOptimistically(this, withMetaData)
 
 /**
  * Extension function - Publishes the event of type [Pair]<[E], [EV]> to the materialized view
@@ -128,6 +175,12 @@ suspend fun <S, E, V, M> E.publishOptimisticallyTo(materializedView: M): Pair<S,
 suspend fun <S, E, EV, SV, M> Pair<E, EV>.publishOptimisticallyWithDeduplicationTo(materializedView: M): Pair<S, SV> where M : ViewStateComputation<S, E>, M : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
     materializedView.handleOptimisticallyWithDeduplication(this)
 
+suspend fun <S, E, EV, SV, M> Pair<E, EV>.publishOptimisticallyWithDeduplicationTo(
+    materializedView: M,
+    withMetaData: Map<String, Any>
+): Triple<S, SV, Map<String, Any>> where M : ViewStateComputation<S, E>, M : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
+    materializedView.handleOptimisticallyWithDeduplication(this, withMetaData)
+
 /**
  * Extension function - Publishes the event of type [E] to the materialized view of type
  * @receiver [Flow] of events of type [E]
@@ -138,6 +191,9 @@ suspend fun <S, E, EV, SV, M> Pair<E, EV>.publishOptimisticallyWithDeduplication
  */
 fun <S, E, M> Flow<E>.publishTo(materializedView: M): Flow<S> where M : ViewStateComputation<S, E>, M : ViewStateRepository<E, S> =
     materializedView.handle(this)
+
+fun <S, E, M> Flow<Pair<E, Map<String, Any>>>.publishWithMetaDataTo(materializedView: M): Flow<Pair<S, Map<String, Any>>> where M : ViewStateComputation<S, E>, M : ViewStateRepository<E, S> =
+    materializedView.handleWithMetaData(this)
 
 /**
  * Extension function - Publishes the event of type [E] to the materialized view
@@ -150,6 +206,9 @@ fun <S, E, M> Flow<E>.publishTo(materializedView: M): Flow<S> where M : ViewStat
 fun <S, E, V, M> Flow<E>.publishOptimisticallyTo(materializedView: M): Flow<Pair<S, V>> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
     materializedView.handleOptimistically(this)
 
+fun <S, E, V, M> Flow<Pair<E, Map<String, Any>>>.publishOptimisticallyWithMetaDataTo(materializedView: M): Flow<Triple<S, V, Map<String, Any>>> where M : ViewStateComputation<S, E>, M : ViewStateLockingRepository<E, S, V> =
+    materializedView.handleOptimisticallyWithMetaData(this)
+
 /**
  * Extension function - Publishes the event of type [Pair]<[E], [EV]> to the materialized view
  * @receiver [Flow] of events of type [Pair]<[E], [EV]>
@@ -160,3 +219,8 @@ fun <S, E, V, M> Flow<E>.publishOptimisticallyTo(materializedView: M): Flow<Pair
  */
 fun <S, E, EV, SV, M> Flow<Pair<E, EV>>.publishOptimisticallyWithDeduplicationTo(materializedView: M): Flow<Pair<S, SV>> where M : ViewStateComputation<S, E>, M : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
     materializedView.handleOptimisticallyWithDeduplication(this)
+
+fun <S, E, EV, SV, M> Flow<Triple<E, EV, Map<String, Any>>>.publishOptimisticallyWithDeduplicationAndMetaDataTo(
+    materializedView: M
+): Flow<Triple<S, SV, Map<String, Any>>> where M : ViewStateComputation<S, E>, M : ViewStateLockingDeduplicationRepository<E, S, EV, SV> =
+    materializedView.handleOptimisticallyWithDeduplicationAndMetaData(this)
