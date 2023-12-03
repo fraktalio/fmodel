@@ -101,9 +101,9 @@ You're now ready to include Fmodel in your project.
 
 ```kotlin
 dependencies {
-    implementation("com.fraktalio.fmodel:domain:3.4.0")
-    implementation("com.fraktalio.fmodel:application-vanilla:3.4.0")
-    implementation("com.fraktalio.fmodel:application-arrow:3.4.0")
+    implementation("com.fraktalio.fmodel:domain:3.5.0")
+    implementation("com.fraktalio.fmodel:application-vanilla:3.5.0")
+    implementation("com.fraktalio.fmodel:application-arrow:3.5.0")
 }
 ```
 
@@ -112,9 +112,9 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.fraktalio.fmodel:domain:3.4.0'
-    implementation 'com.fraktalio.fmodel:application-vanilla:3.4.0'
-    implementation 'com.fraktalio.fmodel:application-arrow:3.4.0'
+    implementation 'com.fraktalio.fmodel:domain:3.5.0'
+    implementation 'com.fraktalio.fmodel:application-vanilla:3.5.0'
+    implementation 'com.fraktalio.fmodel:application-arrow:3.5.0'
 }
 ```
 
@@ -126,19 +126,19 @@ dependencies {
 <dependency>
     <groupId>com.fraktalio.fmodel</groupId>
     <artifactId>domain</artifactId>
-    <version>3.4.0</version>
+    <version>3.5.0</version>
 </dependency>
 
 <dependency>
 <groupId>com.fraktalio.fmodel</groupId>
 <artifactId>application-vanilla</artifactId>
-<version>3.4.0</version>
+<version>3.5.0</version>
 </dependency>
 
 <dependency>
 <groupId>com.fraktalio.fmodel</groupId>
 <artifactId>application-arrow</artifactId>
-<version>3.4.0</version>
+<version>3.5.0</version>
 </dependency>
 ```
 
