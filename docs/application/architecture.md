@@ -65,7 +65,16 @@ The domain model is explicitly modeling `events` and `state,` and this opens som
 
 It is important to realize that your core domain logic does not have to change in order to transit from one flavor to another!
 
-Fmodel exposes couple of types of repository interfaces/ports within the `application` module to support these two flavors:
+Fmodel exposes couple of types of repository interfaces/ports within the `application` module to support these two flavors.
+
+:::info
+- State-stored systems are using single canonical model for writing and reading/presenting, by default.
+- Event-stored/Event_sourced systems are split to command and view/query models, by default.
+
+Fmodel is promoting robust event-driven systems only in case of Event-Sourced scenario.
+
+In case of State-Stored scenario, you are limited to Decider and StateStoredAggregate components only. View, MaterializedView, SagaManager components are not available/useful.
+:::
 
 <Tabs groupId="system-type" queryString="system-type">
   <TabItem value="event-stored" label="Event-Stored / Event-Sourced">
