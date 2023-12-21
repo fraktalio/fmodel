@@ -672,7 +672,15 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 - Browse the [tests](domain/src/commonTest/kotlin/com/fraktalio/fmodel/domain/DeciderTest.kt)
 - Learn by example on the [playground](https://fraktalio.com/blog/playground)
 - Read the [blog](https://fraktalio.com/blog/)
-- Check the [demos](https://github.com/fraktalio/fmodel-demos)
+- Check the demos
+    - [Spring, R2DBC, Event Sourcing, CQRS, Postgres](https://github.com/fraktalio/fmodel-spring-demo)
+    - [Spring, R2DBC, State-Stored, Postgres](https://github.com/fraktalio/fmodel-spring-state-stored-demo)
+    - [Ktor, R2DBC, Event Sourcing, CQRS, Postgres](https://github.com/fraktalio/fmodel-ktor-demo)
+
+### FModel in other languages
+
+- [FModel in TypeScript](https://github.com/fraktalio/fmodel-ts)
+- [FModel in Rust](https://github.com/fraktalio/fmodel-rust)
 
 ## References and further reading
 
