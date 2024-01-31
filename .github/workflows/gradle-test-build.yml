@@ -30,19 +30,19 @@ jobs:
           java-version: '17'
 
       - name: Test (macos, jvm, js)
-        uses: gradle/gradle-build-action@v2.12.0
+        uses: gradle/gradle-build-action@v3.0.0
         if: matrix.os == 'macos-11'
         with:
           arguments: --full-stacktrace build
 
       - name: Test (linux)
-        uses: gradle/gradle-build-action@v2.12.0
+        uses: gradle/gradle-build-action@v3.0.0
         if: matrix.os == 'ubuntu-latest'
         with:
           arguments: --full-stacktrace linuxX64Test
 
       - name: Test (windows)
-        uses: gradle/gradle-build-action@v2.12.0
+        uses: gradle/gradle-build-action@v3.0.0
         if: matrix.os == 'windows-latest'
         with:
           arguments: --full-stacktrace mingwX64Test
