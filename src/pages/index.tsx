@@ -15,7 +15,7 @@ function HomepageHeader() {
             <div className="container">
                 <h1 className="hero__title">{siteConfig.title}</h1>
                 <p className="hero__subtitle">{siteConfig.tagline}</p>
-                <p>Accelerate development of compositional, safe and ergonomic applications</p>
+                <p>Functional, Algebraic and Reactive Domain Modeling</p>
                 <p><b>Kotlin / Multiplatform</b></p>
                 <div className={styles.buttons}>
                     <Link
@@ -35,7 +35,7 @@ export default function Home(): JSX.Element {
 
         <Layout
             title={`${siteConfig.title}`}
-            description="Functional, Algebraic and Reactive Domain Modeling">
+            description="Functional, algebraic and reactive domain modeling">
             <HomepageHeader/>
             <main>
                 <HomepageFeatures/>

@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
     title: 'Fmodel',
-    tagline: 'Functional, Algebraic and Reactive Domain Modeling ',
+    tagline: 'Accelerate development of compositional, safe and ergonomic applications',
     favicon: 'img/favicon-32x32.png',
 
     // Set the production url of your site here
