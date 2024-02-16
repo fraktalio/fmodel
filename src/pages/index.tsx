@@ -40,11 +40,11 @@ export default function Home(): JSX.Element {
             <main>
                 <HomepageFeatures/>
                 <div className="container">
-                        <CodeBlock
-                            language="kotlin"
-                            // title="A simplified model of an Order process:"
-                            showLineNumbers>
-                            {`
+                    <CodeBlock
+                        language="kotlin"
+                        // title="A simplified model of an Order process:"
+                        showLineNumbers>
+                        {`
 typealias OrderDecider = Decider<OrderCommand?, Order?, OrderEvent?>
 
 fun orderDecider() = OrderDecider(
@@ -81,9 +81,17 @@ fun orderDecider() = OrderDecider(
 // https://github.com/fraktalio/fmodel-spring-demo
 // https://github.com/fraktalio/fmodel-ktor-demo
                             `}
-                        </CodeBlock>
-                    </div>
+                    </CodeBlock>
+                </div>
+                <div className={styles.buttons}>
+                    <Link
+                        className="button button--primary button--lg"
+                        to="/docs/intro">
+                        Get Started
+                    </Link>
 
+                </div>
+                <br/>
             </main>
         </Layout>
     );
