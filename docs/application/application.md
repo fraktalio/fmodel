@@ -695,4 +695,84 @@ suspend fun <C, S, E> StateStoredAggregate.handle(command: C): S =
 </TabItem>
 </Tabs>
 
-Feel free to use these two extension modules, or create your own by using these two as a fine example.
+
+An example (taken from FModel `application-arrow` library), in case you prefer typed errors:
+
+<Tabs groupId="system-type" queryString="system-type">
+  <TabItem value="event-stored" label="Event-Stored / Event-Sourced">
+
+
+```kotlin
+fun <C, S, E> EventSourcingAggregate<C, S, E>.handleWithEffect(command: C): Flow<Either<Error, E>> =
+   command
+      .fetchEvents()
+      .computeNewEvents(command)
+      .save()
+      .map { either<Error, E> { it } }
+      .catch { emit(either { raise(CommandHandlingFailed(command)) }) }
+```
+
+</TabItem>
+  <TabItem value="state-stored" label="State-Stored">
+
+```kotlin
+suspend fun <C, S, E, I> I.handleWithEffect(command: C): Either<Error, S> where I : StateComputation<C, S, E>,
+                                                                                I : StateRepository<C, S> {
+   /**
+    * Inner function - Computes new State based on the previous State and the [command] or fails.
+    *
+    * @param command of type [C]
+    * @return [Either] (either the newly computed state of type [S] or [Error])
+    */
+   suspend fun S?.computeNewStateWithEffect(command: C): Either<Error, S> =
+      either {
+         catch({
+            computeNewState(command)
+         }) {
+            raise(CalculatingNewStateFailed(this@computeNewStateWithEffect, command, it))
+         }
+      }
+
+   /**
+    * Inner function - Fetch state - either version
+    *
+    * @receiver Command of type [C]
+    * @return [Either] (either [Error] or the State of type [S]?)
+    */
+   suspend fun C.fetchStateWithEffect(): Either<Error, S?> =
+      either {
+         catch({
+            fetchState()
+         }) {
+            raise(FetchingStateFailed(this@fetchStateWithEffect, it))
+         }
+      }
+
+   /**
+    * Inner function - Save state - either version
+    *
+    * @receiver State of type [S]
+    * @return [Either] (either [Error] or the newly saved State of type [S])
+    */
+   suspend fun S.saveWithEffect(): Either<Error, S> =
+      either {
+         catch({
+            save()
+         }) {
+            raise(StoringStateFailed(this@saveWithEffect, it))
+         }
+      }
+
+   return either {
+      command
+         .fetchStateWithEffect().bind()
+         .computeNewStateWithEffect(command).bind()
+         .saveWithEffect().bind()
+   }
+}
+```
+
+</TabItem>
+</Tabs>
+
+Feel free to use these two extension modules, or create your own by using these two as a good example.
