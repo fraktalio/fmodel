@@ -45,7 +45,8 @@ interface EventOrchestratingComputation<C, S, E> : ISaga<E, C>, IDecider<C, S, E
         resultingEvents
             .flatMapConcat { react(it) }
             .onEach { c ->
-                val newEvents = flowOf(fetchEvents(c), resultingEvents)
+                val previousEvents = resultingEvents.toList().asFlow()
+                val newEvents = flowOf(fetchEvents(c), previousEvents)
                     .flattenConcat()
                     .computeNewEventsByOrchestrating(c, fetchEvents)
                 resultingEvents = flowOf(resultingEvents, newEvents).flattenConcat()
