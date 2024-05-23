@@ -17,7 +17,7 @@ Artifacts are available on Maven Central
 
 ### What's changed
 
-In this `minor` release, we have fixed the bug on the Event Sourced aggregate within the `application` module - https://github.com/fraktalio/fmodel/pull/291.
+In this `patch` release, we have fixed the bug on the Event Sourced aggregate within the `application` module - https://github.com/fraktalio/fmodel/pull/291.
 It is reproducible only in the orchestrating scenarios where you communicate two deciders back and forth, a couple of times.
 
 **Full Changelog**: https://github.com/fraktalio/fmodel/compare/v3.5.0...v3.5.1
