@@ -7,6 +7,72 @@ import TabItem from '@theme/TabItem';
 
 # Release Notes
 
+## 3.5.1
+
+Artifacts are available on Maven Central
+
+- [https://search.maven.org/artifact/com.fraktalio.fmodel/domain/3.5.1/jar](https://search.maven.org/artifact/com.fraktalio.fmodel/domain/3.5.1/jar)
+- [https://search.maven.org/artifact/com.fraktalio.fmodel/application-vanilla/3.5.1/jar](https://search.maven.org/artifact/com.fraktalio.fmodel/application-vanilla/3.5.1/jar)
+- [https://search.maven.org/artifact/com.fraktalio.fmodel/application-arrow/3.5.1/jar](https://search.maven.org/artifact/com.fraktalio.fmodel/application-arrow/3.5.1/jar)
+
+### What's changed
+
+In this `minor` release, we have fixed the bug on the Event Sourced aggregate within the `application` module - https://github.com/fraktalio/fmodel/pull/291.
+It is reproducible only in the orchestrating scenarios where you communicate two deciders back and forth, a couple of times.
+
+**Full Changelog**: https://github.com/fraktalio/fmodel/compare/v3.5.0...v3.5.1
+
+### Include the dependencies
+
+<Tabs groupId="build" queryString="build-type">
+<TabItem value="gradleKotlin" label="Gradle (Kotlin)">
+
+```kotlin
+dependencies {
+  implementation("com.fraktalio.fmodel:domain:3.5.1")
+  implementation("com.fraktalio.fmodel:application-vanilla:3.5.1")
+  implementation("com.fraktalio.fmodel:application-arrow:3.5.1")
+}
+```
+
+</TabItem>
+<TabItem value="gradleGroovy" label="Gradle (Groovy)">
+
+```groovy
+dependencies {
+  implementation 'com.fraktalio.fmodel:domain:3.5.1'
+  implementation 'com.fraktalio.fmodel:application-vanilla:3.5.1'
+  implementation 'com.fraktalio.fmodel:application-arrow:3.5.1'
+}
+```
+
+</TabItem>
+<TabItem value="maven" label="Maven">
+
+```xml
+
+<dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>domain</artifactId>
+    <version>3.5.1</version>
+</dependency>
+
+<dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>application-vanilla</artifactId>
+    <version>3.5.1</version>
+</dependency>
+
+<dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>application-arrow</artifactId>
+    <version>3.5.1</version>
+</dependency>
+```
+
+</TabItem>
+</Tabs>
+
 ## 3.5.0
 
 Artifacts are available on Maven Central
