@@ -70,10 +70,6 @@ kotlin {
         dependsOn(testTasks)
     }
 
-    tasks.named(":signIosArm64Publication") {
-        dependsOn(tasks.named(":compileTestKotlinIosArm64"))
-    }
-
     // Publishing
     publishing {
 
