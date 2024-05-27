@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 @Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
@@ -74,16 +73,18 @@ kotlin {
 
     val signingTasks = tasks.withType<Sign>()
     val testTasks = tasks.withType<AbstractTestTask>()
-    val compileKotlinTasks = tasks.withType<KotlinCompile>() // Kotlin compile tasks
 
     tasks.withType<AbstractPublishToMaven>().configureEach {
         dependsOn(signingTasks)
     }
+
     signingTasks.configureEach {
-        dependsOn(compileKotlinTasks)
         dependsOn(testTasks)
     }
 
+    tasks.named("signIosArm64Publication") {
+        dependsOn(tasks.named("compileTestKotlinIosArm64"))
+    }
     // Publishing
     publishing {
 
