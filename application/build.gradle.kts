@@ -30,7 +30,7 @@ kotlin {
     watchosSimulatorArm64()
 
     iosX64()
-    iosArm64()
+//    iosArm64()
     iosSimulatorArm64()
 
     sourceSets {
