@@ -2,7 +2,7 @@
 plugins {
     base
     id("maven-publish")
-    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.15.1"
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.16.0"
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotest.multiplatform) apply false
     alias(libs.plugins.dokka)
