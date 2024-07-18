@@ -8,8 +8,8 @@ on:
 
 env:
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false -Dorg.gradle.jvmargs="-Xmx5g -XX:+UseParallelGC -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
-  MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-  MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+  MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+  MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
   GPG_PRIVATE_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
   GPG_PRIVATE_PASSWORD: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
