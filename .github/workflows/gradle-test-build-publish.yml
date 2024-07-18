@@ -34,21 +34,21 @@ jobs:
           check-latest: true
 
       - name: Publish JVM, JS and MacOS versions
-        uses: gradle/gradle-build-action@v3.4.2
+        uses: gradle/gradle-build-action@v3.5.0
         if: matrix.os == 'macos-latest'
         with:
           cache-disabled: true
           arguments: --full-stacktrace build publishAllPublicationToOssrhRepository
 
       - name: Publish Linux version
-        uses: gradle/gradle-build-action@v3.4.2
+        uses: gradle/gradle-build-action@v3.5.0
         if: matrix.os == 'ubuntu-latest'
         with:
           cache-disabled: true
           arguments: --full-stacktrace linuxX64Test publishLinuxX64PublicationToOssrhRepository
 
       - name: Publish Windows version
-        uses: gradle/gradle-build-action@v3.4.2
+        uses: gradle/gradle-build-action@v3.5.0
         if: matrix.os == 'windows-latest'
         with:
           cache-disabled: true
