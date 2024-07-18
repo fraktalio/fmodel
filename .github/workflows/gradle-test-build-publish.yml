@@ -33,26 +33,20 @@ jobs:
           java-version: '17'
           check-latest: true
 
-      - name: Publish JVM, JS and MacOS versions
-        uses: gradle/gradle-build-action@v3.4.2
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Publish (macos, jvm, js)
         if: matrix.os == 'macos-latest'
-        with:
-          cache-disabled: true
-          arguments: --full-stacktrace build publishAllPublicationToOssrhRepository
+        run: ./gradlew build publishAllPublicationToOssrhRepository --full-stacktrace
 
-      - name: Publish Linux version
-        uses: gradle/gradle-build-action@v3.4.2
+      - name: Publish (linux)
         if: matrix.os == 'ubuntu-latest'
-        with:
-          cache-disabled: true
-          arguments: --full-stacktrace linuxX64Test publishLinuxX64PublicationToOssrhRepository
+        run: ./gradlew linuxX64Test publishLinuxX64PublicationToOssrhRepository --full-stacktrace
 
-      - name: Publish Windows version
-        uses: gradle/gradle-build-action@v3.4.2
+      - name: Publish (windows)
         if: matrix.os == 'windows-latest'
-        with:
-          cache-disabled: true
-          arguments: --full-stacktrace mingwX64Test publishMingwX64PublicationToOssrhRepository
+        run: ./gradlew mingwX64Test publishMingwX64PublicationToOssrhRepository --full-stacktrace
 
       - name: Stop Gradle daemons
         run: ./gradlew --stop

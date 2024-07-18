@@ -29,23 +29,20 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Test (macos, jvm, js)
-        uses: gradle/gradle-build-action@v3.4.2
         if: matrix.os == 'macos-latest'
-        with:
-          arguments: --full-stacktrace build
+        run: ./gradlew build --full-stacktrace
 
       - name: Test (linux)
-        uses: gradle/gradle-build-action@v3.4.2
         if: matrix.os == 'ubuntu-latest'
-        with:
-          arguments: --full-stacktrace linuxX64Test
+        run: ./gradlew linuxX64Test --full-stacktrace
 
       - name: Test (windows)
-        uses: gradle/gradle-build-action@v3.4.2
         if: matrix.os == 'windows-latest'
-        with:
-          arguments: --full-stacktrace mingwX64Test
+        run: ./gradlew mingwX64Test --full-stacktrace
 
       - name: Upload reports
         uses: actions/upload-artifact@v4.3.4
