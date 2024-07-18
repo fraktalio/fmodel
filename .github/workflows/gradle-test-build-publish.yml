@@ -35,7 +35,7 @@ jobs:
 
       - name: Publish JVM, JS and MacOS versions
         uses: gradle/gradle-build-action@v3.3.2
-        if: matrix.os == 'macos-11'
+        if: matrix.os == 'macos-latest'
         with:
           cache-disabled: true
           arguments: --full-stacktrace build publishAllPublicationToOssrhRepository

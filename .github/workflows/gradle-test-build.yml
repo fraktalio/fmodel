@@ -31,7 +31,7 @@ jobs:
 
       - name: Test (macos, jvm, js)
         uses: gradle/gradle-build-action@v3.3.2
-        if: matrix.os == 'macos-11'
+        if: matrix.os == 'macos-latest'
         with:
           arguments: --full-stacktrace build
 
