@@ -684,6 +684,8 @@ All `fmodel` components/libraries are released to [Maven Central](https://repo1.
 
 ## References and further reading
 
+- [Reference Guide](https://fraktalio.com/fmodel/)
+- [Kotlin Conf 2024 Talk](https://www.youtube.com/watch?v=VLuGvEugkGg)
 - https://www.youtube.com/watch?v=kgYGMVDHQHs
 - https://www.manning.com/books/functional-and-reactive-domain-modeling
 - https://www.manning.com/books/functional-programming-in-kotlin
