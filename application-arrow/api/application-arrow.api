@@ -1,3 +1,7 @@
+public final class com/fraktalio/fmodel/application/EphemeralViewArrowExtensionKt {
+	public static final fun handleWithEffect (Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class com/fraktalio/fmodel/application/EventSourcingAggregateArrowExtensionKt {
 	public static final fun handleOptimisticallyWithEffect (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handleOptimisticallyWithEffect (Lcom/fraktalio/fmodel/application/EventSourcingLockingAggregate;Ljava/lang/Object;Ljava/util/Map;)Lkotlinx/coroutines/flow/Flow;

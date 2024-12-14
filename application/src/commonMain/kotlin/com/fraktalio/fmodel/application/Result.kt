@@ -55,6 +55,7 @@ sealed class Error : Result() {
     ) : Error()
 
     data class StoringStateFailed<S>(val state: S, override val throwable: Throwable? = null) : Error()
+    data class FetchingEventsFailed<I>(val id: I, override val throwable: Throwable?): Error()
 }
 
 

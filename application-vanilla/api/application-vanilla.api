@@ -1,3 +1,7 @@
+public final class com/fraktalio/fmodel/application/EphemeralViewExtensionKt {
+	public static final fun handle (Lcom/fraktalio/fmodel/application/ViewStateComputation;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class com/fraktalio/fmodel/application/EventSourcingAggregateActorExtensionKt {
 	public static final fun handleConcurrently (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
 	public static final fun handleConcurrently (Lcom/fraktalio/fmodel/application/EventSourcingAggregate;Lkotlinx/coroutines/flow/Flow;IILkotlinx/coroutines/CoroutineStart;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/Flow;
