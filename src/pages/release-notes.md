@@ -7,6 +7,92 @@ import TabItem from '@theme/TabItem';
 
 # Release Notes
 
+## 3.6.0
+
+Artifacts are available on Maven Central
+
+- [https://search.maven.org/artifact/com.fraktalio.fmodel/domain/3.6.0/jar](https://search.maven.org/artifact/com.fraktalio.fmodel/domain/3.6.0/jar)
+- [https://search.maven.org/artifact/com.fraktalio.fmodel/application-vanilla/3.6.0/jar](https://search.maven.org/artifact/com.fraktalio.fmodel/application-vanilla/3.6.0/jar)
+- [https://search.maven.org/artifact/com.fraktalio.fmodel/application-arrow/3.6.0/jar](https://search.maven.org/artifact/com.fraktalio.fmodel/application-arrow/3.6.0/jar)
+
+### What's changed
+
+In this release, we have introduced a new component on the application layer `EphemeralView`:
+
+A view that is built "on the fly" and not maintained/materialized.
+Potential use cases include:
+
+- Lightweight aggregation for ad-hoc analysis
+- Development and prototyping read models
+- Building strongly consistent read models
+- Supporting the "read your own rights" guarantee
+
+The main algorithm is as follows:
+
+```kotlin
+suspend fun <S, E, Q, EV> EV.handle(query: Q): S where EV : ViewStateComputation<S, E>, EV : EphemeralViewRepository<E, Q> =
+    query.fetchEvents().fold(initialState) { s, e -> evolve(s, e) }
+```
+
+Events of type `E` are fetched based on a query `Q`, which are then used to build the respective view `IView<S, E>`. The result of that computation `S` is returned to the caller.
+
+Thank you [@DomenicDev](https://github.com/DomenicDev) for your contribution! You show that we can extend` fmodel` to better fit our specific requirements, by composing `domain` components in a different way. `EphemeralView` is a common use case, so we include it in the library.  Looking forward to what is next? :)
+
+Also, Kotlin and Arrow are updated to `v2`, respectively!
+
+**Full Changelog**: https://github.com/fraktalio/fmodel/compare/v3.5.1...v3.6.0
+
+### Include the dependencies
+
+<Tabs groupId="build" queryString="build-type">
+<TabItem value="gradleKotlin" label="Gradle (Kotlin)">
+
+```kotlin
+dependencies {
+  implementation("com.fraktalio.fmodel:domain:3.6.0")
+  implementation("com.fraktalio.fmodel:application-vanilla:3.6.0")
+  implementation("com.fraktalio.fmodel:application-arrow:3.6.0")
+}
+```
+
+</TabItem>
+<TabItem value="gradleGroovy" label="Gradle (Groovy)">
+
+```groovy
+dependencies {
+  implementation 'com.fraktalio.fmodel:domain:3.6.0'
+  implementation 'com.fraktalio.fmodel:application-vanilla:3.6.0'
+  implementation 'com.fraktalio.fmodel:application-arrow:3.6.0'
+}
+```
+
+</TabItem>
+<TabItem value="maven" label="Maven">
+
+```xml
+
+<dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>domain</artifactId>
+    <version>3.6.0</version>
+</dependency>
+
+<dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>application-vanilla</artifactId>
+    <version>3.6.0</version>
+</dependency>
+
+<dependency>
+    <groupId>com.fraktalio.fmodel</groupId>
+    <artifactId>application-arrow</artifactId>
+    <version>3.6.0</version>
+</dependency>
+```
+
+</TabItem>
+</Tabs>
+
 ## 3.5.1
 
 Artifacts are available on Maven Central
