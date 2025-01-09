@@ -253,7 +253,7 @@ natively requiring zero boilerplate code.
 `eventSourcingAggregate` function is a good example:
 
 ```kotlin
-fun <C, S, E> eventSourcingAggregate(
+fun <C, S, E> EventSourcingAggregate(
     decider: IDecider<C, S, E>,
     eventRepository: EventRepository<C, E>
 ): EventSourcingAggregate<C, S, E> =
@@ -298,7 +298,7 @@ natively requiring zero boilerplate code.
 `stateStoredAggregate` function is a good example:
 
 ```kotlin
-fun <C, S, E> stateStoredAggregate(
+fun <C, S, E> StateStoredAggregate(
     decider: IDecider<C, S, E>,
     stateRepository: StateRepository<C, S>
 ): StateStoredAggregate<C, S, E> =
@@ -430,7 +430,7 @@ natively requiring zero boilerplate code.
 `materializedView` function is a good example:
 
 ```kotlin
-fun <S, E> materializedView(
+fun <S, E> MaterializedView(
     view: IView<S, E>,
     viewStateRepository: ViewStateRepository<E, S>,
 ): MaterializedView<S, E> =
@@ -574,7 +574,7 @@ natively requiring zero boilerplate code.
 `sagaManager` function is a good example:
 
 ```kotlin
-fun <AR, A> sagaManager(
+fun <AR, A> SagaManager(
     saga: ISaga<AR, A>,
     actionPublisher: ActionPublisher<A>
 ): SagaManager<AR, A> =
