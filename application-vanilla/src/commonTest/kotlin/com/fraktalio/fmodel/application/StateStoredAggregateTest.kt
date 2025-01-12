@@ -7,6 +7,7 @@ import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumber
 import com.fraktalio.fmodel.application.examples.numbers.even.command.evenNumberStateRepository
 import com.fraktalio.fmodel.application.examples.numbers.numberStateRepository
 import com.fraktalio.fmodel.domain.IDecider
+import com.fraktalio.fmodel.domain.ISaga
 import com.fraktalio.fmodel.domain.combine
 import com.fraktalio.fmodel.domain.examples.numbers.api.Description
 import com.fraktalio.fmodel.domain.examples.numbers.api.EvenNumberState
@@ -14,6 +15,7 @@ import com.fraktalio.fmodel.domain.examples.numbers.api.NumberCommand.EvenNumber
 import com.fraktalio.fmodel.domain.examples.numbers.api.NumberValue
 import com.fraktalio.fmodel.domain.examples.numbers.api.OddNumberState
 import com.fraktalio.fmodel.domain.examples.numbers.even.command.evenNumberDecider
+import com.fraktalio.fmodel.domain.examples.numbers.numberSaga
 import com.fraktalio.fmodel.domain.examples.numbers.odd.command.oddNumberDecider
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
@@ -38,6 +40,16 @@ private suspend fun <C, S, E, V> IDecider<C, S, E>.given(
         stateRepository = repository
     ).handleOptimistically(command())
 
+private suspend fun <C, S, E> IDecider<C, S, E>.given(
+    repository: StateRepository<C, S>,
+    saga: ISaga<E, C>,
+    command: () -> C
+) = StateStoredOrchestratingAggregate(
+    decider = this,
+    saga = saga,
+    stateRepository = repository
+).handle(command())
+
 /**
  * DSL - When
  */
@@ -61,6 +73,7 @@ class StateStoredAggregateTest : FunSpec({
     val evenNumberStateRepository = evenNumberStateRepository() as EvenNumberStateRepository
     val evenNumberLockingStateRepository = evenNumberLockingStateRepository() as EvenNumberLockingStateRepository
     val numberStateRepository = numberStateRepository() as NumberStateRepository
+    val numberSaga = numberSaga()
 
     test("State-stored aggregate - add even number") {
         with(evenDecider) {
@@ -102,6 +115,18 @@ class StateStoredAggregateTest : FunSpec({
             } thenState Pair(
                 EvenNumberState(Description("2"), NumberValue(2)),
                 OddNumberState(Description("0"), NumberValue(0))
+            )
+        }
+    }
+
+    test("Orchestrated state-stored aggregate - add even and odd number") {
+        with(combinedDecider) {
+            numberStateRepository.deleteAll()
+            given(numberStateRepository, numberSaga) {
+                whenCommand(AddEvenNumber(Description("4"), NumberValue(4)))
+            } thenState Pair(
+                EvenNumberState(Description("4"), NumberValue(4)),
+                OddNumberState(Description("3"), NumberValue(3))
             )
         }
     }
