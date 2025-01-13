@@ -97,8 +97,10 @@ interface StateOrchestratingComputation<C, S, E> : ISaga<E, C>, StateComputation
     override suspend fun S?.computeNewState(command: C): S {
         val currentState = this ?: initialState
         val events = decide(command, currentState)
-        val newState = events.fold(currentState) { s, e -> evolve(s, e) }
-        events.flatMapConcat { react(it) }.onEach { newState.computeNewState(it) }.collect()
+        var newState = events.fold(currentState) { s, e -> evolve(s, e) }
+        events.flatMapConcat { react(it) }.collect {
+            newState = newState.computeNewState(it)
+        }
         return newState
     }
 }
