@@ -3,7 +3,7 @@ coroutines = "1.10.1"
 dokka = "2.0.0"
 kotest = "6.0.0.M1"
 kotest-plugin = "6.0.0.M1"
-kotlin = "2.1.0"
+kotlin = "2.1.10"
 arrow = "2.0.1"
 
 [libraries]
