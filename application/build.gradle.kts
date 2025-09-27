@@ -48,7 +48,7 @@ kotlin {
                 sourcesJar = true,
             )
         )
-        publishToMavenCentral(SonatypeHost.S01)
+        publishToMavenCentral()
 
         signAllPublications()
 
