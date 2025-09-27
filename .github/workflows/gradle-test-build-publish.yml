@@ -21,8 +21,8 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 21
-      - name: Publish and Release to MavenCentral
-        run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
+      - name: Publish to MavenCentral
+        run: ./gradlew publishToMavenCentral --no-configuration-cache
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername:  ${{ secrets.MAVEN_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_PASSWORD }}
