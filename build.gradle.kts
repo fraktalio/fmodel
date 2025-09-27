@@ -13,6 +13,10 @@ allprojects {
 
     repositories {
         mavenCentral()
+        maven {
+            name = "SonatypeSnapshots"
+            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+        }
         mavenLocal()
     }
 }
