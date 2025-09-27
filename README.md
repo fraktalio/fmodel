@@ -1,4 +1,4 @@
-# **f`(`model`)`** - Functional and Reactive Domain Modeling
+# **f`(`model`)`** - Domain Modeling
 
 When you’re developing an information system to automate the activities of the business, you are modeling the business.
 The abstractions that you design, the behaviors that you implement, and the UI interactions that you build all reflect
