@@ -26,8 +26,8 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4.7.0
         with:
-          distribution: 'adopt'
-          java-version: '17'
+          distribution: 'zulu'
+          java-version: '21'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4

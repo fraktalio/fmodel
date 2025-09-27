@@ -1,9 +1,9 @@
 [versions]
 coroutines = "1.10.1"
 dokka = "2.0.0"
-kotest = "6.0.0.M1"
-kotest-plugin = "6.0.0.M1"
-kotlin = "2.1.10"
+kotest = "6.0.0.M3"
+kotest-plugin = "6.0.0.M3"
+kotlin = "2.1.21"
 arrow = "2.0.1"
 
 [libraries]
@@ -17,3 +17,4 @@ arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotest-multiplatform = { id = "io.kotest.multiplatform", version.ref = "kotest-plugin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.29.0" }

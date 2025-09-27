@@ -8,46 +8,24 @@ on:
 
 env:
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false -Dorg.gradle.jvmargs="-Xmx5g -XX:+UseParallelGC -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
-  MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-  MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-  GPG_PRIVATE_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-  GPG_PRIVATE_PASSWORD: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
 jobs:
   publish:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ 'macos-latest', 'ubuntu-latest', 'windows-latest' ]
-
+    name: Release build and publish
+    runs-on: macOS-latest
     steps:
-      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
         with:
-          fetch-depth: 0
-
-      - name: Set up Java
-        uses: actions/setup-java@v4.7.0
-        with:
-          distribution: 'adopt'
-          java-version: '17'
-          check-latest: true
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Publish (macos, jvm, js)
-        if: matrix.os == 'macos-latest'
-        run: ./gradlew build publishAllPublicationToOssrhRepository --full-stacktrace
-
-      - name: Publish (linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: ./gradlew linuxX64Test publishLinuxX64PublicationToOssrhRepository --full-stacktrace
-
-      - name: Publish (windows)
-        if: matrix.os == 'windows-latest'
-        run: ./gradlew mingwX64Test publishMingwX64PublicationToOssrhRepository --full-stacktrace
-
-      - name: Stop Gradle daemons
-        run: ./gradlew --stop
-
+          distribution: 'zulu'
+          java-version: 21
+      - name: Publish and Release to MavenCentral
+        run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername:  ${{ secrets.MAVEN_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.MAVEN_GPG_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
