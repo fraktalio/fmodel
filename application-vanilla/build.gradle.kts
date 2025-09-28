@@ -3,7 +3,8 @@ import com.vanniktech.maven.publish.KotlinMultiplatform
 
 plugins {
     id(libs.plugins.kotlin.multiplatform.get().pluginId)
-    id(libs.plugins.kotest.multiplatform.get().pluginId)
+    id(libs.plugins.kotest.get().pluginId)
+    id(libs.plugins.ksp.get().pluginId)
     id(libs.plugins.dokka.get().pluginId)
     id(libs.plugins.vanniktech.mavenPublish.get().pluginId)
 }

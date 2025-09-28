@@ -2,7 +2,8 @@ plugins {
     base
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.17.0"
     alias(libs.plugins.kotlin.multiplatform) apply false
-    alias(libs.plugins.kotest.multiplatform) apply false
+    alias(libs.plugins.kotest) apply false
+    alias(libs.plugins.ksp) apply false
     alias(libs.plugins.vanniktech.mavenPublish) apply false
     alias(libs.plugins.dokka)
 }

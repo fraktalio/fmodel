@@ -1,10 +1,10 @@
 [versions]
-coroutines = "1.10.1"
+coroutines = "1.10.2"
 dokka = "2.0.0"
-kotest = "6.0.0.M3"
-kotest-plugin = "6.0.0.M3"
-kotlin = "2.1.21"
-arrow = "2.0.1"
+kotest = "6.0.3"
+ksp = "2.2.10-2.0.2"
+kotlin = "2.2.20"
+arrow = "2.1.2"
 
 [libraries]
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -15,6 +15,7 @@ arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 
 [plugins]
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-kotest-multiplatform = { id = "io.kotest.multiplatform", version.ref = "kotest-plugin" }
+kotest = { id = "io.kotest", version.ref = "kotest" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.34.0" }
