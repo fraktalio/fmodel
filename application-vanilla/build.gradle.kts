@@ -1,6 +1,5 @@
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
-import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     id(libs.plugins.kotlin.multiplatform.get().pluginId)
@@ -64,7 +63,7 @@ kotlin {
                 sourcesJar = true,
             )
         )
-        publishToMavenCentral(SonatypeHost.S01)
+        publishToMavenCentral()
 
         signAllPublications()
 
