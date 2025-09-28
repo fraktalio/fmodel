@@ -53,7 +53,7 @@ kotlin {
         signAllPublications()
 
 
-        coordinates(group.toString(), "application", version.toString())
+        coordinates("com.fraktalio.fmodel", "application", "3.6.1-SNAPSHOT")
         pom {
             name.set("fmodel-application")
             description.set("Fmodel provides just enough tactical Domain-Driven Design patterns, optimised for Event Sourcing and CQRS. The application library orchestrates the execution of the logic by loading state, executing domain components and storing new state.")
