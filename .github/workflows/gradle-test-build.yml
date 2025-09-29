@@ -45,7 +45,7 @@ jobs:
         run: ./gradlew mingwX64Test --full-stacktrace
 
       - name: Upload reports
-        uses: actions/upload-artifact@v4.6.0
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: 'reports-${{ matrix.os }}'
           path: '**/build/reports/**'
