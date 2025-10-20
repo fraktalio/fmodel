@@ -55,8 +55,8 @@ kotlin {
                 // configures the -javadoc artifact, possible values:
                 // - `JavadocJar.None()` don't publish this artifact
                 // - `JavadocJar.Empty()` publish an empty jar
-                // - `JavadocJar.Dokka("dokkaHtml")` when using Kotlin with Dokka, where `dokkaHtml` is the name of the Dokka task that should be used as input
-                javadocJar = JavadocJar.Dokka("dokkaHtml"),
+                // - `JavadocJar.Dokka("dokkaGenerateHtml")` when using Kotlin with Dokka, where `dokkaGenerateHtml` is the name of the Dokka task that should be used as input
+                javadocJar = JavadocJar.Dokka("dokkaGenerateHtml"),
                 // whether to publish a sources jar
                 sourcesJar = true,
             )
