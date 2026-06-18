@@ -1,5 +1,5 @@
 [versions]
-coroutines = "1.10.2"
+coroutines = "1.11.0"
 dokka = "2.1.0"
 kotest = "6.0.7"
 ksp = "2.3.4"
