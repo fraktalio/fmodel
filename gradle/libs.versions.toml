@@ -1,7 +1,7 @@
 [versions]
 coroutines = "1.10.2"
 dokka = "2.1.0"
-kotest = "6.0.7"
+kotest = "6.2.5"
 ksp = "2.3.4"
 kotlin = "2.3.0"
 arrow = "2.2.0"
